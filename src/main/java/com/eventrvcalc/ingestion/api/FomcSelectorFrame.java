@@ -41,27 +41,33 @@ public class FomcSelectorFrame extends JFrame {
         JPanel northContainer = new JPanel();
         northContainer.setLayout(new BoxLayout(northContainer, BoxLayout.Y_AXIS));
 
-        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 12));
-        topPanel.setBorder(BorderFactory.createEmptyBorder(8, 10, 6, 10));
-        topPanel.add(new JLabel("FOMC Date:"));
-        topPanel.add(dateCombo);
-        topPanel.add(new JLabel("Ticker:"));
-        topPanel.add(tickerCombo);
-        topPanel.add(new JLabel("P-Source:"));
-        topPanel.add(probSourceCombo);
-        topPanel.add(fetchYfCheckbox);
-        topPanel.add(eventBullishCheckbox);
-        topPanel.add(new JLabel("Manual sigma_event:"));
-        topPanel.add(sigmaField);
+        // Row 1: Selectors & Inputs
+        JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
+        row1.add(new JLabel("FOMC Date:"));
+        row1.add(dateCombo);
+        row1.add(new JLabel("Ticker:"));
+        row1.add(tickerCombo);
+        row1.add(new JLabel("P-Source:"));
+        row1.add(probSourceCombo);
+        row1.add(fetchYfCheckbox);
+        row1.add(eventBullishCheckbox);
+        row1.add(new JLabel("Manual sigma_event:"));
+        row1.add(sigmaField);
 
+        // Row 2: Action Buttons
+        JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
         JButton fetchBtn = new JButton("Fetch Market & Run Math Engine");
-        topPanel.add(fetchBtn);
-        topPanel.add(openPlotBtn);
-        northContainer.add(topPanel);
+        fetchBtn.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        openPlotBtn.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
+        row2.add(fetchBtn);
+        row2.add(openPlotBtn);
 
-        // Triangulated Summary Banner
+        northContainer.add(row1);
+        northContainer.add(row2);
+
+        // Row 3: Triangulated Summary Banner
         summaryBanner.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createEmptyBorder(0, 10, 10, 10),
+                BorderFactory.createEmptyBorder(4, 10, 8, 10),
                 BorderFactory.createCompoundBorder(
                         BorderFactory.createLineBorder(new Color(60, 110, 180), 2, true),
                         BorderFactory.createEmptyBorder(8, 12, 8, 12)
@@ -395,12 +401,14 @@ public class FomcSelectorFrame extends JFrame {
 
                 // Update UI Banner on Swing Thread
                 final BL.CrossAssetTriangulation finalTri = triangulation;
+                final double finalPPolymarket = pPolymarket;
+                final double finalPBonds = pBonds;
                 SwingUtilities.invokeLater(() -> {
                     summaryLine1.setText(String.format(
                             "TRIANGULATED PROBABILITY: %.1f%% (Polymarket: %s | CME ZQ: %s) | 20Y Yield Shock: +/-%.1f bps | SPY Move: +/-%.2f%%",
                             finalTri.pTriangulated() * 100.0,
-                            Double.isNaN(pPolymarket) ? "N/A" : String.format("%.1f%%", pPolymarket * 100.0),
-                            Double.isNaN(pBonds) ? "N/A" : String.format("%.1f%%", pBonds * 100.0),
+                            Double.isNaN(finalPPolymarket) ? "N/A" : String.format("%.1f%%", finalPPolymarket * 100.0),
+                            Double.isNaN(finalPBonds) ? "N/A" : String.format("%.1f%%", finalPBonds * 100.0),
                             finalTri.tltImpliedYieldShockBps(),
                             finalTri.sigmaSpy() * 100.0
                     ));
