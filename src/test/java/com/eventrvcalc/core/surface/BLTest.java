@@ -218,8 +218,47 @@ class BLTest {
         BL.CrossAssetTriangulation res = BL.triangulateFomcVenues(0.80, 0.85, 0.025, 0.006, false);
         assertThat(res.tltImpliedYieldShockBps()).isCloseTo(15.15, within(0.1));
         assertThat(res.tltToSpyVolRatio()).isCloseTo(4.167, within(0.01));
+        // Fair SPY = 2.50% / 1.25 = 2.00%
+        assertThat(res.triangulatedSpyFairSigma()).isCloseTo(0.020, within(1e-6));
+        // Edge = 2.00% - 0.60% = +1.40%
+        assertThat(res.spyVolEdgePct()).isCloseTo(0.014, within(1e-6));
         assertThat(res.regimeVerdict()).contains("EQUITY VOL CHEAP");
         assertThat(res.spyVolEdgePct()).isGreaterThan(0.0);
+
+        // Prompt user bug scenario: TLT = 1.41%, SPY = 1.94%
+        // Fair SPY = 1.41% / 1.25 = 1.128% (~1.13%)
+        // Edge = 1.128% - 1.94% = -0.812% (~-0.81%)
+        BL.CrossAssetTriangulation res2 = BL.triangulateFomcVenues(0.80, 0.85, 0.0141, 0.0194, false);
+        assertThat(res2.triangulatedSpyFairSigma() * 100.0).isCloseTo(1.128, within(0.01));
+        assertThat(res2.spyVolEdgePct() * 100.0).isCloseTo(-0.812, within(0.01));
+        assertThat(res2.regimeVerdict()).contains("RATES VOL CHEAP vs EQUITIES");
+    }
+
+    @Test
+    void testTailAdjustedCmeProbability() {
+        // Exact numbers from user prompt:
+        // Delta_r = +20.89 bps = 0.2089%
+        // Polymarket brackets:
+        // 50+ bps decrease: 0.40% (0.0040)
+        // 25 bps decrease: 0.55% (0.0055)
+        // 50+ bps increase: 2.45% (0.0245)
+        // 25 bps increase: 79.40% (0.7940)
+        double deltaRatePct = 0.2089;
+        BL.PolymarketTailBrackets tails = new BL.PolymarketTailBrackets(
+                0.0040, 0.0055, 0.7940, 0.0245
+        );
+
+        BL.TailAdjustedCmeResult res = BL.solveTailAdjustedCme(deltaRatePct, tails);
+
+        // Binary: 20.89 / 25 = 83.56%
+        assertThat(res.pBondsBinary() * 100.0).isCloseTo(83.56, within(0.01));
+
+        // Tail contribution = -50(0.0040) - 25(0.0055) + 50(0.0245) = -0.20 - 0.1375 + 1.225 = +0.8875 bps
+        // p_hike25_zq = (20.89 - 0.8875) / 25 = 20.0025 / 25 = 80.01%
+        assertThat(res.pHike25Zq() * 100.0).isCloseTo(80.01, within(0.01));
+
+        // p_Bonds_TailAdjusted = 80.01% + 2.45% = 82.46%
+        assertThat(res.pBondsTailAdjusted() * 100.0).isCloseTo(82.46, within(0.01));
     }
 
     private static double gauss(double x, double mu, double sigma) {

@@ -107,6 +107,31 @@ public class Polymarket {
             throw new IllegalArgumentException("Bracket/market '" + bracketOrId + "' not found in event " + slug);
         }
 
+        public BL.PolymarketTailBrackets extractTailBrackets() {
+            double pCut50 = 0.0;
+            double pCut25 = 0.0;
+            double pHike25 = 0.0;
+            double pHike50 = 0.0;
+
+            for (Market m : markets) {
+                String label = ((m.groupItemTitle() != null ? m.groupItemTitle() : "") + " " + m.question()).toLowerCase();
+                double p = m.yesProbability();
+
+                if (label.contains("50+ bps decrease") || label.contains("50+ bps cut") || label.contains(">50 bps decrease")
+                        || label.contains("decrease by 50") || label.contains("cut by 50") || (label.contains("decrease") && label.contains("50"))) {
+                    pCut50 += p;
+                } else if (label.contains("25 bps decrease") || label.contains("25 bps cut") || (label.contains("decrease") && label.contains("25"))) {
+                    pCut25 += p;
+                } else if (label.contains("50+ bps increase") || label.contains("50+ bps hike") || label.contains(">50 bps increase")
+                        || label.contains("increase by 50") || label.contains("hike by 50") || (label.contains("increase") && label.contains("50"))) {
+                    pHike50 += p;
+                } else if (label.contains("25 bps increase") || label.contains("25 bps hike") || (label.contains("increase") && label.contains("25"))) {
+                    pHike25 += p;
+                }
+            }
+            return new BL.PolymarketTailBrackets(pCut50, pCut25, pHike25, pHike50);
+        }
+
         public double yesProbability() {
             if (markets.size() == 1) {
                 return markets.get(0).yesProbability();

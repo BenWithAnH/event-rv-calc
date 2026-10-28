@@ -156,13 +156,13 @@ def format_option_slice(ticker, expiry_str, current_spot, risk_free_rate=0.043):
         c_bid = float(c_row['bid']) if c_row is not None and not pd.isna(c_row.get('bid')) else 0.0
         c_ask = float(c_row['ask']) if c_row is not None and not pd.isna(c_row.get('ask')) else 0.0
         c_last = float(c_row['lastPrice']) if c_row is not None and not pd.isna(c_row.get('lastPrice')) else 0.0
-        c_mid = (c_bid + c_ask) / 2.0 if (c_bid + c_ask) > 0 else c_last
+        c_mid = (c_bid + c_ask) / 2.0 if (c_bid + c_ask) > 0.0 else c_last
         c_iv = float(c_row['impliedVolatility']) if c_row is not None and not pd.isna(c_row.get('impliedVolatility')) else 0.0
         
         p_bid = float(p_row['bid']) if p_row is not None and not pd.isna(p_row.get('bid')) else 0.0
         p_ask = float(p_row['ask']) if p_row is not None and not pd.isna(p_row.get('ask')) else 0.0
         p_last = float(p_row['lastPrice']) if p_row is not None and not pd.isna(p_row.get('lastPrice')) else 0.0
-        p_mid = (p_bid + p_ask) / 2.0 if (p_bid + p_ask) > 0 else p_last
+        p_mid = (p_bid + p_ask) / 2.0 if (p_bid + p_ask) > 0.0 else p_last
         p_iv = float(p_row['impliedVolatility']) if p_row is not None and not pd.isna(p_row.get('impliedVolatility')) else 0.0
         
         if math.isnan(c_mid): c_mid = 0.0
@@ -185,29 +185,60 @@ def format_option_slice(ticker, expiry_str, current_spot, risk_free_rate=0.043):
         exchange_iv = 0.0
         
         if pct_diff < -0.01:
-            eta = -1
-            put_weight = 1.0
-            mid = p_mid
-            bid = p_bid
-            ask = p_ask
-            exchange_iv = p_iv
+            if p_mid > 0.001:
+                eta = -1
+                put_weight = 1.0
+                mid = p_mid
+                bid = p_bid
+                ask = p_ask
+                exchange_iv = p_iv
+            else:
+                eta = 1
+                call_weight = 1.0
+                mid = c_mid
+                bid = c_bid
+                ask = c_ask
+                exchange_iv = c_iv
         elif pct_diff > 0.01:
-            eta = 1
-            call_weight = 1.0
-            mid = c_mid
-            bid = c_bid
-            ask = c_ask
-            exchange_iv = c_iv
+            if c_mid > 0.001:
+                eta = 1
+                call_weight = 1.0
+                mid = c_mid
+                bid = c_bid
+                ask = c_ask
+                exchange_iv = c_iv
+            else:
+                eta = -1
+                put_weight = 1.0
+                mid = p_mid
+                bid = p_bid
+                ask = p_ask
+                exchange_iv = p_iv
         else:
-            # Linear blend within +/- 1% ATM window
-            alpha = (pct_diff + 0.01) / 0.02
-            call_weight = max(0.0, min(1.0, alpha))
-            put_weight = 1.0 - call_weight
-            mid = call_weight * c_mid + put_weight * p_mid
-            bid = call_weight * c_bid + put_weight * p_bid
-            ask = call_weight * c_ask + put_weight * p_ask
-            exchange_iv = call_weight * c_iv + put_weight * p_iv
-            eta = 0
+            # Linear blend within +/- 1% ATM window (fallback if one leg is missing)
+            if c_mid > 0.001 and p_mid > 0.001:
+                alpha = (pct_diff + 0.01) / 0.02
+                call_weight = max(0.0, min(1.0, alpha))
+                put_weight = 1.0 - call_weight
+                mid = call_weight * c_mid + put_weight * p_mid
+                bid = call_weight * c_bid + put_weight * p_bid
+                ask = call_weight * c_ask + put_weight * p_ask
+                exchange_iv = call_weight * c_iv + put_weight * p_iv
+                eta = 0
+            elif p_mid > 0.001:
+                eta = -1
+                put_weight = 1.0
+                mid = p_mid
+                bid = p_bid
+                ask = p_ask
+                exchange_iv = p_iv
+            else:
+                eta = 1
+                call_weight = 1.0
+                mid = c_mid
+                bid = c_bid
+                ask = c_ask
+                exchange_iv = c_iv
             
         if mid > 0.001:
             quotes.append({
@@ -408,13 +439,11 @@ def main():
     print(f"Current {args.symbol} Spot: ${current_spot:.2f}")
     
     out_files = {}
+    slices_data = {}
 
     def fetch_slice(label, exp_str):
         p = format_option_slice(ticker, exp_str, current_spot)
-        fpath = os.path.join(args.output_dir, f"{args.symbol.lower()}_{label}.json")
-        with open(fpath, "w", encoding="utf-8") as f:
-            json.dump(p, f, indent=2)
-        return label, os.path.abspath(fpath), exp_str, len(p['quotes'])
+        return label, exp_str, p
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
         futures = [
@@ -422,9 +451,68 @@ def main():
             for label, exp_str in [("t1", t1_str), ("t2", t2_str), ("t3", t3_str)]
         ]
         for fut in concurrent.futures.as_completed(futures):
-            label, fpath, exp_str, quote_count = fut.result()
-            out_files[label] = fpath
-            print(f"Wrote {label.upper()} ({exp_str}, {quote_count} strikes) -> {fpath}")
+            label, exp_str, p = fut.result()
+            slices_data[label] = (exp_str, p)
+
+    # Ensure T1 has at least 5 valid strikes for 5-param SVI fit; if a weekly expiry is illiquid (e.g. HYG 2026-12-04 has only 3 strikes),
+    # automatically step back to the nearest liquid pre-event expiration.
+    event_dt = datetime.datetime.strptime(args.event_date, "%Y-%m-%d").date()
+    t1_dt = datetime.datetime.strptime(t1_str, "%Y-%m-%d").date()
+    t2_dt = datetime.datetime.strptime(t2_str, "%Y-%m-%d").date()
+    t3_dt = datetime.datetime.strptime(t3_str, "%Y-%m-%d").date()
+
+    if len(slices_data["t1"][1]["quotes"]) < 5:
+        prior_exps = sorted([
+            e for e in expiries
+            if datetime.datetime.strptime(e, "%Y-%m-%d").date() < t1_dt
+        ], reverse=True)
+        for cand_str in prior_exps:
+            cand_p = format_option_slice(ticker, cand_str, current_spot)
+            if len(cand_p["quotes"]) >= 5:
+                print(f"Notice: {t1_str} had only {len(slices_data['t1'][1]['quotes'])} strikes (<5); stepped back to liquid pre-event expiry {cand_str} ({len(cand_p['quotes'])} strikes)")
+                t1_str = cand_str
+                t1_dt = datetime.datetime.strptime(t1_str, "%Y-%m-%d").date()
+                slices_data["t1"] = (t1_str, cand_p)
+                days_t1_t2 = count_trading_days(t1_dt, t2_dt)
+                break
+
+    # Similarly ensure T2 and T3 have >= 5 strikes
+    if len(slices_data["t2"][1]["quotes"]) < 5:
+        later_exps = sorted([
+            e for e in expiries
+            if t2_dt < datetime.datetime.strptime(e, "%Y-%m-%d").date() < t3_dt
+        ])
+        for cand_str in later_exps:
+            cand_p = format_option_slice(ticker, cand_str, current_spot)
+            if len(cand_p["quotes"]) >= 5:
+                t2_str = cand_str
+                t2_dt = datetime.datetime.strptime(t2_str, "%Y-%m-%d").date()
+                slices_data["t2"] = (t2_str, cand_p)
+                days_t1_t2 = count_trading_days(t1_dt, t2_dt)
+                days_t2_t3 = count_trading_days(t2_dt, t3_dt)
+                break
+
+    if len(slices_data["t3"][1]["quotes"]) < 5:
+        later_exps = sorted([
+            e for e in expiries
+            if datetime.datetime.strptime(e, "%Y-%m-%d").date() > t3_dt
+        ])
+        for cand_str in later_exps:
+            cand_p = format_option_slice(ticker, cand_str, current_spot)
+            if len(cand_p["quotes"]) >= 5:
+                t3_str = cand_str
+                t3_dt = datetime.datetime.strptime(t3_str, "%Y-%m-%d").date()
+                slices_data["t3"] = (t3_str, cand_p)
+                days_t2_t3 = count_trading_days(t2_dt, t3_dt)
+                break
+
+    for label in ("t1", "t2", "t3"):
+        exp_str, p = slices_data[label]
+        fpath = os.path.join(args.output_dir, f"{args.symbol.lower()}_{label}.json")
+        with open(fpath, "w", encoding="utf-8") as f:
+            json.dump(p, f, indent=2)
+        out_files[label] = os.path.abspath(fpath)
+        print(f"Wrote {label.upper()} ({exp_str}, {len(p['quotes'])} strikes) -> {out_files[label]}")
         
     manifest = {
         "symbol": args.symbol,

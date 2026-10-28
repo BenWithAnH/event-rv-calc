@@ -616,6 +616,64 @@ public class BL {
 
     public static final double TLT_MODIFIED_DURATION = 16.5;
     public static final double IEF_MODIFIED_DURATION = 7.5;
+    public static final double BASELINE_TLT_SPY_RATIO = 1.25;
+
+    public record PolymarketTailBrackets(
+            double pCut50,
+            double pCut25,
+            double pHike25,
+            double pHike50
+    ) {
+        public static PolymarketTailBrackets empty() {
+            return new PolymarketTailBrackets(0.0, 0.0, 0.0, 0.0);
+        }
+    }
+
+    public record TailAdjustedCmeResult(
+            double deltaRateBps,
+            double pBondsBinary,
+            double pHike25Zq,
+            double pBondsTailAdjusted,
+            double tailCorrectionBps,
+            boolean isHikeImplied
+    ) {}
+
+    /**
+     * Solves for the tail-adjusted CME Fed Funds futures probability by accounting for
+     * tail brackets (50+ bps cuts/hikes and 25 bps cuts):
+     * Delta_r_ZQ (in bps) = -50 * p_cut50 - 25 * p_cut25 + 25 * p_hike25_ZQ + 50 * p_hike50
+     * => p_hike25_ZQ = (Delta_r_ZQ - (-50*p_cut50 - 25*p_cut25 + 50*p_hike50)) / 25
+     * => p_Bonds_TailAdjusted = p_hike25_ZQ + p_hike50
+     */
+    public static TailAdjustedCmeResult solveTailAdjustedCme(
+            double deltaRatePct,
+            PolymarketTailBrackets tails) {
+
+        double deltaBps = deltaRatePct * 100.0; // e.g. 0.2089% -> 20.89 bps
+        double pBinary = Math.min(1.0, Math.max(0.0, Math.abs(deltaBps) / 25.0));
+
+        if (tails == null) {
+            return new TailAdjustedCmeResult(deltaBps, pBinary, pBinary, pBinary, 0.0, deltaBps >= 0.0);
+        }
+
+        // Tails contribution outside of 25 bps hike:
+        // tailContribution = -50 * p_cut50 - 25 * p_cut25 + 50 * p_hike50
+        double tailContribution = -50.0 * tails.pCut50() - 25.0 * tails.pCut25() + 50.0 * tails.pHike50();
+        double pHike25Zq = (deltaBps - tailContribution) / 25.0;
+        pHike25Zq = Math.max(0.0, Math.min(1.0, pHike25Zq));
+
+        double pBondsTailAdjusted = Math.max(0.0, Math.min(1.0, pHike25Zq + tails.pHike50()));
+        double tailCorrectionBps = deltaBps - (25.0 * pBinary);
+
+        return new TailAdjustedCmeResult(
+                deltaBps,
+                pBinary,
+                pHike25Zq,
+                pBondsTailAdjusted,
+                tailContribution,
+                deltaBps >= 0.0
+        );
+    }
 
     public record CrossAssetTriangulation(
             double pPolymarket,
@@ -639,7 +697,7 @@ public class BL {
     /**
      * Triangulates across 3 venues:
      * 1. Venue 1 (Prediction Market - Polymarket/Kalshi)
-     * 2. Venue 2 (Short-Term Rates - CME Fed Funds ZQ)
+     * 2. Venue 2 (Short-Term Rates - CME Fed Funds ZQ, tail-adjusted)
      * 3. Venue 3 (TLT & SPY Breeden-Litzenberger Surfaces with TLT Duration Conversion)
      */
     public static CrossAssetTriangulation triangulateFomcVenues(
@@ -679,10 +737,11 @@ public class BL {
         // 4. Cross-Asset Vol Ratio (MOVE vs VIX event proxy)
         double ratio = safeSigmaSpy > 1e-6 ? (safeSigmaTlt / safeSigmaSpy) : Double.NaN;
 
-        // Empirical macro baseline: ~0.80% SPY move per 10 bps 20Y Treasury shock (TLT/SPY ratio ~1.25)
-        double spyMovePer10Bps = (tltYieldShockBps > 1e-4) ? (safeSigmaSpy / (tltYieldShockBps / 10.0)) : Double.NaN;
-        double fairSpySigma = (tltYieldShockBps / 10.0) * 0.0080;
+        // Baseline TLT/SPY ratio is ~1.25x (meaning TLT typically moves 1.25x as much as SPY)
+        // Fair SPY Move implied by TLT = safeSigmaTlt / 1.25
+        double fairSpySigma = safeSigmaTlt / BASELINE_TLT_SPY_RATIO;
         double spyVolEdge = fairSpySigma - safeSigmaSpy;
+        double spyMovePer10Bps = (tltYieldShockBps > 1e-4) ? (safeSigmaSpy / (tltYieldShockBps / 10.0)) : Double.NaN;
 
         String verdict;
         String explanation;

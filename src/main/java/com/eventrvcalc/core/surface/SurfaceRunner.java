@@ -113,13 +113,28 @@ public class SurfaceRunner {
                 double putMid = qNode.has("putMid") ? qNode.get("putMid").asDouble() : (eta == -1 ? mid : 0.0);
                 double callWeight = qNode.has("callWeight") ? qNode.get("callWeight").asDouble() : (eta == 1 ? 1.0 : 0.0);
                 double putWeight = qNode.has("putWeight") ? qNode.get("putWeight").asDouble() : (eta == -1 ? 1.0 : 0.0);
+                double exchangeIv = qNode.has("exchangeIv") ? qNode.get("exchangeIv").asDouble() : 0.0;
 
                 try {
                     double sigmaHat;
                     if (callWeight > 0.0 && putWeight > 0.0) {
-                        double sigCall = CRR.findSigmaHat(S0, strike, T, r, q, N, 1, callMid);
-                        double sigPut = CRR.findSigmaHat(S0, strike, T, r, q, N, -1, putMid);
-                        sigmaHat = callWeight * sigCall + putWeight * sigPut;
+                        Double sigCall = null;
+                        Double sigPut = null;
+                        if (callMid > 0.0) {
+                            try { sigCall = CRR.findSigmaHat(S0, strike, T, r, q, N, 1, callMid); } catch (Exception ignored) {}
+                        }
+                        if (putMid > 0.0) {
+                            try { sigPut = CRR.findSigmaHat(S0, strike, T, r, q, N, -1, putMid); } catch (Exception ignored) {}
+                        }
+                        if (sigCall != null && sigPut != null) {
+                            sigmaHat = callWeight * sigCall + putWeight * sigPut;
+                        } else if (sigCall != null) {
+                            sigmaHat = sigCall;
+                        } else if (sigPut != null) {
+                            sigmaHat = sigPut;
+                        } else {
+                            sigmaHat = exchangeIv;
+                        }
                     } else if (callWeight >= 1.0 || eta == 1) {
                         sigmaHat = CRR.findSigmaHat(S0, strike, T, r, q, N, 1, mid);
                     } else {
@@ -129,7 +144,12 @@ public class SurfaceRunner {
                         validStrikes.add(strike);
                         validVols.add(sigmaHat);
                     }
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                    if (exchangeIv > 0.005 && exchangeIv < 3.0) {
+                        validStrikes.add(strike);
+                        validVols.add(exchangeIv);
+                    }
+                }
             }
         }
 
@@ -171,7 +191,13 @@ public class SurfaceRunner {
         double vT2 = resT2.logVariance();
         double vT3 = resT3.logVariance();
 
-        double v1Day = BL.calculateDailyNoiseVariance(vT2, vT3, tradingDaysT2ToT3);
+        // Daily background noise sanity check:
+        // Background noise V_1 should never exceed pre-event daily rate (vT1 / daysToT1),
+        // preventing subsequent macro events or upward term-structure jumps in T3 from wiping out pure event move.
+        double tradingDaysToT1 = Math.max(1.0, resT1.T() * 252.0);
+        double v1Pre = vT1 / tradingDaysToT1;
+        double v1Post = BL.calculateDailyNoiseVariance(vT2, vT3, tradingDaysT2ToT3);
+        double v1Day = Math.min(v1Pre, Math.max(0.0, v1Post));
         double sigmaEvent = BL.impliedPureEventMove(vT1, vT2, v1Day, windowDays);
 
         return new EventPureMoveResult(resT1, resT2, resT3, vT1, vT2, vT3, v1Day, sigmaEvent);

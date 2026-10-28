@@ -20,7 +20,13 @@ public class FomcSelectorFrame extends JFrame {
 
     private final JComboBox<LocalDate> dateCombo = new JComboBox<>();
     private final JComboBox<String> tickerCombo = new JComboBox<>(new String[]{"ALL (SPY, TLT, IEF, HYG)", "SPY", "TLT", "IEF", "HYG"});
-    private final JComboBox<String> probSourceCombo = new JComboBox<>(new String[]{"Fed Funds ZQ (Institutional)", "Polymarket (Retail)"});
+    private final JComboBox<String> probSourceCombo = new JComboBox<>(new String[]{
+            "Hybrid Consensus (ZQ + PM) (Default)",
+            "Fed Funds ZQ (Institutional)",
+            "Polymarket (Retail Crowd)",
+            "Manual / Custom p"
+    });
+    private final JTextField customPField = new JTextField("0.50", 4);
     private final JCheckBox fetchYfCheckbox = new JCheckBox("Live yfinance", true);
     private final JCheckBox eventBullishCheckbox = new JCheckBox("Hike is Bullish", false);
     private final JTextField sigmaField = new JTextField("0.02", 6);
@@ -49,10 +55,19 @@ public class FomcSelectorFrame extends JFrame {
         row1.add(tickerCombo);
         row1.add(new JLabel("P-Source:"));
         row1.add(probSourceCombo);
+        row1.add(new JLabel("Custom p:"));
+        row1.add(customPField);
+        customPField.setEnabled(false);
         row1.add(fetchYfCheckbox);
         row1.add(eventBullishCheckbox);
         row1.add(new JLabel("Manual sigma_event:"));
         row1.add(sigmaField);
+
+        probSourceCombo.addActionListener(e -> {
+            String sel = (String) probSourceCombo.getSelectedItem();
+            boolean isCustom = sel != null && sel.startsWith("Manual");
+            customPField.setEnabled(isCustom);
+        });
 
         // Row 2: Action Buttons
         JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
@@ -74,10 +89,23 @@ public class FomcSelectorFrame extends JFrame {
                 )
         ));
         summaryBanner.setBackground(new Color(242, 246, 252));
+        summaryBanner.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        summaryBanner.setToolTipText("Click to view full verdict and summary details");
         summaryLine1.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
         summaryLine1.setForeground(new Color(20, 45, 90));
         summaryLine2.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
         summaryLine2.setForeground(new Color(30, 60, 100));
+
+        java.awt.event.MouseAdapter bannerClickListener = new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                showFullVerdictDialog();
+            }
+        };
+        summaryBanner.addMouseListener(bannerClickListener);
+        summaryLine1.addMouseListener(bannerClickListener);
+        summaryLine2.addMouseListener(bannerClickListener);
+
         summaryBanner.add(summaryLine1);
         summaryBanner.add(summaryLine2);
         northContainer.add(summaryBanner);
@@ -94,6 +122,28 @@ public class FomcSelectorFrame extends JFrame {
         pack();
         setLocationRelativeTo(null);
         loadInitialData();
+    }
+
+    private void showFullVerdictDialog() {
+        String line1 = summaryLine1.getText();
+        String line2 = summaryLine2.getText();
+
+        JTextArea textArea = new JTextArea(line1 + "\n\n" + line2);
+        textArea.setWrapStyleWord(true);
+        textArea.setLineWrap(true);
+        textArea.setEditable(false);
+        textArea.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
+        textArea.setCaretPosition(0);
+
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(550, 220));
+
+        JOptionPane.showMessageDialog(
+                this,
+                scrollPane,
+                "Cross-Asset Verdict & Summary",
+                JOptionPane.INFORMATION_MESSAGE
+        );
     }
 
     private void openImageExternally() {
@@ -248,11 +298,30 @@ public class FomcSelectorFrame extends JFrame {
 
         String chosenTicker = (String) tickerCombo.getSelectedItem();
         String chosenProbSource = (String) probSourceCombo.getSelectedItem();
-        boolean useBondsProb = chosenProbSource != null && chosenProbSource.startsWith("Fed Funds");
+        double parsedCustomP = 0.50;
+        if (chosenProbSource != null && chosenProbSource.startsWith("Manual")) {
+            try {
+                parsedCustomP = Double.parseDouble(customPField.getText().trim());
+                if (parsedCustomP > 1.0 && parsedCustomP <= 100.0) {
+                    parsedCustomP /= 100.0;
+                }
+                if (parsedCustomP < 0.0 || parsedCustomP > 1.0) {
+                    outputArea.setText("Invalid Custom p: must be between 0.0 and 1.0 (or 0% to 100%).");
+                    return;
+                }
+            } catch (NumberFormatException ex) {
+                outputArea.setText("Invalid Custom p number: " + customPField.getText());
+                return;
+            }
+        }
+        final double customPValue = parsedCustomP;
         final boolean fetchYf = fetchYfCheckbox.isSelected();
         final boolean isBullish = eventBullishCheckbox.isSelected();
 
-        outputArea.setText("Gathering market data for FOMC Date: " + selectedDate + "...\n");
+        outputArea.setText(""); // Clear console/terminal area on rerun
+        summaryLine1.setText("Triangulated Probability: Calculating... | Consensus: In Progress");
+        summaryLine2.setText("Cross-Asset Verdict: Gathering multi-asset data...");
+        outputArea.append("Gathering market data for FOMC Date: " + selectedDate + "...\n");
 
         SwingWorker<Void, String> mainWorker = new SwingWorker<>() {
             private final StringBuilder sb = new StringBuilder();
@@ -266,12 +335,16 @@ public class FomcSelectorFrame extends JFrame {
                 // 1. Discover Polymarket event
                 Optional<Polymarket.Event> matchOpt = Polymarket.findFomcEventForDate(selectedDate, cachedEvents);
                 double pPolymarket = Double.NaN;
+                BL.PolymarketTailBrackets tails = null;
                 if (matchOpt.isPresent()) {
                     matchedEvent = matchOpt.get();
                     sb.append("Matched Polymarket Event:    ").append(matchedEvent.title()).append("\n");
                     sb.append(String.format("Polymarket Total Volume:     $%,.2f%n", matchedEvent.volume()));
                     pPolymarket = matchedEvent.yesProbability();
-                    sb.append(String.format("Polymarket Hike Prob (p):    %.4f (%.2f%%)%n%n", pPolymarket, pPolymarket * 100.0));
+                    tails = matchedEvent.extractTailBrackets();
+                    sb.append(String.format("Polymarket Hike Prob (p):    %.4f (%.2f%%)%n", pPolymarket, pPolymarket * 100.0));
+                    sb.append(String.format("  -> Discovered Brackets: 50+ bps cut: %.2f%% | 25 bps cut: %.2f%% | 25 bps hike: %.2f%% | 50+ bps hike: %.2f%%%n%n",
+                            tails.pCut50() * 100.0, tails.pCut25() * 100.0, tails.pHike25() * 100.0, tails.pHike50() * 100.0));
                 } else {
                     sb.append("Polymarket: No direct market match found for ").append(selectedDate).append("\n\n");
                 }
@@ -279,6 +352,8 @@ public class FomcSelectorFrame extends JFrame {
                 // 2. Discover Layer B: CME 30-Day Fed Funds Futures (ZQ)
                 sb.append("=== Layer B: Institutional Ground Truth (CME 30-Day Fed Funds Futures ZQ) ===\n");
                 double pBonds = Double.NaN;
+                double pBondsTailAdjusted = Double.NaN;
+                BL.TailAdjustedCmeResult tailCmeResult = null;
                 try {
                     fedFundsRes = YFinanceOptionsIngestion.fetchFedFundsProbability(selectedDate, null);
                     pBonds = fedFundsRes.pBonds();
@@ -289,31 +364,72 @@ public class FomcSelectorFrame extends JFrame {
                     sb.append(String.format("  Day-Weighted Post-FOMC Target Rate : %.4f%%%n", fedFundsRes.ratePostImpliedPct()));
                     sb.append(String.format("  Implied Rate Change (Delta)       : %+.2f bps (%s)%n",
                             fedFundsRes.deltaRatePct() * 100.0, fedFundsRes.isHikeImplied() ? "HIKE implied" : "CUT implied"));
-                    sb.append(String.format("  CME Day-Weighted Prob (p_Bonds)    : %.4f (%.2f%%)%n",
+                    sb.append(String.format("  CME Unadjusted Binary Prob        : %.4f (%.2f%%)%n",
                             fedFundsRes.pBonds(), fedFundsRes.pBonds() * 100.0));
-                    sb.append(String.format("  Unadjusted Month-Avg Prob         : %.4f (%.2f%%)%n",
-                            fedFundsRes.pBondsUnadjusted(), fedFundsRes.pBondsUnadjusted() * 100.0));
+
+                    // Tail-adjusted CME Calculation via Polymarket tail brackets
+                    tailCmeResult = BL.solveTailAdjustedCme(fedFundsRes.deltaRatePct(), tails);
+                    pBondsTailAdjusted = tailCmeResult.pBondsTailAdjusted();
+                    sb.append(String.format("  Tail Bracket Drag / Contribution  : %+.4f bps%n", tailCmeResult.tailCorrectionBps()));
+                    sb.append(String.format("  CME 25 bps Hike Prob (p_hike25_ZQ): %.4f (%.2f%%)%n",
+                            tailCmeResult.pHike25Zq(), tailCmeResult.pHike25Zq() * 100.0));
+                    sb.append(String.format("  CME Tail-Adjusted Hike Prob (ZQ)  : %.4f (%.2f%%)%n",
+                            pBondsTailAdjusted, pBondsTailAdjusted * 100.0));
                 } catch (Exception ex) {
                     sb.append("  Fed Funds Futures Ingestion Note: ").append(ex.getMessage()).append("\n");
                 }
 
-                // 3. Probability Comparison Matrix
+                // 3. Probability Comparison & Selection Matrix
                 sb.append("\n=== Probability Source Comparison ===\n");
                 if (!Double.isNaN(pPolymarket)) {
-                    sb.append(String.format("  Polymarket (Retail)       : %.2f%%%n", pPolymarket * 100.0));
+                    sb.append(String.format("  1. Polymarket (Retail Crowd)       : %.2f%%%n", pPolymarket * 100.0));
                 }
                 if (!Double.isNaN(pBonds)) {
-                    sb.append(String.format("  Fed Funds ZQ (Institutional): %.2f%%%n", pBonds * 100.0));
-                }
-                if (!Double.isNaN(pPolymarket) && !Double.isNaN(pBonds)) {
-                    double spread = (pBonds - pPolymarket) * 100.0;
-                    sb.append(String.format("  Institutional Divergence   : %+.2f pts (%s)%n",
-                            spread, spread > 0 ? "Bonds price HIGHER hike probability than Retail" : "Retail pricing MORE aggressive than Bonds"));
+                    sb.append(String.format("  2. Fed Funds ZQ (Binary)           : %.2f%%%n", pBonds * 100.0));
+                    if (!Double.isNaN(pBondsTailAdjusted)) {
+                        sb.append(String.format("  3. Fed Funds ZQ (Tail-Adjusted)    : %.2f%%%n", pBondsTailAdjusted * 100.0));
+                    }
                 }
 
-                double activeP = useBondsProb && !Double.isNaN(pBonds) ? pBonds : (!Double.isNaN(pPolymarket) ? pPolymarket : 0.50);
-                String activeSourceName = useBondsProb && !Double.isNaN(pBonds) ? "Fed Funds ZQ (Institutional)" : "Polymarket (Retail)";
-                sb.append(String.format("  -> ACTIVE PROBABILITY USED : %.2f%% (%s)%n%n", activeP * 100.0, activeSourceName));
+                // Effective Rates Prob used in blend
+                double effectiveRatesP = !Double.isNaN(pBondsTailAdjusted) ? pBondsTailAdjusted : pBonds;
+                double hybridP;
+                if (!Double.isNaN(effectiveRatesP) && !Double.isNaN(pPolymarket)) {
+                    hybridP = 0.65 * effectiveRatesP + 0.35 * pPolymarket;
+                    double rawSpread = (pBonds - pPolymarket) * 100.0;
+                    double tailAdjSpread = (effectiveRatesP - pPolymarket) * 100.0;
+                    sb.append(String.format("  Binary Divergence (CME - PM)       : %+.2f pts%n", rawSpread));
+                    sb.append(String.format("  Tail-Adjusted Divergence (CME - PM): %+.2f pts (Gap shrank by %.2f pts)%n",
+                            tailAdjSpread, Math.abs(rawSpread) - Math.abs(tailAdjSpread)));
+                    sb.append(String.format("  Hybrid Consensus Blend (ZQ + PM)   : %.2f%%%n", hybridP * 100.0));
+                } else if (!Double.isNaN(effectiveRatesP)) {
+                    hybridP = effectiveRatesP;
+                } else if (!Double.isNaN(pPolymarket)) {
+                    hybridP = pPolymarket;
+                } else {
+                    hybridP = 0.50;
+                }
+
+                // Determine Active P based on user selection in dropdown:
+                double activeP;
+                String activeSourceName;
+                if (chosenProbSource != null && chosenProbSource.startsWith("Polymarket")) {
+                    activeP = !Double.isNaN(pPolymarket) ? pPolymarket : 0.50;
+                    activeSourceName = "Polymarket (Retail Crowd)";
+                } else if (chosenProbSource != null && chosenProbSource.startsWith("Fed Funds")) {
+                    activeP = !Double.isNaN(effectiveRatesP) ? effectiveRatesP : 0.50;
+                    activeSourceName = "Fed Funds ZQ (Institutional " + (!Double.isNaN(pBondsTailAdjusted) ? "Tail-Adjusted)" : "Binary)");
+                } else if (chosenProbSource != null && chosenProbSource.startsWith("Manual")) {
+                    activeP = customPValue;
+                    activeSourceName = String.format("Manual / Custom p (%.1f%%)", customPValue * 100.0);
+                } else {
+                    // Default: Hybrid Consensus (ZQ + PM)
+                    activeP = hybridP;
+                    activeSourceName = "Hybrid Consensus (ZQ + PM) (Default)";
+                }
+
+                sb.append(String.format("  -> ACTIVE PROBABILITY APPLIED TO ALL SURFACES : %.2f%% (%s)%n%n",
+                        activeP * 100.0, activeSourceName));
 
                 // 4. Layer A: Options Processing
                 Map<String, Double> discoveredSigmas = new java.util.concurrent.ConcurrentHashMap<>();
@@ -354,13 +470,13 @@ public class FomcSelectorFrame extends JFrame {
                             SwingUtilities.invokeLater(() -> sigmaField.setText(String.format("%.4f", discoveredSigma)));
                         } catch (Exception ex) {
                             sb.append(String.format("  Could not fetch/process options for %s: %s%n", ticker, ex.getMessage()));
-                            discoveredSigmas.put(ticker.toUpperCase(), sigmaManual);
-                            appendJumpCalculations(sb, ticker, activeP, sigmaManual, isBullish);
+                            sb.append(String.format("  Zero-Drift Jump Solution for %s: N/A (Options SVI fit unavailable)%n", ticker));
                         }
                     }
 
                     if (lastEventSliceFile != null && lastEventSliceFile.exists()) {
-                        generateAndOpenPlotInBackground(lastEventSliceFile);
+                        // Generate the plot file silently in background without popping open an external viewer window
+                        generatePlotTask(lastEventSliceFile, false);
                     }
                 } else {
                     discoveredSigmas.put(chosenTicker != null ? chosenTicker.toUpperCase() : "SPY", sigmaManual);
@@ -371,8 +487,9 @@ public class FomcSelectorFrame extends JFrame {
                 double sigmaTlt = discoveredSigmas.getOrDefault("TLT", sigmaManual);
                 double sigmaSpy = discoveredSigmas.getOrDefault("SPY", sigmaManual);
 
+                double ratesPForSynthesis = !Double.isNaN(pBondsTailAdjusted) ? pBondsTailAdjusted : pBonds;
                 BL.CrossAssetTriangulation triangulation = BL.triangulateFomcVenues(
-                        pPolymarket, pBonds, sigmaTlt, sigmaSpy, isBullish);
+                        pPolymarket, ratesPForSynthesis, sigmaTlt, sigmaSpy, isBullish);
 
                 sb.append("\n========================================================================================\n");
                 sb.append("=== 3-VENUE FOMC EVENT SYNTHESIS & TRIANGULATION (PREDICTION + RATES + B-L SURFACES) ===\n");
@@ -380,8 +497,10 @@ public class FomcSelectorFrame extends JFrame {
                 sb.append(String.format("Venue 1 — Retail Prediction Market (Polymarket)      : %s%n",
                         Double.isNaN(pPolymarket) ? "N/A" : String.format("%.2f%%", pPolymarket * 100.0)));
                 sb.append(String.format("Venue 2 — Institutional Rates Market (Fed Funds ZQ) : %s%n",
-                        Double.isNaN(pBonds) ? "N/A" : String.format("%.2f%% (Implied Rate Delta: %+.2f bps)",
-                                pBonds * 100.0, (fedFundsRes != null ? fedFundsRes.deltaRatePct() * 100.0 : 0.0))));
+                        Double.isNaN(pBonds) ? "N/A" : String.format("%.2f%% %s (Delta: %+.2f bps)",
+                                (!Double.isNaN(pBondsTailAdjusted) ? pBondsTailAdjusted : pBonds) * 100.0,
+                                (!Double.isNaN(pBondsTailAdjusted) ? "[Tail-Adjusted]" : "[Binary]"),
+                                (fedFundsRes != null ? fedFundsRes.deltaRatePct() * 100.0 : 0.0))));
                 sb.append(String.format("Venue 3 — B-L Implied Volatility Surfaces (TLT & SPY) :%n"));
                 sb.append(String.format("   * TLT Pure Event Move: %.2f%% -> Implied 20Y Yield Shock: +/-%.2f bps (D_mod ~16.5y)%n",
                         sigmaTlt * 100.0, triangulation.tltImpliedYieldShockBps()));
@@ -391,7 +510,8 @@ public class FomcSelectorFrame extends JFrame {
                 sb.append(String.format("     Move if Hike/Event: %+.2f%% equity | Move if Pause/Surprise: %+.2f%% equity%n",
                         triangulation.spyMoveIfEventPct() * 100.0, triangulation.spyMoveIfNotEventPct() * 100.0));
                 sb.append("----------------------------------------------------------------------------------------\n");
-                sb.append(String.format("-> TRIANGULATED CONSENSUS PROBABILITY (p_Tri) : %.2f%%%n", triangulation.pTriangulated() * 100.0));
+                sb.append(String.format("-> ACTIVE PROBABILITY APPLIED                 : %.2f%% (%s)%n", activeP * 100.0, activeSourceName));
+                sb.append(String.format("-> TRIANGULATED HYBRID CONSENSUS PROB (p_Tri) : %.2f%%%n", triangulation.pTriangulated() * 100.0));
                 sb.append(String.format("-> CROSS-ASSET EVENT VOL RATIO (TLT / SPY)    : %.2f  (Baseline: ~1.25x)%n", triangulation.tltToSpyVolRatio()));
                 sb.append(String.format("-> TRIANGULATED FAIR SPY EVENT MOVE           : %.2f%% (Current Surface: %.2f%%, Edge: %+.2f%%)%n",
                         triangulation.triangulatedSpyFairSigma() * 100.0, sigmaSpy * 100.0, triangulation.spyVolEdgePct() * 100.0));
@@ -402,10 +522,14 @@ public class FomcSelectorFrame extends JFrame {
                 // Update UI Banner on Swing Thread
                 final BL.CrossAssetTriangulation finalTri = triangulation;
                 final double finalPPolymarket = pPolymarket;
-                final double finalPBonds = pBonds;
+                final double finalPBonds = !Double.isNaN(pBondsTailAdjusted) ? pBondsTailAdjusted : pBonds;
+                final double finalActiveP = activeP;
+                final String finalActiveName = activeSourceName;
                 SwingUtilities.invokeLater(() -> {
                     summaryLine1.setText(String.format(
-                            "TRIANGULATED PROBABILITY: %.1f%% (Polymarket: %s | CME ZQ: %s) | 20Y Yield Shock: +/-%.1f bps | SPY Move: +/-%.2f%%",
+                            "ACTIVE PROB: %.1f%% (%s) | Hybrid Consensus: %.1f%% (PM: %s | CME ZQ: %s) | 20Y Yield Shock: +/-%.1f bps | SPY Move: +/-%.2f%%",
+                            finalActiveP * 100.0,
+                            finalActiveName,
                             finalTri.pTriangulated() * 100.0,
                             Double.isNaN(finalPPolymarket) ? "N/A" : String.format("%.1f%%", finalPPolymarket * 100.0),
                             Double.isNaN(finalPBonds) ? "N/A" : String.format("%.1f%%", finalPBonds * 100.0),
