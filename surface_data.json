@@ -1,0 +1,4306 @@
+{
+  "source" : "spy_eod_2023.parquet",
+  "quoteDate" : "2023-01-03",
+  "expireDate" : "2023-02-17",
+  "dte" : 45.0,
+  "S0" : 381.0998191762053,
+  "T" : 0.1232876712328767,
+  "r" : 0.043,
+  "q" : 0.0,
+  "forwardPrice" : 383.1255350626491,
+  "blTotalProb" : 0.9793085618294299,
+  "blExpectedST" : 376.19630557430867,
+  "defaultN" : 100,
+  "fittedA" : 3.791539075731368E-6,
+  "fittedB" : -0.0038159690253848954,
+  "fittedC" : 1.1220845780492774,
+  "svi" : {
+    "a" : 0.0039218123852632295,
+    "b" : 0.014614122100203266,
+    "rho" : -0.5438295622595372,
+    "m" : 0.08937683997868412,
+    "s" : 0.02098120001006221,
+    "vertexStrike" : 416.72985135342645
+  },
+  "quotes" : [ {
+    "strike" : 324.0,
+    "eta" : -1,
+    "mid" : 0.675,
+    "bid" : 0.67,
+    "ask" : 0.68,
+    "exchangeIv" : 0.28063,
+    "deAmSigmaHat" : 0.2850037638790328,
+    "euroCrrPrice" : 0.6713318683192434,
+    "earlyExercisePremium" : 0.0036681316807566366,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 325.0,
+    "eta" : -1,
+    "mid" : 0.705,
+    "bid" : 0.7,
+    "ask" : 0.71,
+    "exchangeIv" : 0.27887,
+    "deAmSigmaHat" : 0.2835446676431184,
+    "euroCrrPrice" : 0.7001290479521034,
+    "earlyExercisePremium" : 0.0048709520478965596,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 326.0,
+    "eta" : -1,
+    "mid" : 0.735,
+    "bid" : 0.73,
+    "ask" : 0.74,
+    "exchangeIv" : 0.27724,
+    "deAmSigmaHat" : 0.2810930869855966,
+    "euroCrrPrice" : 0.7300679914226244,
+    "earlyExercisePremium" : 0.004932008577375635,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 327.0,
+    "eta" : -1,
+    "mid" : 0.765,
+    "bid" : 0.76,
+    "ask" : 0.77,
+    "exchangeIv" : 0.27504,
+    "deAmSigmaHat" : 0.2786529104774639,
+    "euroCrrPrice" : 0.759997538746458,
+    "earlyExercisePremium" : 0.005002461253541979,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 328.0,
+    "eta" : -1,
+    "mid" : 0.805,
+    "bid" : 0.8,
+    "ask" : 0.81,
+    "exchangeIv" : 0.27316,
+    "deAmSigmaHat" : 0.27690486024035327,
+    "euroCrrPrice" : 0.7999062677421345,
+    "earlyExercisePremium" : 0.00509373225786558,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 329.0,
+    "eta" : -1,
+    "mid" : 0.845,
+    "bid" : 0.84,
+    "ask" : 0.85,
+    "exchangeIv" : 0.27197,
+    "deAmSigmaHat" : 0.2751635567887197,
+    "euroCrrPrice" : 0.8397755934150747,
+    "earlyExercisePremium" : 0.00522440658492529,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 330.0,
+    "eta" : -1,
+    "mid" : 0.885,
+    "bid" : 0.88,
+    "ask" : 0.89,
+    "exchangeIv" : 0.26965,
+    "deAmSigmaHat" : 0.27342973105970925,
+    "euroCrrPrice" : 0.8796160161509274,
+    "earlyExercisePremium" : 0.005383983849072571,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 331.0,
+    "eta" : -1,
+    "mid" : 0.925,
+    "bid" : 0.92,
+    "ask" : 0.93,
+    "exchangeIv" : 0.26785,
+    "deAmSigmaHat" : 0.27170408923775263,
+    "euroCrrPrice" : 0.9194377542355814,
+    "earlyExercisePremium" : 0.005562245764418661,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 332.0,
+    "eta" : -1,
+    "mid" : 0.975,
+    "bid" : 0.97,
+    "ask" : 0.98,
+    "exchangeIv" : 0.26732,
+    "deAmSigmaHat" : 0.2706541819697653,
+    "euroCrrPrice" : 0.9691273032554647,
+    "earlyExercisePremium" : 0.005872696744535277,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 333.0,
+    "eta" : -1,
+    "mid" : 1.0350000000000001,
+    "bid" : 1.03,
+    "ask" : 1.04,
+    "exchangeIv" : 0.26579,
+    "deAmSigmaHat" : 0.27026759958440993,
+    "euroCrrPrice" : 1.0285788856254734,
+    "earlyExercisePremium" : 0.0064211143745267485,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 334.0,
+    "eta" : -1,
+    "mid" : 1.085,
+    "bid" : 1.08,
+    "ask" : 1.09,
+    "exchangeIv" : 0.26442,
+    "deAmSigmaHat" : 0.2689402065946987,
+    "euroCrrPrice" : 1.0767716037437873,
+    "earlyExercisePremium" : 0.008228396256212633,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 335.0,
+    "eta" : -1,
+    "mid" : 1.145,
+    "bid" : 1.14,
+    "ask" : 1.15,
+    "exchangeIv" : 0.26337,
+    "deAmSigmaHat" : 0.26718246678206575,
+    "euroCrrPrice" : 1.1366185806246252,
+    "earlyExercisePremium" : 0.008381419375374843,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 336.0,
+    "eta" : -1,
+    "mid" : 1.1949999999999998,
+    "bid" : 1.19,
+    "ask" : 1.2,
+    "exchangeIv" : 0.26097,
+    "deAmSigmaHat" : 0.2649304904861,
+    "euroCrrPrice" : 1.1864706039245976,
+    "earlyExercisePremium" : 0.008529396075402262,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 337.0,
+    "eta" : -1,
+    "mid" : 1.2650000000000001,
+    "bid" : 1.26,
+    "ask" : 1.27,
+    "exchangeIv" : 0.26083,
+    "deAmSigmaHat" : 0.26369156820546497,
+    "euroCrrPrice" : 1.2562197967064022,
+    "earlyExercisePremium" : 0.008780203293597966,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 338.0,
+    "eta" : -1,
+    "mid" : 1.335,
+    "bid" : 1.33,
+    "ask" : 1.34,
+    "exchangeIv" : 0.25963,
+    "deAmSigmaHat" : 0.26245683906051215,
+    "euroCrrPrice" : 1.3259067651574545,
+    "earlyExercisePremium" : 0.009093234842545428,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 339.0,
+    "eta" : -1,
+    "mid" : 1.415,
+    "bid" : 1.41,
+    "ask" : 1.42,
+    "exchangeIv" : 0.25886,
+    "deAmSigmaHat" : 0.26172550393175736,
+    "euroCrrPrice" : 1.405509152937947,
+    "earlyExercisePremium" : 0.009490847062052943,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 340.0,
+    "eta" : -1,
+    "mid" : 1.495,
+    "bid" : 1.49,
+    "ask" : 1.5,
+    "exchangeIv" : 0.25759,
+    "deAmSigmaHat" : 0.2609866125416903,
+    "euroCrrPrice" : 1.4848688555571774,
+    "earlyExercisePremium" : 0.010131144442822704,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 341.0,
+    "eta" : -1,
+    "mid" : 1.5750000000000002,
+    "bid" : 1.57,
+    "ask" : 1.58,
+    "exchangeIv" : 0.25586,
+    "deAmSigmaHat" : 0.26023513429581296,
+    "euroCrrPrice" : 1.5638830428270794,
+    "earlyExercisePremium" : 0.011116957172920827,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 342.0,
+    "eta" : -1,
+    "mid" : 1.6549999999999998,
+    "bid" : 1.65,
+    "ask" : 1.66,
+    "exchangeIv" : 0.25503,
+    "deAmSigmaHat" : 0.2588800794222354,
+    "euroCrrPrice" : 1.6414323146046885,
+    "earlyExercisePremium" : 0.01356768539531128,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 343.0,
+    "eta" : -1,
+    "mid" : 1.755,
+    "bid" : 1.75,
+    "ask" : 1.76,
+    "exchangeIv" : 0.25359,
+    "deAmSigmaHat" : 0.2576189918801165,
+    "euroCrrPrice" : 1.7411146097428383,
+    "earlyExercisePremium" : 0.013885390257161623,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 344.0,
+    "eta" : -1,
+    "mid" : 1.855,
+    "bid" : 1.85,
+    "ask" : 1.86,
+    "exchangeIv" : 0.25291,
+    "deAmSigmaHat" : 0.256362482829407,
+    "euroCrrPrice" : 1.840719574689359,
+    "earlyExercisePremium" : 0.014280425310640998,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 345.0,
+    "eta" : -1,
+    "mid" : 1.955,
+    "bid" : 1.95,
+    "ask" : 1.96,
+    "exchangeIv" : 0.2518,
+    "deAmSigmaHat" : 0.25510834834532325,
+    "euroCrrPrice" : 1.9401898496510075,
+    "earlyExercisePremium" : 0.014810150348992579,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 346.0,
+    "eta" : -1,
+    "mid" : 2.065,
+    "bid" : 2.06,
+    "ask" : 2.07,
+    "exchangeIv" : 0.25088,
+    "deAmSigmaHat" : 0.25424305926357904,
+    "euroCrrPrice" : 2.0495488908300867,
+    "earlyExercisePremium" : 0.015451109169913213,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 347.0,
+    "eta" : -1,
+    "mid" : 2.175,
+    "bid" : 2.17,
+    "ask" : 2.18,
+    "exchangeIv" : 0.25029,
+    "deAmSigmaHat" : 0.25337185858826844,
+    "euroCrrPrice" : 2.1586129172000974,
+    "earlyExercisePremium" : 0.01638708279990242,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 348.0,
+    "eta" : -1,
+    "mid" : 2.3049999999999997,
+    "bid" : 2.3,
+    "ask" : 2.31,
+    "exchangeIv" : 0.24928,
+    "deAmSigmaHat" : 0.2532501501449255,
+    "euroCrrPrice" : 2.2870943284578713,
+    "earlyExercisePremium" : 0.01790567154212841,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 349.0,
+    "eta" : -1,
+    "mid" : 2.435,
+    "bid" : 2.43,
+    "ask" : 2.44,
+    "exchangeIv" : 0.2482,
+    "deAmSigmaHat" : 0.25259840249427684,
+    "euroCrrPrice" : 2.4133321425110634,
+    "earlyExercisePremium" : 0.021667857488936626,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 350.0,
+    "eta" : -1,
+    "mid" : 2.565,
+    "bid" : 2.56,
+    "ask" : 2.57,
+    "exchangeIv" : 0.24776,
+    "deAmSigmaHat" : 0.2510532639907388,
+    "euroCrrPrice" : 2.5428025910002456,
+    "earlyExercisePremium" : 0.02219740899975431,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 351.0,
+    "eta" : -1,
+    "mid" : 2.6900000000000004,
+    "bid" : 2.68,
+    "ask" : 2.7,
+    "exchangeIv" : 0.24592,
+    "deAmSigmaHat" : 0.2493580068852675,
+    "euroCrrPrice" : 2.6671444143609757,
+    "earlyExercisePremium" : 0.022855585639024678,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 352.0,
+    "eta" : -1,
+    "mid" : 2.855,
+    "bid" : 2.85,
+    "ask" : 2.86,
+    "exchangeIv" : 0.24626,
+    "deAmSigmaHat" : 0.2489030626766151,
+    "euroCrrPrice" : 2.8311742078883952,
+    "earlyExercisePremium" : 0.023825792111604738,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 353.0,
+    "eta" : -1,
+    "mid" : 3.0149999999999997,
+    "bid" : 3.01,
+    "ask" : 3.02,
+    "exchangeIv" : 0.24551,
+    "deAmSigmaHat" : 0.2482917855481557,
+    "euroCrrPrice" : 2.9900463284156897,
+    "earlyExercisePremium" : 0.024953671584309944,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 354.0,
+    "eta" : -1,
+    "mid" : 3.175,
+    "bid" : 3.17,
+    "ask" : 3.18,
+    "exchangeIv" : 0.24427,
+    "deAmSigmaHat" : 0.24766755027644796,
+    "euroCrrPrice" : 3.1483687270852085,
+    "earlyExercisePremium" : 0.026631272914791282,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 355.0,
+    "eta" : -1,
+    "mid" : 3.34,
+    "bid" : 3.33,
+    "ask" : 3.35,
+    "exchangeIv" : 0.24296,
+    "deAmSigmaHat" : 0.24717537505727832,
+    "euroCrrPrice" : 3.310861096864582,
+    "earlyExercisePremium" : 0.02913890313541767,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 356.0,
+    "eta" : -1,
+    "mid" : 3.5199999999999996,
+    "bid" : 3.51,
+    "ask" : 3.53,
+    "exchangeIv" : 0.2426,
+    "deAmSigmaHat" : 0.2464045680291901,
+    "euroCrrPrice" : 3.4860596446101946,
+    "earlyExercisePremium" : 0.033940355389805,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 357.0,
+    "eta" : -1,
+    "mid" : 3.71,
+    "bid" : 3.7,
+    "ask" : 3.72,
+    "exchangeIv" : 0.24225,
+    "deAmSigmaHat" : 0.24520458890127284,
+    "euroCrrPrice" : 3.6750878013328436,
+    "earlyExercisePremium" : 0.034912198667156336,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 358.0,
+    "eta" : -1,
+    "mid" : 3.9000000000000004,
+    "bid" : 3.89,
+    "ask" : 3.91,
+    "exchangeIv" : 0.24065,
+    "deAmSigmaHat" : 0.24400366388417333,
+    "euroCrrPrice" : 3.8637863785962963,
+    "earlyExercisePremium" : 0.0362136214037041,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 359.0,
+    "eta" : -1,
+    "mid" : 4.109999999999999,
+    "bid" : 4.1,
+    "ask" : 4.12,
+    "exchangeIv" : 0.24046,
+    "deAmSigmaHat" : 0.24331962719646405,
+    "euroCrrPrice" : 4.072195833684016,
+    "earlyExercisePremium" : 0.0378041663159836,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 360.0,
+    "eta" : -1,
+    "mid" : 4.3149999999999995,
+    "bid" : 4.31,
+    "ask" : 4.32,
+    "exchangeIv" : 0.23927,
+    "deAmSigmaHat" : 0.24250117159028478,
+    "euroCrrPrice" : 4.275211355110639,
+    "earlyExercisePremium" : 0.03978864488936029,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 361.0,
+    "eta" : -1,
+    "mid" : 4.529999999999999,
+    "bid" : 4.52,
+    "ask" : 4.54,
+    "exchangeIv" : 0.23832,
+    "deAmSigmaHat" : 0.24192334901914966,
+    "euroCrrPrice" : 4.487392351843128,
+    "earlyExercisePremium" : 0.04260764815687157,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 362.0,
+    "eta" : -1,
+    "mid" : 4.76,
+    "bid" : 4.75,
+    "ask" : 4.77,
+    "exchangeIv" : 0.23769,
+    "deAmSigmaHat" : 0.24167123306483254,
+    "euroCrrPrice" : 4.7121536349558655,
+    "earlyExercisePremium" : 0.04784636504413431,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 363.0,
+    "eta" : -1,
+    "mid" : 4.995,
+    "bid" : 4.98,
+    "ask" : 5.01,
+    "exchangeIv" : 0.23686,
+    "deAmSigmaHat" : 0.24037067733639084,
+    "euroCrrPrice" : 4.942738933322697,
+    "earlyExercisePremium" : 0.05226106667730335,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 364.0,
+    "eta" : -1,
+    "mid" : 5.24,
+    "bid" : 5.23,
+    "ask" : 5.25,
+    "exchangeIv" : 0.23603,
+    "deAmSigmaHat" : 0.2390946295520589,
+    "euroCrrPrice" : 5.185963091406644,
+    "earlyExercisePremium" : 0.05403690859335608,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 365.0,
+    "eta" : -1,
+    "mid" : 5.49,
+    "bid" : 5.48,
+    "ask" : 5.5,
+    "exchangeIv" : 0.23486,
+    "deAmSigmaHat" : 0.23792888432576198,
+    "euroCrrPrice" : 5.433725373805365,
+    "earlyExercisePremium" : 0.05627462619463497,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 366.0,
+    "eta" : -1,
+    "mid" : 5.755,
+    "bid" : 5.74,
+    "ask" : 5.77,
+    "exchangeIv" : 0.23429,
+    "deAmSigmaHat" : 0.2370968404489042,
+    "euroCrrPrice" : 5.696037483168553,
+    "earlyExercisePremium" : 0.058962516831447154,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 367.0,
+    "eta" : -1,
+    "mid" : 6.025,
+    "bid" : 6.01,
+    "ask" : 6.04,
+    "exchangeIv" : 0.23312,
+    "deAmSigmaHat" : 0.23635906629868864,
+    "euroCrrPrice" : 5.962321819123361,
+    "earlyExercisePremium" : 0.06267818087663901,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 368.0,
+    "eta" : -1,
+    "mid" : 6.305,
+    "bid" : 6.29,
+    "ask" : 6.32,
+    "exchangeIv" : 0.23157,
+    "deAmSigmaHat" : 0.2358183655102409,
+    "euroCrrPrice" : 6.2372362493788085,
+    "earlyExercisePremium" : 0.06776375062119122,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 369.0,
+    "eta" : -1,
+    "mid" : 6.595000000000001,
+    "bid" : 6.58,
+    "ask" : 6.61,
+    "exchangeIv" : 0.23129,
+    "deAmSigmaHat" : 0.234978495558846,
+    "euroCrrPrice" : 6.518222624728313,
+    "earlyExercisePremium" : 0.07677737527168738,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 370.0,
+    "eta" : -1,
+    "mid" : 6.895,
+    "bid" : 6.88,
+    "ask" : 6.91,
+    "exchangeIv" : 0.22956,
+    "deAmSigmaHat" : 0.2334688809667202,
+    "euroCrrPrice" : 6.815715001833387,
+    "earlyExercisePremium" : 0.07928499816661283,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 371.0,
+    "eta" : -1,
+    "mid" : 7.205,
+    "bid" : 7.19,
+    "ask" : 7.22,
+    "exchangeIv" : 0.22909,
+    "deAmSigmaHat" : 0.23215745109579805,
+    "euroCrrPrice" : 7.122452499080755,
+    "earlyExercisePremium" : 0.08254750091924468,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 372.0,
+    "eta" : -1,
+    "mid" : 7.525,
+    "bid" : 7.51,
+    "ask" : 7.54,
+    "exchangeIv" : 0.22737,
+    "deAmSigmaHat" : 0.23104629167564034,
+    "euroCrrPrice" : 7.438627828313742,
+    "earlyExercisePremium" : 0.08637217168625799,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 373.0,
+    "eta" : -1,
+    "mid" : 7.865,
+    "bid" : 7.85,
+    "ask" : 7.88,
+    "exchangeIv" : 0.22714,
+    "deAmSigmaHat" : 0.23032435759769934,
+    "euroCrrPrice" : 7.773681565733996,
+    "earlyExercisePremium" : 0.09131843426600383,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 374.0,
+    "eta" : -1,
+    "mid" : 8.195,
+    "bid" : 8.18,
+    "ask" : 8.21,
+    "exchangeIv" : 0.22574,
+    "deAmSigmaHat" : 0.22937533677137417,
+    "euroCrrPrice" : 8.097218134550147,
+    "earlyExercisePremium" : 0.09778186544985346,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 375.0,
+    "eta" : -1,
+    "mid" : 8.545,
+    "bid" : 8.53,
+    "ask" : 8.56,
+    "exchangeIv" : 0.22412,
+    "deAmSigmaHat" : 0.22872121743840293,
+    "euroCrrPrice" : 8.435116069165899,
+    "earlyExercisePremium" : 0.1098839308341013,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 376.0,
+    "eta" : -1,
+    "mid" : 8.879999999999999,
+    "bid" : 8.87,
+    "ask" : 8.89,
+    "exchangeIv" : 0.22279,
+    "deAmSigmaHat" : 0.22650501294175032,
+    "euroCrrPrice" : 8.765275197932803,
+    "earlyExercisePremium" : 0.1147248020671956,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 377.0,
+    "eta" : -1,
+    "mid" : 9.285,
+    "bid" : 9.27,
+    "ask" : 9.3,
+    "exchangeIv" : 0.22229,
+    "deAmSigmaHat" : 0.22560575037137284,
+    "euroCrrPrice" : 9.165487250785993,
+    "earlyExercisePremium" : 0.11951274921400667,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 378.0,
+    "eta" : -1,
+    "mid" : 9.665,
+    "bid" : 9.65,
+    "ask" : 9.68,
+    "exchangeIv" : 0.22122,
+    "deAmSigmaHat" : 0.22421990052652038,
+    "euroCrrPrice" : 9.539886994505379,
+    "earlyExercisePremium" : 0.12511300549462057,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 379.0,
+    "eta" : -1,
+    "mid" : 10.065000000000001,
+    "bid" : 10.05,
+    "ask" : 10.08,
+    "exchangeIv" : 0.2198,
+    "deAmSigmaHat" : 0.22319738538439277,
+    "euroCrrPrice" : 9.932867193152198,
+    "earlyExercisePremium" : 0.13213280684780315,
+    "callWeight" : 0.0,
+    "putWeight" : 1.0
+  }, {
+    "strike" : 380.0,
+    "eta" : 0,
+    "mid" : 11.21875,
+    "bid" : 11.2025,
+    "ask" : 11.235,
+    "exchangeIv" : 0.22009,
+    "deAmSigmaHat" : 0.22236753567163686,
+    "euroCrrPrice" : 11.11287735902004,
+    "earlyExercisePremium" : 0.10587264097996218,
+    "callWeight" : 0.25,
+    "putWeight" : 0.75
+  }, {
+    "strike" : 381.0,
+    "eta" : 0,
+    "mid" : 11.8925,
+    "bid" : 11.875,
+    "ask" : 11.91,
+    "exchangeIv" : 0.22102,
+    "deAmSigmaHat" : 0.22190842273559616,
+    "euroCrrPrice" : 11.81483969773539,
+    "earlyExercisePremium" : 0.07766030226460963,
+    "callWeight" : 0.5,
+    "putWeight" : 0.5
+  }, {
+    "strike" : 382.0,
+    "eta" : 0,
+    "mid" : 12.058750000000002,
+    "bid" : 12.04,
+    "ask" : 12.0775,
+    "exchangeIv" : 0.2215025,
+    "deAmSigmaHat" : 0.22007842850219642,
+    "euroCrrPrice" : 12.017686694490951,
+    "earlyExercisePremium" : 0.04106330550904991,
+    "callWeight" : 0.75,
+    "putWeight" : 0.25
+  }, {
+    "strike" : 383.0,
+    "eta" : 1,
+    "mid" : 11.75,
+    "bid" : 11.73,
+    "ask" : 11.77,
+    "exchangeIv" : 0.22226,
+    "deAmSigmaHat" : 0.21861666438769292,
+    "euroCrrPrice" : 11.750000032824055,
+    "earlyExercisePremium" : -3.282405458548965E-8,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 384.0,
+    "eta" : 1,
+    "mid" : 11.205,
+    "bid" : 11.19,
+    "ask" : 11.22,
+    "exchangeIv" : 0.22042,
+    "deAmSigmaHat" : 0.21721388097361038,
+    "euroCrrPrice" : 11.20500038455862,
+    "earlyExercisePremium" : -3.8455861961494975E-7,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 385.0,
+    "eta" : 1,
+    "mid" : 10.695,
+    "bid" : 10.68,
+    "ask" : 10.71,
+    "exchangeIv" : 0.21966,
+    "deAmSigmaHat" : 0.21647303366813614,
+    "euroCrrPrice" : 10.69499902069575,
+    "earlyExercisePremium" : 9.793042501371474E-7,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 386.0,
+    "eta" : 1,
+    "mid" : 10.18,
+    "bid" : 10.16,
+    "ask" : 10.2,
+    "exchangeIv" : 0.21885,
+    "deAmSigmaHat" : 0.21564495817181356,
+    "euroCrrPrice" : 10.18000000018277,
+    "earlyExercisePremium" : -1.8277113156273117E-10,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 387.0,
+    "eta" : 1,
+    "mid" : 9.705,
+    "bid" : 9.69,
+    "ask" : 9.72,
+    "exchangeIv" : 0.21723,
+    "deAmSigmaHat" : 0.21543107951706864,
+    "euroCrrPrice" : 9.705000003187207,
+    "earlyExercisePremium" : -3.1872069428118266E-9,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 388.0,
+    "eta" : 1,
+    "mid" : 9.175,
+    "bid" : 9.16,
+    "ask" : 9.19,
+    "exchangeIv" : 0.21508,
+    "deAmSigmaHat" : 0.2127963831604126,
+    "euroCrrPrice" : 9.175000039973705,
+    "earlyExercisePremium" : -3.997370434660752E-8,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 389.0,
+    "eta" : 1,
+    "mid" : 8.73,
+    "bid" : 8.71,
+    "ask" : 8.75,
+    "exchangeIv" : 0.21413,
+    "deAmSigmaHat" : 0.21180399302736885,
+    "euroCrrPrice" : 8.730000294589424,
+    "earlyExercisePremium" : -2.9458942307769576E-7,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 390.0,
+    "eta" : 1,
+    "mid" : 8.26,
+    "bid" : 8.25,
+    "ask" : 8.27,
+    "exchangeIv" : 0.21263,
+    "deAmSigmaHat" : 0.21034402883313394,
+    "euroCrrPrice" : 8.259999056977357,
+    "earlyExercisePremium" : 9.430226430851008E-7,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 391.0,
+    "eta" : 1,
+    "mid" : 7.805,
+    "bid" : 7.79,
+    "ask" : 7.82,
+    "exchangeIv" : 0.21163,
+    "deAmSigmaHat" : 0.2091794031082502,
+    "euroCrrPrice" : 7.8050000029207975,
+    "earlyExercisePremium" : -2.920797825822774E-9,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 392.0,
+    "eta" : 1,
+    "mid" : 7.385,
+    "bid" : 7.37,
+    "ask" : 7.4,
+    "exchangeIv" : 0.2106,
+    "deAmSigmaHat" : 0.20868369028424244,
+    "euroCrrPrice" : 7.385000034323902,
+    "earlyExercisePremium" : -3.4323901942912016E-8,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 393.0,
+    "eta" : 1,
+    "mid" : 6.965,
+    "bid" : 6.95,
+    "ask" : 6.98,
+    "exchangeIv" : 0.20956,
+    "deAmSigmaHat" : 0.20729855455674456,
+    "euroCrrPrice" : 6.964999999518684,
+    "earlyExercisePremium" : 4.81315431954954E-10,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 394.0,
+    "eta" : 1,
+    "mid" : 6.555,
+    "bid" : 6.54,
+    "ask" : 6.57,
+    "exchangeIv" : 0.20776,
+    "deAmSigmaHat" : 0.20547389296541413,
+    "euroCrrPrice" : 6.55499999984091,
+    "earlyExercisePremium" : 1.5908963035826673E-10,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 395.0,
+    "eta" : 1,
+    "mid" : 6.18,
+    "bid" : 6.17,
+    "ask" : 6.19,
+    "exchangeIv" : 0.20657,
+    "deAmSigmaHat" : 0.204370039275733,
+    "euroCrrPrice" : 6.180001234381071,
+    "earlyExercisePremium" : -1.234381071135715E-6,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 396.0,
+    "eta" : 1,
+    "mid" : 5.805,
+    "bid" : 5.79,
+    "ask" : 5.82,
+    "exchangeIv" : 0.20585,
+    "deAmSigmaHat" : 0.20327506232837111,
+    "euroCrrPrice" : 5.8050000000250055,
+    "earlyExercisePremium" : -2.5005775228237326E-11,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 397.0,
+    "eta" : 1,
+    "mid" : 5.4399999999999995,
+    "bid" : 5.43,
+    "ask" : 5.45,
+    "exchangeIv" : 0.20415,
+    "deAmSigmaHat" : 0.20238897259217992,
+    "euroCrrPrice" : 5.44000004113271,
+    "earlyExercisePremium" : -4.1132710570934705E-8,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 398.0,
+    "eta" : 1,
+    "mid" : 5.109999999999999,
+    "bid" : 5.1,
+    "ask" : 5.12,
+    "exchangeIv" : 0.20293,
+    "deAmSigmaHat" : 0.20172823494821676,
+    "euroCrrPrice" : 5.1100000005105555,
+    "earlyExercisePremium" : -5.105560418883215E-10,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 399.0,
+    "eta" : 1,
+    "mid" : 4.779999999999999,
+    "bid" : 4.77,
+    "ask" : 4.79,
+    "exchangeIv" : 0.20192,
+    "deAmSigmaHat" : 0.20001169817662648,
+    "euroCrrPrice" : 4.780000020483414,
+    "earlyExercisePremium" : -2.0483414964189706E-8,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 400.0,
+    "eta" : 1,
+    "mid" : 4.465,
+    "bid" : 4.46,
+    "ask" : 4.47,
+    "exchangeIv" : 0.20007,
+    "deAmSigmaHat" : 0.19864371039330436,
+    "euroCrrPrice" : 4.465000329254768,
+    "earlyExercisePremium" : -3.292547683386715E-7,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 401.0,
+    "eta" : 1,
+    "mid" : 4.18,
+    "bid" : 4.17,
+    "ask" : 4.19,
+    "exchangeIv" : 0.19943,
+    "deAmSigmaHat" : 0.19795182230289568,
+    "euroCrrPrice" : 4.180000005815496,
+    "earlyExercisePremium" : -5.81549652878266E-9,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 402.0,
+    "eta" : 1,
+    "mid" : 3.875,
+    "bid" : 3.87,
+    "ask" : 3.88,
+    "exchangeIv" : 0.19842,
+    "deAmSigmaHat" : 0.19682469298841412,
+    "euroCrrPrice" : 3.8750001294443965,
+    "earlyExercisePremium" : -1.294443965349501E-7,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 403.0,
+    "eta" : 1,
+    "mid" : 3.605,
+    "bid" : 3.6,
+    "ask" : 3.61,
+    "exchangeIv" : 0.19684,
+    "deAmSigmaHat" : 0.19605142228686323,
+    "euroCrrPrice" : 3.604999775047296,
+    "earlyExercisePremium" : 2.2495270401989842E-7,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 404.0,
+    "eta" : 1,
+    "mid" : 3.355,
+    "bid" : 3.35,
+    "ask" : 3.36,
+    "exchangeIv" : 0.19592,
+    "deAmSigmaHat" : 0.19463140422883124,
+    "euroCrrPrice" : 3.354999876001522,
+    "earlyExercisePremium" : 1.2399847815203202E-7,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 405.0,
+    "eta" : 1,
+    "mid" : 3.12,
+    "bid" : 3.11,
+    "ask" : 3.13,
+    "exchangeIv" : 0.19524,
+    "deAmSigmaHat" : 0.1936068666752887,
+    "euroCrrPrice" : 3.1200000004451827,
+    "earlyExercisePremium" : -4.4518255748471347E-10,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 406.0,
+    "eta" : 1,
+    "mid" : 2.885,
+    "bid" : 2.88,
+    "ask" : 2.89,
+    "exchangeIv" : 0.19378,
+    "deAmSigmaHat" : 0.19259135731701696,
+    "euroCrrPrice" : 2.8850003325824662,
+    "earlyExercisePremium" : -3.325824664557331E-7,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 407.0,
+    "eta" : 1,
+    "mid" : 2.675,
+    "bid" : 2.67,
+    "ask" : 2.68,
+    "exchangeIv" : 0.19327,
+    "deAmSigmaHat" : 0.19221678335048573,
+    "euroCrrPrice" : 2.675000006034786,
+    "earlyExercisePremium" : -6.034786004249781E-9,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 408.0,
+    "eta" : 1,
+    "mid" : 2.4699999999999998,
+    "bid" : 2.46,
+    "ask" : 2.48,
+    "exchangeIv" : 0.19173,
+    "deAmSigmaHat" : 0.19146535309216764,
+    "euroCrrPrice" : 2.4699998623275627,
+    "earlyExercisePremium" : 1.3767243700613108E-7,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 409.0,
+    "eta" : 1,
+    "mid" : 2.2800000000000002,
+    "bid" : 2.27,
+    "ask" : 2.29,
+    "exchangeIv" : 0.19143,
+    "deAmSigmaHat" : 0.1900868287226201,
+    "euroCrrPrice" : 2.2799998625638276,
+    "earlyExercisePremium" : 1.3743617266470665E-7,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 410.0,
+    "eta" : 1,
+    "mid" : 2.105,
+    "bid" : 2.1,
+    "ask" : 2.11,
+    "exchangeIv" : 0.18984,
+    "deAmSigmaHat" : 0.18917787541256464,
+    "euroCrrPrice" : 2.105000000357298,
+    "earlyExercisePremium" : -3.572981910338058E-10,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 411.0,
+    "eta" : 1,
+    "mid" : 1.9449999999999998,
+    "bid" : 1.94,
+    "ask" : 1.95,
+    "exchangeIv" : 0.1892,
+    "deAmSigmaHat" : 0.18873167528455892,
+    "euroCrrPrice" : 1.9450000000657623,
+    "earlyExercisePremium" : -6.576250655143667E-11,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 412.0,
+    "eta" : 1,
+    "mid" : 1.79,
+    "bid" : 1.78,
+    "ask" : 1.8,
+    "exchangeIv" : 0.1886,
+    "deAmSigmaHat" : 0.1884402008212446,
+    "euroCrrPrice" : 1.7900000186949931,
+    "earlyExercisePremium" : -1.869499310913625E-8,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 413.0,
+    "eta" : 1,
+    "mid" : 1.65,
+    "bid" : 1.64,
+    "ask" : 1.66,
+    "exchangeIv" : 0.18855,
+    "deAmSigmaHat" : 0.18800781315410972,
+    "euroCrrPrice" : 1.650000607186142,
+    "earlyExercisePremium" : -6.071861420320346E-7,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 414.0,
+    "eta" : 1,
+    "mid" : 1.5150000000000001,
+    "bid" : 1.51,
+    "ask" : 1.52,
+    "exchangeIv" : 0.18792,
+    "deAmSigmaHat" : 0.1868465281387065,
+    "euroCrrPrice" : 1.5149995849492177,
+    "earlyExercisePremium" : 4.15050782409665E-7,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 415.0,
+    "eta" : 1,
+    "mid" : 1.395,
+    "bid" : 1.39,
+    "ask" : 1.4,
+    "exchangeIv" : 0.18701,
+    "deAmSigmaHat" : 0.18626380650268357,
+    "euroCrrPrice" : 1.395000001543594,
+    "earlyExercisePremium" : -1.543593919350883E-9,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 416.0,
+    "eta" : 1,
+    "mid" : 1.28,
+    "bid" : 1.27,
+    "ask" : 1.29,
+    "exchangeIv" : 0.18661,
+    "deAmSigmaHat" : 0.18587460303595685,
+    "euroCrrPrice" : 1.2800000011467245,
+    "earlyExercisePremium" : -1.1467244931395726E-9,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 417.0,
+    "eta" : 1,
+    "mid" : 1.1749999999999998,
+    "bid" : 1.17,
+    "ask" : 1.18,
+    "exchangeIv" : 0.18654,
+    "deAmSigmaHat" : 0.18586379834041078,
+    "euroCrrPrice" : 1.1750000120484396,
+    "earlyExercisePremium" : -1.2048439801404243E-8,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 418.0,
+    "eta" : 1,
+    "mid" : 1.08,
+    "bid" : 1.07,
+    "ask" : 1.09,
+    "exchangeIv" : 0.18556,
+    "deAmSigmaHat" : 0.185647217340588,
+    "euroCrrPrice" : 1.0799998554014985,
+    "earlyExercisePremium" : 1.4459850161685495E-7,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 419.0,
+    "eta" : 1,
+    "mid" : 0.995,
+    "bid" : 0.99,
+    "ask" : 1.0,
+    "exchangeIv" : 0.18547,
+    "deAmSigmaHat" : 0.18504381194401057,
+    "euroCrrPrice" : 0.994999999621265,
+    "earlyExercisePremium" : 3.787350433270831E-10,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 420.0,
+    "eta" : 1,
+    "mid" : 0.905,
+    "bid" : 0.9,
+    "ask" : 0.91,
+    "exchangeIv" : 0.18512,
+    "deAmSigmaHat" : 0.18420089280003082,
+    "euroCrrPrice" : 0.9050000908405281,
+    "earlyExercisePremium" : -9.084052809971155E-8,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 421.0,
+    "eta" : 1,
+    "mid" : 0.835,
+    "bid" : 0.83,
+    "ask" : 0.84,
+    "exchangeIv" : 0.18442,
+    "deAmSigmaHat" : 0.18434126384774382,
+    "euroCrrPrice" : 0.8349999998068953,
+    "earlyExercisePremium" : 1.9310464338673228E-10,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 422.0,
+    "eta" : 1,
+    "mid" : 0.765,
+    "bid" : 0.76,
+    "ask" : 0.77,
+    "exchangeIv" : 0.18425,
+    "deAmSigmaHat" : 0.18448050546181724,
+    "euroCrrPrice" : 0.7650002114734438,
+    "earlyExercisePremium" : -2.1147344375638255E-7,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 423.0,
+    "eta" : 1,
+    "mid" : 0.695,
+    "bid" : 0.69,
+    "ask" : 0.7,
+    "exchangeIv" : 0.18389,
+    "deAmSigmaHat" : 0.18421717914027577,
+    "euroCrrPrice" : 0.6949998523500825,
+    "earlyExercisePremium" : 1.4764991740356948E-7,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 424.0,
+    "eta" : 1,
+    "mid" : 0.645,
+    "bid" : 0.64,
+    "ask" : 0.65,
+    "exchangeIv" : 0.18435,
+    "deAmSigmaHat" : 0.18414389862952163,
+    "euroCrrPrice" : 0.6450000002254254,
+    "earlyExercisePremium" : -2.2542534505731737E-10,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 425.0,
+    "eta" : 1,
+    "mid" : 0.595,
+    "bid" : 0.59,
+    "ask" : 0.6,
+    "exchangeIv" : 0.18428,
+    "deAmSigmaHat" : 0.18407122609775256,
+    "euroCrrPrice" : 0.5950000000007643,
+    "earlyExercisePremium" : -7.642775301519578E-13,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 426.0,
+    "eta" : 1,
+    "mid" : 0.545,
+    "bid" : 0.54,
+    "ask" : 0.55,
+    "exchangeIv" : 0.18439,
+    "deAmSigmaHat" : 0.1839991588060459,
+    "euroCrrPrice" : 0.5449999187838436,
+    "earlyExercisePremium" : 8.121615646672353E-8,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 427.0,
+    "eta" : 1,
+    "mid" : 0.495,
+    "bid" : 0.49,
+    "ask" : 0.5,
+    "exchangeIv" : 0.18406,
+    "deAmSigmaHat" : 0.18392770564262126,
+    "euroCrrPrice" : 0.4950000002531523,
+    "earlyExercisePremium" : -2.5315227691891096E-10,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 428.0,
+    "eta" : 1,
+    "mid" : 0.455,
+    "bid" : 0.45,
+    "ask" : 0.46,
+    "exchangeIv" : 0.18363,
+    "deAmSigmaHat" : 0.1845112486115432,
+    "euroCrrPrice" : 0.455000181813557,
+    "earlyExercisePremium" : -1.818135569875423E-7,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 429.0,
+    "eta" : 1,
+    "mid" : 0.425,
+    "bid" : 0.42,
+    "ask" : 0.43,
+    "exchangeIv" : 0.18459,
+    "deAmSigmaHat" : 0.18504903442352777,
+    "euroCrrPrice" : 0.42499998982130677,
+    "earlyExercisePremium" : 1.0178693221618573E-8,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 430.0,
+    "eta" : 1,
+    "mid" : 0.385,
+    "bid" : 0.38,
+    "ask" : 0.39,
+    "exchangeIv" : 0.18443,
+    "deAmSigmaHat" : 0.18426609332780586,
+    "euroCrrPrice" : 0.3849999984420372,
+    "earlyExercisePremium" : 1.5579628143136404E-9,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 431.0,
+    "eta" : 1,
+    "mid" : 0.355,
+    "bid" : 0.35,
+    "ask" : 0.36,
+    "exchangeIv" : 0.18464,
+    "deAmSigmaHat" : 0.1844202881088826,
+    "euroCrrPrice" : 0.3549997701116846,
+    "earlyExercisePremium" : 2.298883153839526E-7,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 432.0,
+    "eta" : 1,
+    "mid" : 0.325,
+    "bid" : 0.32,
+    "ask" : 0.33,
+    "exchangeIv" : 0.18418,
+    "deAmSigmaHat" : 0.18457330703913002,
+    "euroCrrPrice" : 0.32500000000024637,
+    "earlyExercisePremium" : -2.4635848916432224E-13,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 433.0,
+    "eta" : 1,
+    "mid" : 0.305,
+    "bid" : 0.3,
+    "ask" : 0.31,
+    "exchangeIv" : 0.18559,
+    "deAmSigmaHat" : 0.18564922811973317,
+    "euroCrrPrice" : 0.3050000000001735,
+    "earlyExercisePremium" : -1.7352785874891197E-13,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 434.0,
+    "eta" : 1,
+    "mid" : 0.28500000000000003,
+    "bid" : 0.28,
+    "ask" : 0.29,
+    "exchangeIv" : 0.18634,
+    "deAmSigmaHat" : 0.18671845492008748,
+    "euroCrrPrice" : 0.2850000345709798,
+    "earlyExercisePremium" : -3.457097974557399E-8,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 435.0,
+    "eta" : 1,
+    "mid" : 0.255,
+    "bid" : 0.25,
+    "ask" : 0.26,
+    "exchangeIv" : 0.18574,
+    "deAmSigmaHat" : 0.1861062569461915,
+    "euroCrrPrice" : 0.2550000544644439,
+    "earlyExercisePremium" : -5.446444389933802E-8,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 436.0,
+    "eta" : 1,
+    "mid" : 0.245,
+    "bid" : 0.24,
+    "ask" : 0.25,
+    "exchangeIv" : 0.18675,
+    "deAmSigmaHat" : 0.18743934712052707,
+    "euroCrrPrice" : 0.24500002124031736,
+    "earlyExercisePremium" : -2.1240317366055805E-8,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 437.0,
+    "eta" : 1,
+    "mid" : 0.225,
+    "bid" : 0.22,
+    "ask" : 0.23,
+    "exchangeIv" : 0.18696,
+    "deAmSigmaHat" : 0.18739391437035935,
+    "euroCrrPrice" : 0.22500000211704907,
+    "earlyExercisePremium" : -2.1170490638322548E-9,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  }, {
+    "strike" : 438.0,
+    "eta" : 1,
+    "mid" : 0.20500000000000002,
+    "bid" : 0.2,
+    "ask" : 0.21,
+    "exchangeIv" : 0.1875,
+    "deAmSigmaHat" : 0.18734884521072784,
+    "euroCrrPrice" : 0.20500000127934495,
+    "earlyExercisePremium" : -1.279344935545268E-9,
+    "callWeight" : 1.0,
+    "putWeight" : 0.0
+  } ],
+  "syntheticEuroCalls" : [ {
+    "strike" : 319.0,
+    "vol" : 0.2842782064201129,
+    "price" : 64.23946920051884
+  }, {
+    "strike" : 319.8322147651007,
+    "vol" : 0.28344004794638905,
+    "price" : 63.43535841324149
+  }, {
+    "strike" : 320.66442953020135,
+    "vol" : 0.2826016247552234,
+    "price" : 62.632374416237155
+  }, {
+    "strike" : 321.496644295302,
+    "vol" : 0.2817629238425606,
+    "price" : 61.83056437224127
+  }, {
+    "strike" : 322.3288590604027,
+    "vol" : 0.28092393216341316,
+    "price" : 61.02997706901738
+  }, {
+    "strike" : 323.16107382550337,
+    "vol" : 0.28008463663136685,
+    "price" : 60.23066295653598
+  }, {
+    "strike" : 323.99328859060404,
+    "vol" : 0.2792450241181443,
+    "price" : 59.432674183933216
+  }, {
+    "strike" : 324.8255033557047,
+    "vol" : 0.27840508145323195,
+    "price" : 58.63606463617339
+  }, {
+    "strike" : 325.6577181208054,
+    "vol" : 0.2775647954235754,
+    "price" : 57.84088997032592
+  }, {
+    "strike" : 326.48993288590606,
+    "vol" : 0.2767241527733488,
+    "price" : 57.04720765136966
+  }, {
+    "strike" : 327.32214765100673,
+    "vol" : 0.2758831402038046,
+    "price" : 56.25507698742865
+  }, {
+    "strike" : 328.1543624161074,
+    "vol" : 0.2750417443732105,
+    "price" : 55.4645591643407
+  }, {
+    "strike" : 328.9865771812081,
+    "vol" : 0.27419995189687985,
+    "price" : 54.6757172794517
+  }, {
+    "strike" : 329.81879194630875,
+    "vol" : 0.27335774934730506,
+    "price" : 53.88861637452817
+  }, {
+    "strike" : 330.6510067114094,
+    "vol" : 0.2725151232544008,
+    "price" : 53.103323467672226
+  }, {
+    "strike" : 331.48322147651004,
+    "vol" : 0.27167206010586725,
+    "price" : 52.31990758411655
+  }, {
+    "strike" : 332.3154362416107,
+    "vol" : 0.27082854634768305,
+    "price" : 51.53843978577618
+  }, {
+    "strike" : 333.1476510067114,
+    "vol" : 0.26998456838473917,
+    "price" : 50.75899319942425
+  }, {
+    "strike" : 333.97986577181206,
+    "vol" : 0.26914011258162457,
+    "price" : 49.981643043355746
+  }, {
+    "strike" : 334.81208053691273,
+    "vol" : 0.2682951652635775,
+    "price" : 49.20646665239633
+  }, {
+    "strike" : 335.6442953020134,
+    "vol" : 0.26744971271761586,
+    "price" : 48.43354350111008
+  }, {
+    "strike" : 336.4765100671141,
+    "vol" : 0.26660374119386154,
+    "price" : 47.662955225052656
+  }, {
+    "strike" : 337.30872483221475,
+    "vol" : 0.2657572369070762,
+    "price" : 46.894785639910936
+  }, {
+    "strike" : 338.1409395973154,
+    "vol" : 0.2649101860384246,
+    "price" : 46.12912075836846
+  }, {
+    "strike" : 338.9731543624161,
+    "vol" : 0.26406257473748684,
+    "price" : 45.36604880452438
+  }, {
+    "strike" : 339.80536912751677,
+    "vol" : 0.26321438912454,
+    "price" : 44.60566022569611
+  }, {
+    "strike" : 340.63758389261744,
+    "vol" : 0.2623656152931318,
+    "price" : 43.84804770142466
+  }, {
+    "strike" : 341.4697986577181,
+    "vol" : 0.26151623931297274,
+    "price" : 43.09330614950113
+  }, {
+    "strike" : 342.3020134228188,
+    "vol" : 0.26066624723317344,
+    "price" : 42.34153272882617
+  }, {
+    "strike" : 343.13422818791946,
+    "vol" : 0.25981562508585776,
+    "price" : 41.592826838910014
+  }, {
+    "strike" : 343.96644295302013,
+    "vol" : 0.2589643588901843,
+    "price" : 40.847290115818794
+  }, {
+    "strike" : 344.7986577181208,
+    "vol" : 0.25811243465681305,
+    "price" : 40.10502642436535
+  }, {
+    "strike" : 345.6308724832215,
+    "vol" : 0.25725983839285593,
+    "price" : 39.36614184634402
+  }, {
+    "strike" : 346.46308724832215,
+    "vol" : 0.2564065561073549,
+    "price" : 38.63074466460051
+  }, {
+    "strike" : 347.2953020134228,
+    "vol" : 0.2555525738173351,
+    "price" : 37.898945342730656
+  }, {
+    "strike" : 348.1275167785235,
+    "vol" : 0.25469787755448525,
+    "price" : 37.17085650019601
+  }, {
+    "strike" : 348.9597315436242,
+    "vol" : 0.2538424533725217,
+    "price" : 36.44659288264273
+  }, {
+    "strike" : 349.79194630872485,
+    "vol" : 0.2529862873553001,
+    "price" : 35.726271327210725
+  }, {
+    "strike" : 350.6241610738255,
+    "vol" : 0.25212936562574356,
+    "price" : 35.010010722618745
+  }, {
+    "strike" : 351.4563758389262,
+    "vol" : 0.25127167435566244,
+    "price" : 34.297931963808594
+  }, {
+    "strike" : 352.28859060402687,
+    "vol" : 0.25041319977655174,
+    "price" : 33.5901579009348
+  }, {
+    "strike" : 353.12080536912754,
+    "vol" : 0.24955392819145675,
+    "price" : 32.8868132824864
+  }, {
+    "strike" : 353.9530201342282,
+    "vol" : 0.24869384598801067,
+    "price" : 32.1880246923281
+  }, {
+    "strike" : 354.7852348993289,
+    "vol" : 0.24783293965275685,
+    "price" : 31.493920480451095
+  }, {
+    "strike" : 355.6174496644295,
+    "vol" : 0.24697119578688087,
+    "price" : 30.80463068722787
+  }, {
+    "strike" : 356.44966442953023,
+    "vol" : 0.24610860112349084,
+    "price" : 30.12028696096661
+  }, {
+    "strike" : 357.28187919463085,
+    "vol" : 0.24524514254660149,
+    "price" : 29.44102246856903
+  }, {
+    "strike" : 358.1140939597316,
+    "vol" : 0.24438080711198992,
+    "price" : 28.766971799098428
+  }, {
+    "strike" : 358.9463087248322,
+    "vol" : 0.24351558207011711,
+    "price" : 28.098270860072603
+  }, {
+    "strike" : 359.77852348993287,
+    "vol" : 0.242649454891322,
+    "price" : 27.435056766304115
+  }, {
+    "strike" : 360.61073825503354,
+    "vol" : 0.2417824132935285,
+    "price" : 26.777467721120104
+  }, {
+    "strike" : 361.4429530201342,
+    "vol" : 0.2409144452727253,
+    "price" : 26.125642889805135
+  }, {
+    "strike" : 362.2751677852349,
+    "vol" : 0.24004553913651358,
+    "price" : 25.47972226512269
+  }, {
+    "strike" : 363.10738255033556,
+    "vol" : 0.23917568354105198,
+    "price" : 24.839846524790175
+  }, {
+    "strike" : 363.93959731543623,
+    "vol" : 0.23830486753176675,
+    "price" : 24.206156880798574
+  }, {
+    "strike" : 364.7718120805369,
+    "vol" : 0.23743308058824097,
+    "price" : 23.5787949204975
+  }, {
+    "strike" : 365.6040268456376,
+    "vol" : 0.23656031267374755,
+    "price" : 22.957902439393536
+  }, {
+    "strike" : 366.43624161073825,
+    "vol" : 0.23568655428994933,
+    "price" : 22.343621265656765
+  }, {
+    "strike" : 367.2684563758389,
+    "vol" : 0.23481179653735554,
+    "price" : 21.736093076377898
+  }, {
+    "strike" : 368.1006711409396,
+    "vol" : 0.23393603118220063,
+    "price" : 21.135459205695014
+  }, {
+    "strike" : 368.93288590604027,
+    "vol" : 0.2330592507304981,
+    "price" : 20.541860445002357
+  }, {
+    "strike" : 369.76510067114094,
+    "vol" : 0.23218144851012198,
+    "price" : 19.955436835578013
+  }, {
+    "strike" : 370.5973154362416,
+    "vol" : 0.23130261876188404,
+    "price" : 19.3763274541449
+  }, {
+    "strike" : 371.4295302013423,
+    "vol" : 0.23042275674070564,
+    "price" : 18.804670192107352
+  }, {
+    "strike" : 372.26174496644296,
+    "vol" : 0.22954185882813788,
+    "price" : 18.240601529524184
+  }, {
+    "strike" : 373.09395973154363,
+    "vol" : 0.2286599226576581,
+    "price" : 17.684256305309674
+  }, {
+    "strike" : 373.9261744966443,
+    "vol" : 0.22777694725437722,
+    "price" : 17.135767485734817
+  }, {
+    "strike" : 374.758389261745,
+    "vol" : 0.2268929331910281,
+    "price" : 16.595265934100382
+  }, {
+    "strike" : 375.59060402684565,
+    "vol" : 0.22600788276238296,
+    "price" : 16.062880185536102
+  }, {
+    "strike" : 376.4228187919463,
+    "vol" : 0.22512180018056985,
+    "price" : 15.538736232347958
+  }, {
+    "strike" : 377.255033557047,
+    "vol" : 0.22423469179413363,
+    "price" : 15.022957327348422
+  }, {
+    "strike" : 378.0872483221477,
+    "vol" : 0.2233465663341308,
+    "price" : 14.515663815322768
+  }, {
+    "strike" : 378.91946308724835,
+    "vol" : 0.22245743519106312,
+    "price" : 14.016973006496244
+  }, {
+    "strike" : 379.751677852349,
+    "vol" : 0.22156731272706792,
+    "price" : 13.526999110903006
+  }, {
+    "strike" : 380.5838926174497,
+    "vol" : 0.2206762166285006,
+    "price" : 13.045853259414997
+  }, {
+    "strike" : 381.4161073825503,
+    "vol" : 0.21978416830489858,
+    "price" : 12.573643646503825
+  }, {
+    "strike" : 382.24832214765104,
+    "vol" : 0.21889119334132529,
+    "price" : 12.110462280555936
+  }, {
+    "strike" : 383.08053691275165,
+    "vol" : 0.21799732201229458,
+    "price" : 11.656401370026146
+  }, {
+    "strike" : 383.9127516778524,
+    "vol" : 0.2171025898669058,
+    "price" : 11.211531199080923
+  }, {
+    "strike" : 384.744966442953,
+    "vol" : 0.21620703839653516,
+    "price" : 10.775952963321572
+  }, {
+    "strike" : 385.5771812080537,
+    "vol" : 0.21531071579847375,
+    "price" : 10.349750453471074
+  }, {
+    "strike" : 386.40939597315435,
+    "vol" : 0.21441367785136878,
+    "price" : 9.93300529993445
+  }, {
+    "strike" : 387.241610738255,
+    "vol" : 0.2135159889212891,
+    "price" : 9.52577980292628
+  }, {
+    "strike" : 388.0738255033557,
+    "vol" : 0.21261772312081392,
+    "price" : 9.128131200203256
+  }, {
+    "strike" : 388.90604026845637,
+    "vol" : 0.21171896564787768,
+    "price" : 8.740110994209601
+  }, {
+    "strike" : 389.73825503355704,
+    "vol" : 0.21081981433635283,
+    "price" : 8.36176439777006
+  }, {
+    "strike" : 390.5704697986577,
+    "vol" : 0.20992038145673667,
+    "price" : 7.993129874976091
+  }, {
+    "strike" : 391.4026845637584,
+    "vol" : 0.20902079581307653,
+    "price" : 7.634238759503063
+  }, {
+    "strike" : 392.23489932885906,
+    "vol" : 0.2081212051917384,
+    "price" : 7.285114937087144
+  }, {
+    "strike" : 393.06711409395973,
+    "vol" : 0.20722177922918214,
+    "price" : 6.945774582497194
+  }, {
+    "strike" : 393.8993288590604,
+    "vol" : 0.20632271278001668,
+    "price" : 6.61622594425225
+  }, {
+    "strike" : 394.7315436241611,
+    "vol" : 0.20542422988383024,
+    "price" : 6.296469172686443
+  }, {
+    "strike" : 395.56375838926175,
+    "vol" : 0.2045265884502765,
+    "price" : 5.986496188884047
+  }, {
+    "strike" : 396.3959731543624,
+    "vol" : 0.20363008580740427,
+    "price" : 5.68629059357032
+  }, {
+    "strike" : 397.2281879194631,
+    "vol" : 0.20273506528906393,
+    "price" : 5.395827616335481
+  }, {
+    "strike" : 398.06040268456377,
+    "vol" : 0.20184192407424642,
+    "price" : 5.115074106616333
+  }, {
+    "strike" : 398.89261744966444,
+    "vol" : 0.20095112253513422,
+    "price" : 4.843988568692552
+  }, {
+    "strike" : 399.7248322147651,
+    "vol" : 0.20006319540182294,
+    "price" : 4.582521243563022
+  }, {
+    "strike" : 400.5570469798658,
+    "vol" : 0.19917876510967944,
+    "price" : 4.330614240884032
+  }, {
+    "strike" : 401.38926174496646,
+    "vol" : 0.19829855775812563,
+    "price" : 4.08820172407394
+  }, {
+    "strike" : 402.22147651006713,
+    "vol" : 0.19742342217239262,
+    "price" : 3.8552101509948784
+  }, {
+    "strike" : 403.0536912751678,
+    "vol" : 0.19655435261258172,
+    "price" : 3.6315585709786973
+  }, {
+    "strike" : 403.8859060402684,
+    "vol" : 0.19569251569882115,
+    "price" : 3.4171589758094
+  }, {
+    "strike" : 404.71812080536915,
+    "vol" : 0.1948392820853013,
+    "price" : 3.2119166967897144
+  }, {
+    "strike" : 405.55033557046977,
+    "vol" : 0.19399626326586794,
+    "price" : 3.0157308309713216
+  }, {
+    "strike" : 406.3825503355705,
+    "vol" : 0.19316535354397313,
+    "price" : 2.8284946653224665
+  }, {
+    "strike" : 407.2147651006711,
+    "vol" : 0.19234877652022975,
+    "price" : 2.6500960458467517
+  }, {
+    "strike" : 408.04697986577185,
+    "vol" : 0.19154913425766015,
+    "price" : 2.4804176070013
+  }, {
+    "strike" : 408.87919463087246,
+    "vol" : 0.19076945534445097,
+    "price" : 2.319336733266752
+  }, {
+    "strike" : 409.7114093959732,
+    "vol" : 0.19001323514617577,
+    "price" : 2.1667250698700045
+  }, {
+    "strike" : 410.5436241610738,
+    "vol" : 0.189284457501517,
+    "price" : 2.0224473399989336
+  }, {
+    "strike" : 411.3758389261745,
+    "vol" : 0.1885875822270865,
+    "price" : 1.8863591798124233
+  }, {
+    "strike" : 412.20805369127515,
+    "vol" : 0.18792747813739263,
+    "price" : 1.7583037074401773
+  }, {
+    "strike" : 413.0402684563758,
+    "vol" : 0.1873092792638079,
+    "price" : 1.6381066569749194
+  }, {
+    "strike" : 413.8724832214765,
+    "vol" : 0.18673814646550477,
+    "price" : 1.5255702011519645
+  }, {
+    "strike" : 414.7046979865772,
+    "vol" : 0.18621893198981837,
+    "price" : 1.4204660903665314
+  }, {
+    "strike" : 415.53691275167785,
+    "vol" : 0.1857557723956191,
+    "price" : 1.3225293738243238
+  }, {
+    "strike" : 416.3691275167785,
+    "vol" : 0.18535166999969396,
+    "price" : 1.2314544893125046
+  }, {
+    "strike" : 417.2013422818792,
+    "vol" : 0.18500814960734524,
+    "price" : 1.1468955317847502
+  }, {
+    "strike" : 418.03355704697987,
+    "vol" : 0.18472507691614146,
+    "price" : 1.0684717601110947
+  }, {
+    "strike" : 418.86577181208054,
+    "vol" : 0.18450068876261197,
+    "price" : 0.9957780018896543
+  }, {
+    "strike" : 419.6979865771812,
+    "vol" : 0.18433182558240013,
+    "price" : 0.9283981642234558
+  }, {
+    "strike" : 420.5302013422819,
+    "vol" : 0.18421430154244012,
+    "price" : 0.8659192679612353
+  }, {
+    "strike" : 421.36241610738256,
+    "vol" : 0.1841433226877706,
+    "price" : 0.8079436169939491
+  }, {
+    "strike" : 422.19463087248323,
+    "vol" : 0.18411387314081729,
+    "price" : 0.7540976394857317
+  }, {
+    "strike" : 423.0268456375839,
+    "vol" : 0.18412102025110527,
+    "price" : 0.704037038783337
+  }, {
+    "strike" : 423.8590604026846,
+    "vol" : 0.1841601229591382,
+    "price" : 0.6574487160875044
+  }, {
+    "strike" : 424.69127516778525,
+    "vol" : 0.18422695147550544,
+    "price" : 0.614050318118931
+  }, {
+    "strike" : 425.5234899328859,
+    "vol" : 0.1843177378761357,
+    "price" : 0.5735882987035765
+  }, {
+    "strike" : 426.3557046979866,
+    "vol" : 0.18442917927150185,
+    "price" : 0.5358352241952247
+  }, {
+    "strike" : 427.18791946308727,
+    "vol" : 0.18455841215379692,
+    "price" : 0.5005868355412559
+  }, {
+    "strike" : 428.02013422818794,
+    "vol" : 0.18470297175816866,
+    "price" : 0.4676591826902978
+  }, {
+    "strike" : 428.8523489932886,
+    "vol" : 0.1848607457037154,
+    "price" : 0.436885998955713
+  }, {
+    "strike" : 429.68456375838923,
+    "vol" : 0.1850299275661173,
+    "price" : 0.40811638479676304
+  }, {
+    "strike" : 430.51677852348996,
+    "vol" : 0.18520897348321608,
+    "price" : 0.381212811933052
+  }, {
+    "strike" : 431.3489932885906,
+    "vol" : 0.18539656323718853,
+    "price" : 0.3560494275717314
+  }, {
+    "strike" : 432.1812080536913,
+    "vol" : 0.1855915662544585,
+    "price" : 0.3325106246426959
+  }, {
+    "strike" : 433.0134228187919,
+    "vol" : 0.1857930124037043,
+    "price" : 0.31048984004512015
+  }, {
+    "strike" : 433.84563758389265,
+    "vol" : 0.18600006719115253,
+    "price" : 0.28988854428924604
+  }, {
+    "strike" : 434.67785234899327,
+    "vol" : 0.18621201083860386,
+    "price" : 0.27061538973266686
+  }, {
+    "strike" : 435.51006711409394,
+    "vol" : 0.1864282207103422,
+    "price" : 0.25258548923434176
+  }, {
+    "strike" : 436.3422818791946,
+    "vol" : 0.18664815658496087,
+    "price" : 0.23571980165019468
+  }, {
+    "strike" : 437.1744966442953,
+    "vol" : 0.18687134832033298,
+    "price" : 0.2199446047643061
+  }, {
+    "strike" : 438.00671140939596,
+    "vol" : 0.18709738551920974,
+    "price" : 0.20519103985305875
+  }, {
+    "strike" : 438.83892617449663,
+    "vol" : 0.1873259088611419,
+    "price" : 0.1913947150961821
+  }, {
+    "strike" : 439.6711409395973,
+    "vol" : 0.18755660281965478,
+    "price" : 0.17849535752583012
+  }, {
+    "strike" : 440.503355704698,
+    "vol" : 0.18778918953034612,
+    "price" : 0.1664365052167387
+  }, {
+    "strike" : 441.33557046979865,
+    "vol" : 0.18802342361557095,
+    "price" : 0.155165233038856
+  }, {
+    "strike" : 442.1677852348993,
+    "vol" : 0.18825908780505252,
+    "price" : 0.14463190658955494
+  }, {
+    "strike" : 443.0,
+    "vol" : 0.188495989219801,
+    "price" : 0.13478995995922816
+  } ],
+  "syntheticEuroPuts" : [ {
+    "strike" : 319.0,
+    "vol" : 0.2842782064201129,
+    "price" : 0.4529877983934014
+  }, {
+    "strike" : 319.8322147651007,
+    "vol" : 0.28344004794638905,
+    "price" : 0.4766915718024567
+  }, {
+    "strike" : 320.66442953020135,
+    "vol" : 0.2826016247552234,
+    "price" : 0.5015221354846044
+  }, {
+    "strike" : 321.496644295302,
+    "vol" : 0.2817629238425606,
+    "price" : 0.5275266521751298
+  }, {
+    "strike" : 322.3288590604027,
+    "vol" : 0.28092393216341316,
+    "price" : 0.5547539096377445
+  }, {
+    "strike" : 323.16107382550337,
+    "vol" : 0.28008463663136685,
+    "price" : 0.5832543578426659
+  }, {
+    "strike" : 323.99328859060404,
+    "vol" : 0.2792450241181443,
+    "price" : 0.6130801459263715
+  }, {
+    "strike" : 324.8255033557047,
+    "vol" : 0.27840508145323195,
+    "price" : 0.644285158852961
+  }, {
+    "strike" : 325.6577181208054,
+    "vol" : 0.2775647954235754,
+    "price" : 0.6769250536919067
+  }, {
+    "strike" : 326.48993288590606,
+    "vol" : 0.2767241527733488,
+    "price" : 0.7110572954219947
+  }, {
+    "strike" : 327.32214765100673,
+    "vol" : 0.2758831402038046,
+    "price" : 0.7467411921674589
+  }, {
+    "strike" : 328.1543624161074,
+    "vol" : 0.2750417443732105,
+    "price" : 0.7840379297659048
+  }, {
+    "strike" : 328.9865771812081,
+    "vol" : 0.27419995189687985,
+    "price" : 0.8230106055632476
+  }, {
+    "strike" : 329.81879194630875,
+    "vol" : 0.27335774934730506,
+    "price" : 0.8637242613262259
+  }, {
+    "strike" : 330.6510067114094,
+    "vol" : 0.2725151232544008,
+    "price" : 0.9062459151566671
+  }, {
+    "strike" : 331.48322147651004,
+    "vol" : 0.27167206010586725,
+    "price" : 0.9506445922873681
+  }, {
+    "strike" : 332.3154362416107,
+    "vol" : 0.27082854634768305,
+    "price" : 0.9969913546333764
+  }, {
+    "strike" : 333.1476510067114,
+    "vol" : 0.26998456838473917,
+    "price" : 1.0453593289679048
+  }, {
+    "strike" : 333.97986577181206,
+    "vol" : 0.26914011258162457,
+    "price" : 1.09582373358581
+  }, {
+    "strike" : 334.81208053691273,
+    "vol" : 0.2682951652635775,
+    "price" : 1.1484619033127856
+  }, {
+    "strike" : 335.6442953020134,
+    "vol" : 0.26744971271761586,
+    "price" : 1.20335331271297
+  }, {
+    "strike" : 336.4765100671141,
+    "vol" : 0.26660374119386154,
+    "price" : 1.2605795973418843
+  }, {
+    "strike" : 337.30872483221475,
+    "vol" : 0.2657572369070762,
+    "price" : 1.3202245728866409
+  }, {
+    "strike" : 338.1409395973154,
+    "vol" : 0.2649101860384246,
+    "price" : 1.38237425203058
+  }, {
+    "strike" : 338.9731543624161,
+    "vol" : 0.26406257473748684,
+    "price" : 1.44711685887291
+  }, {
+    "strike" : 339.80536912751677,
+    "vol" : 0.26321438912454,
+    "price" : 1.5145428407310462
+  }, {
+    "strike" : 340.63758389261744,
+    "vol" : 0.2623656152931318,
+    "price" : 1.5847448771460009
+  }, {
+    "strike" : 341.4697986577181,
+    "vol" : 0.26151623931297274,
+    "price" : 1.6578178859089476
+  }, {
+    "strike" : 342.3020134228188,
+    "vol" : 0.26066624723317344,
+    "price" : 1.7338590259203883
+  }, {
+    "strike" : 343.13422818791946,
+    "vol" : 0.25981562508585776,
+    "price" : 1.8129676966906842
+  }, {
+    "strike" : 343.96644295302013,
+    "vol" : 0.2589643588901843,
+    "price" : 1.8952455342858343
+  }, {
+    "strike" : 344.7986577181208,
+    "vol" : 0.25811243465681305,
+    "price" : 1.980796403518852
+  }, {
+    "strike" : 345.6308724832215,
+    "vol" : 0.25725983839285593,
+    "price" : 2.069726386183895
+  }, {
+    "strike" : 346.46308724832215,
+    "vol" : 0.2564065561073549,
+    "price" : 2.1621437651267357
+  }, {
+    "strike" : 347.2953020134228,
+    "vol" : 0.2555525738173351,
+    "price" : 2.258159003943355
+  }, {
+    "strike" : 348.1275167785235,
+    "vol" : 0.25469787755448525,
+    "price" : 2.3578847220951644
+  }, {
+    "strike" : 348.9597315436242,
+    "vol" : 0.2538424533725217,
+    "price" : 2.4614356652282083
+  }, {
+    "strike" : 349.79194630872485,
+    "vol" : 0.2529862873553001,
+    "price" : 2.56892867048267
+  }, {
+    "strike" : 350.6241610738255,
+    "vol" : 0.25212936562574356,
+    "price" : 2.680482626577138
+  }, {
+    "strike" : 351.4563758389262,
+    "vol" : 0.25127167435566244,
+    "price" : 2.796218428453386
+  }, {
+    "strike" : 352.28859060402687,
+    "vol" : 0.25041319977655174,
+    "price" : 2.9162589262659893
+  }, {
+    "strike" : 353.12080536912754,
+    "vol" : 0.24955392819145675,
+    "price" : 3.040728868503983
+  }, {
+    "strike" : 353.9530201342282,
+    "vol" : 0.24869384598801067,
+    "price" : 3.169754839032109
+  }, {
+    "strike" : 354.7852348993289,
+    "vol" : 0.24783293965275685,
+    "price" : 3.3034651878415673
+  }, {
+    "strike" : 355.6174496644295,
+    "vol" : 0.24697119578688087,
+    "price" : 3.4419899553046918
+  }, {
+    "strike" : 356.44966442953023,
+    "vol" : 0.24610860112349084,
+    "price" : 3.585460789729794
+  }, {
+    "strike" : 357.28187919463085,
+    "vol" : 0.24524514254660149,
+    "price" : 3.7340108580186353
+  }, {
+    "strike" : 358.1140939597316,
+    "vol" : 0.24438080711198992,
+    "price" : 3.887774749234481
+  }, {
+    "strike" : 358.9463087248322,
+    "vol" : 0.24351558207011711,
+    "price" : 4.046888370895061
+  }, {
+    "strike" : 359.77852348993287,
+    "vol" : 0.242649454891322,
+    "price" : 4.211488837812979
+  }, {
+    "strike" : 360.61073825503354,
+    "vol" : 0.2417824132935285,
+    "price" : 4.3817143533153455
+  }, {
+    "strike" : 361.4429530201342,
+    "vol" : 0.2409144452727253,
+    "price" : 4.557704082686811
+  }, {
+    "strike" : 362.2751677852349,
+    "vol" : 0.24004553913651358,
+    "price" : 4.739598018690785
+  }, {
+    "strike" : 363.10738255033556,
+    "vol" : 0.23917568354105198,
+    "price" : 4.927536839044691
+  }, {
+    "strike" : 363.93959731543623,
+    "vol" : 0.23830486753176675,
+    "price" : 5.121661755739524
+  }, {
+    "strike" : 364.7718120805369,
+    "vol" : 0.23743308058824097,
+    "price" : 5.322114356124814
+  }, {
+    "strike" : 365.6040268456376,
+    "vol" : 0.23656031267374755,
+    "price" : 5.52903643570734
+  }, {
+    "strike" : 366.43624161073825,
+    "vol" : 0.23568655428994933,
+    "price" : 5.742569822656947
+  }, {
+    "strike" : 367.2684563758389,
+    "vol" : 0.23481179653735554,
+    "price" : 5.962856194064429
+  }, {
+    "strike" : 368.1006711409396,
+    "vol" : 0.23393603118220063,
+    "price" : 6.190036884067993
+  }, {
+    "strike" : 368.93288590604027,
+    "vol" : 0.2330592507304981,
+    "price" : 6.42425268406177
+  }, {
+    "strike" : 369.76510067114094,
+    "vol" : 0.23218144851012198,
+    "price" : 6.665643635323889
+  }, {
+    "strike" : 370.5973154362416,
+    "vol" : 0.23130261876188404,
+    "price" : 6.914348814577181
+  }, {
+    "strike" : 371.4295302013423,
+    "vol" : 0.23042275674070564,
+    "price" : 7.170506113226054
+  }, {
+    "strike" : 372.26174496644296,
+    "vol" : 0.22954185882813788,
+    "price" : 7.434252011329335
+  }, {
+    "strike" : 373.09395973154363,
+    "vol" : 0.2286599226576581,
+    "price" : 7.7057213478011874
+  }, {
+    "strike" : 373.9261744966443,
+    "vol" : 0.22777694725437722,
+    "price" : 7.985047088912751
+  }, {
+    "strike" : 374.758389261745,
+    "vol" : 0.2268929331910281,
+    "price" : 8.272360097964764
+  }, {
+    "strike" : 375.59060402684565,
+    "vol" : 0.22600788276238296,
+    "price" : 8.567788910086847
+  }, {
+    "strike" : 376.4228187919463,
+    "vol" : 0.22512180018056985,
+    "price" : 8.871459517585151
+  }, {
+    "strike" : 377.255033557047,
+    "vol" : 0.22423469179413363,
+    "price" : 9.183495173271979
+  }, {
+    "strike" : 378.0872483221477,
+    "vol" : 0.2233465663341308,
+    "price" : 9.504016221932773
+  }, {
+    "strike" : 378.91946308724835,
+    "vol" : 0.22245743519106312,
+    "price" : 9.83313997379264
+  }, {
+    "strike" : 379.751677852349,
+    "vol" : 0.22156731272706792,
+    "price" : 10.170980638885823
+  }, {
+    "strike" : 380.5838926174497,
+    "vol" : 0.2206762166285006,
+    "price" : 10.517649348084262
+  }, {
+    "strike" : 381.4161073825503,
+    "vol" : 0.21978416830489858,
+    "price" : 10.873254295859425
+  }, {
+    "strike" : 382.24832214765104,
+    "vol" : 0.21889119334132529,
+    "price" : 11.237887490597984
+  }, {
+    "strike" : 383.08053691275165,
+    "vol" : 0.21799732201229458,
+    "price" : 11.611641140754557
+  }, {
+    "strike" : 383.9127516778524,
+    "vol" : 0.2171025898669058,
+    "price" : 11.994585530495868
+  }, {
+    "strike" : 384.744966442953,
+    "vol" : 0.21620703839653516,
+    "price" : 12.386821855422824
+  }, {
+    "strike" : 385.5771812080537,
+    "vol" : 0.21531071579847375,
+    "price" : 12.788433906258746
+  }, {
+    "strike" : 386.40939597315435,
+    "vol" : 0.21441367785136878,
+    "price" : 13.199503313408485
+  }, {
+    "strike" : 387.241610738255,
+    "vol" : 0.2135159889212891,
+    "price" : 13.620092377086763
+  }, {
+    "strike" : 388.0738255033557,
+    "vol" : 0.21261772312081392,
+    "price" : 14.05025833505016
+  }, {
+    "strike" : 388.90604026845637,
+    "vol" : 0.21171896564787768,
+    "price" : 14.490052689742953
+  }, {
+    "strike" : 389.73825503355704,
+    "vol" : 0.21081981433635283,
+    "price" : 14.939520653989774
+  }, {
+    "strike" : 390.5704697986577,
+    "vol" : 0.20992038145673667,
+    "price" : 15.398700691882283
+  }, {
+    "strike" : 391.4026845637584,
+    "vol" : 0.20902079581307653,
+    "price" : 15.867624137095646
+  }, {
+    "strike" : 392.23489932885906,
+    "vol" : 0.2081212051917384,
+    "price" : 16.346314875366147
+  }, {
+    "strike" : 393.06711409395973,
+    "vol" : 0.20722177922918214,
+    "price" : 16.834789081462617
+  }, {
+    "strike" : 393.8993288590604,
+    "vol" : 0.20632271278001668,
+    "price" : 17.33305500390415
+  }, {
+    "strike" : 394.7315436241611,
+    "vol" : 0.20542422988383024,
+    "price" : 17.841112793024706
+  }, {
+    "strike" : 395.56375838926175,
+    "vol" : 0.2045265884502765,
+    "price" : 18.3589543699087
+  }, {
+    "strike" : 396.3959731543624,
+    "vol" : 0.20363008580740427,
+    "price" : 18.886563335281323
+  }, {
+    "strike" : 397.2281879194631,
+    "vol" : 0.20273506528906393,
+    "price" : 19.423914918732976
+  }, {
+    "strike" : 398.06040268456377,
+    "vol" : 0.20184192407424642,
+    "price" : 19.97097596970019
+  }, {
+    "strike" : 398.89261744966444,
+    "vol" : 0.20095112253513422,
+    "price" : 20.527704992462816
+  }, {
+    "strike" : 399.7248322147651,
+    "vol" : 0.20006319540182294,
+    "price" : 21.094052228019734
+  }, {
+    "strike" : 400.5570469798658,
+    "vol" : 0.19917876510967944,
+    "price" : 21.669959786027164
+  }, {
+    "strike" : 401.38926174496646,
+    "vol" : 0.19829855775812563,
+    "price" : 22.25536182990345
+  }, {
+    "strike" : 402.22147651006713,
+    "vol" : 0.19742342217239262,
+    "price" : 22.850184817510865
+  }, {
+    "strike" : 403.0536912751678,
+    "vol" : 0.19655435261258172,
+    "price" : 23.454347798181175
+  }, {
+    "strike" : 403.8859060402684,
+    "vol" : 0.19569251569882115,
+    "price" : 24.06776276369817
+  }, {
+    "strike" : 404.71812080536915,
+    "vol" : 0.1948392820853013,
+    "price" : 24.690335045364975
+  }, {
+    "strike" : 405.55033557046977,
+    "vol" : 0.19399626326586794,
+    "price" : 25.32196374023289
+  }, {
+    "strike" : 406.3825503355705,
+    "vol" : 0.19316535354397313,
+    "price" : 25.962542135270496
+  }, {
+    "strike" : 407.2147651006711,
+    "vol" : 0.19234877652022975,
+    "price" : 26.61195807648113
+  }, {
+    "strike" : 408.04697986577185,
+    "vol" : 0.19154913425766015,
+    "price" : 27.270094198322226
+  }, {
+    "strike" : 408.87919463087246,
+    "vol" : 0.19076945534445097,
+    "price" : 27.936827885273942
+  }, {
+    "strike" : 409.7114093959732,
+    "vol" : 0.19001323514617577,
+    "price" : 28.612030782563693
+  }, {
+    "strike" : 410.5436241610738,
+    "vol" : 0.189284457501517,
+    "price" : 29.295567613379035
+  }, {
+    "strike" : 411.3758389261745,
+    "vol" : 0.1885875822270865,
+    "price" : 29.98729401387891
+  }, {
+    "strike" : 412.20805369127515,
+    "vol" : 0.18792747813739263,
+    "price" : 30.68705310219309
+  }, {
+    "strike" : 413.0402684563758,
+    "vol" : 0.1873092792638079,
+    "price" : 31.394670612414245
+  }, {
+    "strike" : 413.8724832214765,
+    "vol" : 0.18673814646550477,
+    "price" : 32.10994871727763
+  }, {
+    "strike" : 414.7046979865772,
+    "vol" : 0.18621893198981837,
+    "price" : 32.83265916717869
+  }, {
+    "strike" : 415.53691275167785,
+    "vol" : 0.1857557723956191,
+    "price" : 33.56253701132289
+  }, {
+    "strike" : 416.3691275167785,
+    "vol" : 0.18535166999969396,
+    "price" : 34.29927668749747
+  }, {
+    "strike" : 417.2013422818792,
+    "vol" : 0.18500814960734524,
+    "price" : 35.04253229065614
+  }, {
+    "strike" : 418.03355704697987,
+    "vol" : 0.18472507691614146,
+    "price" : 35.79192307966889
+  }, {
+    "strike" : 418.86577181208054,
+    "vol" : 0.18450068876261197,
+    "price" : 36.547043882133835
+  }, {
+    "strike" : 419.6979865771812,
+    "vol" : 0.18433182558240013,
+    "price" : 37.307478605154074
+  }, {
+    "strike" : 420.5302013422819,
+    "vol" : 0.18421430154244012,
+    "price" : 38.072814269578316
+  }, {
+    "strike" : 421.36241610738256,
+    "vol" : 0.1841433226877706,
+    "price" : 38.84265317929743
+  }, {
+    "strike" : 422.19463087248323,
+    "vol" : 0.18411387314081729,
+    "price" : 39.61662176247563
+  }, {
+    "strike" : 423.0268456375839,
+    "vol" : 0.18412102025110527,
+    "price" : 40.39437572245964
+  }, {
+    "strike" : 423.8590604026846,
+    "vol" : 0.1841601229591382,
+    "price" : 41.175601960450194
+  }, {
+    "strike" : 424.69127516778525,
+    "vol" : 0.18422695147550544,
+    "price" : 41.96001812316808
+  }, {
+    "strike" : 425.5234899328859,
+    "vol" : 0.1843177378761357,
+    "price" : 42.747370664439075
+  }, {
+    "strike" : 426.3557046979866,
+    "vol" : 0.18442917927150185,
+    "price" : 43.53743215061718
+  }, {
+    "strike" : 427.18791946308727,
+    "vol" : 0.18455841215379692,
+    "price" : 44.3299983226496
+  }, {
+    "strike" : 428.02013422818794,
+    "vol" : 0.18470297175816866,
+    "price" : 45.12488523048512
+  }, {
+    "strike" : 428.8523489932886,
+    "vol" : 0.1848607457037154,
+    "price" : 45.921926607436944
+  }, {
+    "strike" : 429.68456375838923,
+    "vol" : 0.1850299275661173,
+    "price" : 46.72097155396426
+  }, {
+    "strike" : 430.51677852348996,
+    "vol" : 0.18520897348321608,
+    "price" : 47.521882541787136
+  }, {
+    "strike" : 431.3489932885906,
+    "vol" : 0.18539656323718853,
+    "price" : 48.32453371811215
+  }, {
+    "strike" : 432.1812080536913,
+    "vol" : 0.1855915662544585,
+    "price" : 49.128809475869616
+  }, {
+    "strike" : 433.0134228187919,
+    "vol" : 0.1857930124037043,
+    "price" : 49.93460325195832
+  }, {
+    "strike" : 433.84563758389265,
+    "vol" : 0.18600006719115253,
+    "price" : 50.741816516889
+  }, {
+    "strike" : 434.67785234899327,
+    "vol" : 0.18621201083860386,
+    "price" : 51.55035792301874
+  }, {
+    "strike" : 435.51006711409394,
+    "vol" : 0.1864282207103422,
+    "price" : 52.360142583206766
+  }, {
+    "strike" : 436.3422818791946,
+    "vol" : 0.18664815658496087,
+    "price" : 53.171091456309114
+  }, {
+    "strike" : 437.1744966442953,
+    "vol" : 0.18687134832033298,
+    "price" : 53.98313082010958
+  }, {
+    "strike" : 438.00671140939596,
+    "vol" : 0.18709738551920974,
+    "price" : 54.796191815884754
+  }, {
+    "strike" : 438.83892617449663,
+    "vol" : 0.1873259088611419,
+    "price" : 55.610210051814306
+  }, {
+    "strike" : 439.6711409395973,
+    "vol" : 0.18755660281965478,
+    "price" : 56.42512525493038
+  }, {
+    "strike" : 440.503355704698,
+    "vol" : 0.18778918953034612,
+    "price" : 57.2408809633078
+  }, {
+    "strike" : 441.33557046979865,
+    "vol" : 0.18802342361557095,
+    "price" : 58.05742425181626
+  }, {
+    "strike" : 442.1677852348993,
+    "vol" : 0.18825908780505252,
+    "price" : 58.8747054860533
+  }, {
+    "strike" : 443.0,
+    "vol" : 0.188495989219801,
+    "price" : 59.69267810010945
+  } ],
+  "breedenLitzenberger" : [ {
+    "strike" : 309.0,
+    "callPrice" : 73.9747187122328,
+    "secondDerivative" : 9.299965086029258E-4,
+    "density" : 9.34939855744592E-4,
+    "cdf" : 0.01568323482643741
+  }, {
+    "strike" : 309.578313253012,
+    "callPrice" : 73.40864219397298,
+    "secondDerivative" : 9.593005870556224E-4,
+    "density" : 9.643996984728728E-4,
+    "cdf" : 0.016232403653121175
+  }, {
+    "strike" : 310.1566265060241,
+    "callPrice" : 72.84288653215617,
+    "secondDerivative" : 9.893992682918904E-4,
+    "density" : 9.946583676536985E-4,
+    "cdf" : 0.01679883967520346
+  }, {
+    "strike" : 310.73493975903614,
+    "callPrice" : 72.27746179362452,
+    "secondDerivative" : 0.0010203091733274048,
+    "density" : 0.001025732572650872,
+    "cdf" : 0.01738300969024864
+  }, {
+    "strike" : 311.31325301204816,
+    "callPrice" : 71.71237831654201,
+    "secondDerivative" : 0.0010520471505515159,
+    "density" : 0.0010576392514104638,
+    "cdf" : 0.017985390225425668
+  }, {
+    "strike" : 311.89156626506025,
+    "callPrice" : 71.14764671601887,
+    "secondDerivative" : 0.0010846301620404117,
+    "density" : 0.001090395456169679,
+    "cdf" : 0.01860646763179763
+  }, {
+    "strike" : 312.4698795180723,
+    "callPrice" : 70.58327788978704,
+    "secondDerivative" : 0.0011180752608197506,
+    "density" : 0.0011240183305986297,
+    "cdf" : 0.01924673816946909
+  }, {
+    "strike" : 313.04819277108436,
+    "callPrice" : 70.01928302392508,
+    "secondDerivative" : 0.0011523997955009688,
+    "density" : 0.0011585253155243765,
+    "cdf" : 0.01990670808930417
+  }, {
+    "strike" : 313.6265060240964,
+    "callPrice" : 69.4556735986294,
+    "secondDerivative" : 0.0011876211829076053,
+    "density" : 0.0011939339203486609,
+    "cdf" : 0.02058689371864475
+  }, {
+    "strike" : 314.2048192771084,
+    "callPrice" : 68.89246139402877,
+    "secondDerivative" : 0.0012237567489137289,
+    "density" : 0.0012302615630403165,
+    "cdf" : 0.02128782152245634
+  }, {
+    "strike" : 314.7831325301205,
+    "callPrice" : 68.32965849604011,
+    "secondDerivative" : 0.0012608244105649644,
+    "density" : 0.0012675262558820746,
+    "cdf" : 0.022010028184474506
+  }, {
+    "strike" : 315.3614457831325,
+    "callPrice" : 67.76727730226202,
+    "secondDerivative" : 0.0012988416074222184,
+    "density" : 0.0013057455311339032,
+    "cdf" : 0.022754060659208042
+  }, {
+    "strike" : 315.93975903614455,
+    "callPrice" : 67.2053305279021,
+    "secondDerivative" : 0.0013378263247432185,
+    "density" : 0.001344937469653214,
+    "cdf" : 0.023520476238798382
+  }, {
+    "strike" : 316.51807228915663,
+    "callPrice" : 66.64383121173586,
+    "secondDerivative" : 0.0013777962976746492,
+    "density" : 0.0013851199008569233,
+    "cdf" : 0.024309842592450726
+  }, {
+    "strike" : 317.09638554216866,
+    "callPrice" : 66.08279272209228,
+    "secondDerivative" : 0.0014187697388479135,
+    "density" : 0.0014263111341847113,
+    "cdf" : 0.025122737821293595
+  }, {
+    "strike" : 317.67469879518075,
+    "callPrice" : 65.52222876286379,
+    "secondDerivative" : 0.001460764428884431,
+    "density" : 0.001468529044769948,
+    "cdf" : 0.025959750489236932
+  }, {
+    "strike" : 318.2530120481928,
+    "callPrice" : 64.9621533795347,
+    "secondDerivative" : 0.0015037986486277075,
+    "density" : 0.0015117920106269935,
+    "cdf" : 0.026821479653260316
+  }, {
+    "strike" : 318.8313253012048,
+    "callPrice" : 64.40258096522501,
+    "secondDerivative" : 0.0015478903151233678,
+    "density" : 0.0015561180440385792,
+    "cdf" : 0.02770853489198477
+  }, {
+    "strike" : 319.4096385542169,
+    "callPrice" : 63.84352626674513,
+    "secondDerivative" : 0.0015930578001643878,
+    "density" : 0.0016015256144519725,
+    "cdf" : 0.028621536310244777
+  }, {
+    "strike" : 319.9879518072289,
+    "callPrice" : 63.28500439065709,
+    "secondDerivative" : 0.0016393189071095546,
+    "density" : 0.0016480326198587704,
+    "cdf" : 0.029561114554517598
+  }, {
+    "strike" : 320.56626506024094,
+    "callPrice" : 62.727030809335076,
+    "secondDerivative" : 0.0016866919168023737,
+    "density" : 0.001695657438273333,
+    "cdf" : 0.03052791080492301
+  }, {
+    "strike" : 321.144578313253,
+    "callPrice" : 62.16962136702409,
+    "secondDerivative" : 0.0017351950646116161,
+    "density" : 0.001744418401993567,
+    "cdf" : 0.03152257676550818
+  }, {
+    "strike" : 321.72289156626505,
+    "callPrice" : 61.61279228588796,
+    "secondDerivative" : 0.0017848461084213336,
+    "density" : 0.001794333363294616,
+    "cdf" : 0.0325457746453901
+  }, {
+    "strike" : 322.30120481927713,
+    "callPrice" : 61.05656017204228,
+    "secondDerivative" : 0.0018356632153881942,
+    "density" : 0.001845420585899706,
+    "cdf" : 0.033598177121610506
+  }, {
+    "strike" : 322.87951807228916,
+    "callPrice" : 60.500942021567425,
+    "secondDerivative" : 0.0018876642343457202,
+    "density" : 0.0018976980135168877,
+    "cdf" : 0.03468046730484897
+  }, {
+    "strike" : 323.4578313253012,
+    "callPrice" : 59.945955226493595,
+    "secondDerivative" : 0.0019408669459153312,
+    "density" : 0.0019511835212795313,
+    "cdf" : 0.035793338679419584
+  }, {
+    "strike" : 324.03614457831327,
+    "callPrice" : 59.39161758075352,
+    "secondDerivative" : 0.001995288971556874,
+    "density" : 0.0020058948243134194,
+    "cdf" : 0.036937495050697766
+  }, {
+    "strike" : 324.6144578313253,
+    "callPrice" : 58.83794728609462,
+    "secondDerivative" : 0.0020509480464170333,
+    "density" : 0.0020618497520354683,
+    "cdf" : 0.03811365045711512
+  }, {
+    "strike" : 325.1927710843373,
+    "callPrice" : 58.28496295794497,
+    "secondDerivative" : 0.002107861337208305,
+    "density" : 0.002119065562406925,
+    "cdf" : 0.039322529091299296
+  }, {
+    "strike" : 325.7710843373494,
+    "callPrice" : 57.73268363122514,
+    "secondDerivative" : 0.002166046215279493,
+    "density" : 0.0021775597191130763,
+    "cdf" : 0.040564865199497535
+  }, {
+    "strike" : 326.34939759036143,
+    "callPrice" : 57.181128766099505,
+    "secondDerivative" : 0.00222551950628258,
+    "density" : 0.0022373491372417666,
+    "cdf" : 0.04184140296899996
+  }, {
+    "strike" : 326.9277108433735,
+    "callPrice" : 56.63031825365755,
+    "secondDerivative" : 0.002286298035869549,
+    "density" : 0.0022984507318808394,
+    "cdf" : 0.04315289639327591
+  }, {
+    "strike" : 327.50602409638554,
+    "callPrice" : 56.08027242151985,
+    "secondDerivative" : 0.0023483983795813397,
+    "density" : 0.0023608811666776443,
+    "cdf" : 0.04450010914796809
+  }, {
+    "strike" : 328.0843373493976,
+    "callPrice" : 55.53101203935802,
+    "secondDerivative" : 0.002411836794635746,
+    "density" : 0.0024246567852643547,
+    "cdf" : 0.04588381441774192
+  }, {
+    "strike" : 328.66265060240966,
+    "callPrice" : 54.982558324322326,
+    "secondDerivative" : 0.0024766289470790066,
+    "density" : 0.0024897933369592467,
+    "cdf" : 0.047304794741991674
+  }, {
+    "strike" : 329.2409638554217,
+    "callPrice" : 54.43493294636585,
+    "secondDerivative" : 0.0025427906848562993,
+    "density" : 0.0025563067539464113,
+    "cdf" : 0.048763841815974596
+  }, {
+    "strike" : 329.8192771084337,
+    "callPrice" : 53.88815803345864,
+    "secondDerivative" : 0.0026103371737917764,
+    "density" : 0.0026242122826631346,
+    "cdf" : 0.05026175630337326
+  }, {
+    "strike" : 330.3975903614458,
+    "callPrice" : 53.342256176680564,
+    "secondDerivative" : 0.002679283238649077,
+    "density" : 0.0026935248266733015,
+    "cdf" : 0.05179934760485594
+  }, {
+    "strike" : 330.9759036144578,
+    "callPrice" : 52.79725043518499,
+    "secondDerivative" : 0.002749643363131326,
+    "density" : 0.0027642589466673933,
+    "cdf" : 0.053377433634065996
+  }, {
+    "strike" : 331.5542168674699,
+    "callPrice" : 52.25316434102069,
+    "secondDerivative" : 0.0028214314625074617,
+    "density" : 0.0028364286318802215,
+    "cdf" : 0.054996840561609805
+  }, {
+    "strike" : 332.13253012048193,
+    "callPrice" : 51.71002190380574,
+    "secondDerivative" : 0.0028946609518243345,
+    "density" : 0.0029100473686656083,
+    "cdf" : 0.056658402537900776
+  }, {
+    "strike" : 332.71084337349396,
+    "callPrice" : 51.16784761523826,
+    "secondDerivative" : 0.002969344882330915,
+    "density" : 0.002985128277645745,
+    "cdf" : 0.05836296141886055
+  }, {
+    "strike" : 333.28915662650604,
+    "callPrice" : 50.626666453437565,
+    "secondDerivative" : 0.0030454958050540877,
+    "density" : 0.0030616839765618352,
+    "cdf" : 0.06011136644476078
+  }, {
+    "strike" : 333.86746987951807,
+    "callPrice" : 50.08650388710197,
+    "secondDerivative" : 0.0031231254070007704,
+    "density" : 0.003139726214542462,
+    "cdf" : 0.06190447391792253
+  }, {
+    "strike" : 334.4457831325301,
+    "callPrice" : 49.54738587947196,
+    "secondDerivative" : 0.003202244965905265,
+    "density" : 0.0032192663292681264,
+    "cdf" : 0.06374314686212834
+  }, {
+    "strike" : 335.0240963855422,
+    "callPrice" : 49.009338892088465,
+    "secondDerivative" : 0.00328286514559295,
+    "density" : 0.003300315041247205,
+    "cdf" : 0.06562825463917554
+  }, {
+    "strike" : 335.6024096385542,
+    "callPrice" : 48.47238988833374,
+    "secondDerivative" : 0.0033649958368187063,
+    "density" : 0.0033828822938083624,
+    "cdf" : 0.06756067257457299
+  }, {
+    "strike" : 336.1807228915663,
+    "callPrice" : 47.936566336740896,
+    "secondDerivative" : 0.003448646089054818,
+    "density" : 0.0034669771845258724,
+    "cdf" : 0.06954128154209249
+  }, {
+    "strike" : 336.7590361445783,
+    "callPrice" : 47.40189621406273,
+    "secondDerivative" : 0.0035338244060767457,
+    "density" : 0.0035526082623765637,
+    "cdf" : 0.07157096752660552
+  }, {
+    "strike" : 337.33734939759034,
+    "callPrice" : 46.868408008083975,
+    "secondDerivative" : 0.0036205384276399846,
+    "density" : 0.0036397832077246467,
+    "cdf" : 0.0736506211760618
+  }, {
+    "strike" : 337.9156626506024,
+    "callPrice" : 46.336130720165556,
+    "secondDerivative" : 0.0037087948840053278,
+    "density" : 0.003728508786605259,
+    "cdf" : 0.0757811373214663
+  }, {
+    "strike" : 338.49397590361446,
+    "callPrice" : 45.805093867507935,
+    "secondDerivative" : 0.0037985997096257043,
+    "density" : 0.0038187909650155994,
+    "cdf" : 0.07796341446999877
+  }, {
+    "strike" : 339.0722891566265,
+    "callPrice" : 45.2753274851176,
+    "secondDerivative" : 0.003889957702085666,
+    "density" : 0.003910634566041527,
+    "cdf" : 0.08019835428898836
+  }, {
+    "strike" : 339.65060240963857,
+    "callPrice" : 44.74686212746474,
+    "secondDerivative" : 0.003982873090535576,
+    "density" : 0.004004043841313227,
+    "cdf" : 0.08248686104417335
+  }, {
+    "strike" : 340.2289156626506,
+    "callPrice" : 44.21972886981871,
+    "secondDerivative" : 0.0040773486716716425,
+    "density" : 0.0040990216023926015,
+    "cdf" : 0.08482984103738878
+  }, {
+    "strike" : 340.8072289156627,
+    "callPrice" : 43.69395930924304,
+    "secondDerivative" : 0.004173386514594312,
+    "density" : 0.0041955699293782876,
+    "cdf" : 0.08722820199796566
+  }, {
+    "strike" : 341.3855421686747,
+    "callPrice" : 43.16958556524054,
+    "secondDerivative" : 0.004270987278687243,
+    "density" : 0.004293689485158865,
+    "cdf" : 0.08968285245870167
+  }, {
+    "strike" : 341.96385542168673,
+    "callPrice" : 42.64664028002875,
+    "secondDerivative" : 0.0043701508730009655,
+    "density" : 0.004393380178301426,
+    "cdf" : 0.09219470110611638
+  }, {
+    "strike" : 342.5421686746988,
+    "callPrice" : 42.125156618434005,
+    "secondDerivative" : 0.004470875614970281,
+    "density" : 0.004494640317297185,
+    "cdf" : 0.09476465610098972
+  }, {
+    "strike" : 343.12048192771084,
+    "callPrice" : 41.60516826738734,
+    "secondDerivative" : 0.00457315882158582,
+    "density" : 0.00459746720487538,
+    "cdf" : 0.0973936243674719
+  }, {
+    "strike" : 343.69879518072287,
+    "callPrice" : 41.08670943500641,
+    "secondDerivative" : 0.004676996400121424,
+    "density" : 0.004701856726555181,
+    "cdf" : 0.10008251087190578
+  }, {
+    "strike" : 344.27710843373495,
+    "callPrice" : 40.56981484924819,
+    "secondDerivative" : 0.004782383120982558,
+    "density" : 0.004807803624944424,
+    "cdf" : 0.10283221785364793
+  }, {
+    "strike" : 344.855421686747,
+    "callPrice" : 40.054519756117315,
+    "secondDerivative" : 0.004889312253908428,
+    "density" : 0.0049153011340079674,
+    "cdf" : 0.1056436440410311
+  }, {
+    "strike" : 345.433734939759,
+    "callPrice" : 39.54085991741215,
+    "secondDerivative" : 0.004997775454285146,
+    "density" : 0.005024340864776573,
+    "cdf" : 0.10851768383475435
+  }, {
+    "strike" : 346.0120481927711,
+    "callPrice" : 39.02887160799327,
+    "secondDerivative" : 0.005107763308842549,
+    "density" : 0.005134913353944337,
+    "cdf" : 0.11145522645984285
+  }, {
+    "strike" : 346.5903614457831,
+    "callPrice" : 38.518591612559476,
+    "secondDerivative" : 0.005219264471634232,
+    "density" : 0.005247007195256078,
+    "cdf" : 0.11445715510274945
+  }, {
+    "strike" : 347.1686746987952,
+    "callPrice" : 38.01005722191104,
+    "secondDerivative" : 0.005332266323421208,
+    "density" : 0.005360609702395915,
+    "cdf" : 0.1175243459953117
+  }, {
+    "strike" : 347.7469879518072,
+    "callPrice" : 37.50330622868819,
+    "secondDerivative" : 0.005446754471449821,
+    "density" : 0.005475706406106271,
+    "cdf" : 0.12065766749813656
+  }, {
+    "strike" : 348.32530120481925,
+    "callPrice" : 36.99837692256466,
+    "secondDerivative" : 0.005562712772189115,
+    "density" : 0.005592281077046108,
+    "cdf" : 0.12385797913084051
+  }, {
+    "strike" : 348.90361445783134,
+    "callPrice" : 36.49530808488049,
+    "secondDerivative" : 0.005680123604179243,
+    "density" : 0.005710316000089644,
+    "cdf" : 0.12712613058914546
+  }, {
+    "strike" : 349.48192771084337,
+    "callPrice" : 35.994138982698985,
+    "secondDerivative" : 0.005798967345072014,
+    "density" : 0.005829791448587134,
+    "cdf" : 0.13046296072368768
+  }, {
+    "strike" : 350.06024096385545,
+    "callPrice" : 35.49490936226783,
+    "secondDerivative" : 0.005919222667216672,
+    "density" : 0.005950685981521828,
+    "cdf" : 0.13386929649253954
+  }, {
+    "strike" : 350.6385542168675,
+    "callPrice" : 34.99765944187044,
+    "secondDerivative" : 0.006040866242074116,
+    "density" : 0.0060729761463530095,
+    "cdf" : 0.13734595188744403
+  }, {
+    "strike" : 351.2168674698795,
+    "callPrice" : 34.50242990404911,
+    "secondDerivative" : 0.006163872967590577,
+    "density" : 0.006196636707598274,
+    "cdf" : 0.14089372682290524
+  }, {
+    "strike" : 351.7951807228916,
+    "callPrice" : 34.009261887183754,
+    "secondDerivative" : 0.0062882156043997375,
+    "density" : 0.006321640281101898,
+    "cdf" : 0.14451340600699214
+  }, {
+    "strike" : 352.3734939759036,
+    "callPrice" : 33.51819697640906,
+    "secondDerivative" : 0.0064138650941458755,
+    "density" : 0.0064479576540500076,
+    "cdf" : 0.1482057577732825
+  }, {
+    "strike" : 352.95180722891564,
+    "callPrice" : 33.02927719385423,
+    "secondDerivative" : 0.0065407901729486176,
+    "density" : 0.006575557396380732,
+    "cdf" : 0.1519715328893786
+  }, {
+    "strike" : 353.5301204819277,
+    "callPrice" : 32.5425449881883,
+    "secondDerivative" : 0.006668957303190836,
+    "density" : 0.006704405792209517,
+    "cdf" : 0.15581146333570584
+  }, {
+    "strike" : 354.10843373493975,
+    "callPrice" : 32.05804322345398,
+    "secondDerivative" : 0.0067983311055286304,
+    "density" : 0.006834467274135436,
+    "cdf" : 0.1597262610557395
+  }, {
+    "strike" : 354.6867469879518,
+    "callPrice" : 31.575815167175676,
+    "secondDerivative" : 0.006928873676770307,
+    "density" : 0.006965703737494388,
+    "cdf" : 0.16371661667708703
+  }, {
+    "strike" : 355.26506024096386,
+    "callPrice" : 31.09590447772365,
+    "secondDerivative" : 0.007060544976411618,
+    "density" : 0.007098074928948948,
+    "cdf" : 0.16778319820914045
+  }, {
+    "strike" : 355.8433734939759,
+    "callPrice" : 30.618355190920113,
+    "secondDerivative" : 0.007193302826635771,
+    "density" : 0.007231538446488374,
+    "cdf" : 0.17192664971044147
+  }, {
+    "strike" : 356.421686746988,
+    "callPrice" : 30.143211705870613,
+    "secondDerivative" : 0.0073271023666165985,
+    "density" : 0.007366049190831156,
+    "cdf" : 0.17614758992175994
+  }, {
+    "strike" : 357.0,
+    "callPrice" : 29.670518770006936,
+    "secondDerivative" : 0.0074618964617911825,
+    "density" : 0.007501559776873105,
+    "cdf" : 0.1804466108957431
+  }, {
+    "strike" : 357.578313253012,
+    "callPrice" : 29.2003214633246,
+    "secondDerivative" : 0.007597635499223541,
+    "density" : 0.007638020327963306,
+    "cdf" : 0.18482427657113354
+  }, {
+    "strike" : 358.1566265060241,
+    "callPrice" : 28.7326651818027,
+    "secondDerivative" : 0.007734267455816733,
+    "density" : 0.007775378544478807,
+    "cdf" : 0.18928112134698705
+  }, {
+    "strike" : 358.73493975903614,
+    "callPrice" : 28.267595619990402,
+    "secondDerivative" : 0.007871737830100754,
+    "density" : 0.007913579635249926,
+    "cdf" : 0.193817648621461
+  }, {
+    "strike" : 359.3132530120482,
+    "callPrice" : 27.80515875274807,
+    "secondDerivative" : 0.00800998943759623,
+    "density" : 0.008052566111836223,
+    "cdf" : 0.19843432930317217
+  }, {
+    "strike" : 359.89156626506025,
+    "callPrice" : 27.345400816128347,
+    "secondDerivative" : 0.008148962319864948,
+    "density" : 0.008192277697093584,
+    "cdf" : 0.20313160031969713
+  }, {
+    "strike" : 360.4698795180723,
+    "callPrice" : 26.888368287385447,
+    "secondDerivative" : 0.008288594335681408,
+    "density" : 0.00833265191948812,
+    "cdf" : 0.2079098630757853
+  }, {
+    "strike" : 361.04819277108436,
+    "callPrice" : 26.434107864102373,
+    "secondDerivative" : 0.008428820183326023,
+    "density" : 0.00847362313019241,
+    "cdf" : 0.21276948192128564
+  }, {
+    "strike" : 361.6265060240964,
+    "callPrice" : 25.9826664424225,
+    "secondDerivative" : 0.008569572310079819,
+    "density" : 0.008615123417414591,
+    "cdf" : 0.21771078257850174
+  }, {
+    "strike" : 362.2048192771084,
+    "callPrice" : 25.534091094378198,
+    "secondDerivative" : 0.008710779889042895,
+    "density" : 0.008757081577778126,
+    "cdf" : 0.2227340505724017
+  }, {
+    "strike" : 362.7831325301205,
+    "callPrice" : 25.088429044304746,
+    "secondDerivative" : 0.008852369842315964,
+    "density" : 0.008899424144942028,
+    "cdf" : 0.2278395296231146
+  }, {
+    "strike" : 363.3614457831325,
+    "callPrice" : 24.645727644335125,
+    "secondDerivative" : 0.008994266181616693,
+    "density" : 0.009042074726712278,
+    "cdf" : 0.23302742005213972
+  }, {
+    "strike" : 363.93975903614455,
+    "callPrice" : 24.206034348966398,
+    "secondDerivative" : 0.0091363899400676,
+    "density" : 0.009184953936467144,
+    "cdf" : 0.23829787715541295
+  }, {
+    "strike" : 364.51807228915663,
+    "callPrice" : 23.7693966886946,
+    "secondDerivative" : 0.009278659581468672,
+    "density" : 0.009327979804605263,
+    "cdf" : 0.24365100959065833
+  }, {
+    "strike" : 365.09638554216866,
+    "callPrice" : 23.335862242715223,
+    "secondDerivative" : 0.009420990534181327,
+    "density" : 0.00947106730995199,
+    "cdf" : 0.24908687773588178
+  }, {
+    "strike" : 365.6746987951807,
+    "callPrice" : 22.905478610688732,
+    "secondDerivative" : 0.00956329571408787,
+    "density" : 0.009614128905498624,
+    "cdf" : 0.25460549209043837
+  }, {
+    "strike" : 366.2530120481928,
+    "callPrice" : 22.47829338357451,
+    "secondDerivative" : 0.009705485240374399,
+    "density" : 0.009757074232674556,
+    "cdf" : 0.2602068116358116
+  }, {
+    "strike" : 366.8313253012048,
+    "callPrice" : 22.054354113538665,
+    "secondDerivative" : 0.009847466162682393,
+    "density" : 0.009899809847048562,
+    "cdf" : 0.2658907422435378
+  }, {
+    "strike" : 367.4096385542169,
+    "callPrice" : 21.6337082829464,
+    "secondDerivative" : 0.009989143291022627,
+    "density" : 0.010042240052654078,
+    "cdf" : 0.27165713510056
+  }, {
+    "strike" : 367.9879518072289,
+    "callPrice" : 21.21640327245487,
+    "secondDerivative" : 0.010130418513654147,
+    "density" : 0.010184266216242391,
+    "cdf" : 0.2775057851531545
+  }, {
+    "strike" : 368.56626506024094,
+    "callPrice" : 20.802486328227843,
+    "secondDerivative" : 0.010271191138144785,
+    "density" : 0.010325787110156045,
+    "cdf" : 0.2834364296080022
+  }, {
+    "strike" : 369.144578313253,
+    "callPrice" : 20.392004528302607,
+    "secondDerivative" : 0.010411358289275084,
+    "density" : 0.010466699312347812,
+    "cdf" : 0.28944874649354924
+  }, {
+    "strike" : 369.72289156626505,
+    "callPrice" : 19.985004748149265,
+    "secondDerivative" : 0.010550814795351469,
+    "density" : 0.010606897092089552,
+    "cdf" : 0.2955423532902275
+  }, {
+    "strike" : 370.30120481927713,
+    "callPrice" : 19.581533625472446,
+    "secondDerivative" : 0.010689453085888088,
+    "density" : 0.0107462723071102,
+    "cdf" : 0.301716805668395
+  }, {
+    "strike" : 370.87951807228916,
+    "callPrice" : 19.181637524322724,
+    "secondDerivative" : 0.010827164271631771,
+    "density" : 0.010884715489361528,
+    "cdf" : 0.3079715963634254
+  }, {
+    "strike" : 371.4578313253012,
+    "callPrice" : 18.785362498602723,
+    "secondDerivative" : 0.010963837462441004,
+    "density" : 0.01102211515927136,
+    "cdf" : 0.31430615419623287
+  }, {
+    "strike" : 372.03614457831327,
+    "callPrice" : 18.392754255073868,
+    "secondDerivative" : 0.011099361051947197,
+    "density" : 0.011158359117233367,
+    "cdf" : 0.3207198433278081
+  }, {
+    "strike" : 372.6144578313253,
+    "callPrice" : 18.003858116000487,
+    "secondDerivative" : 0.011233622797135466,
+    "density" : 0.011293334523610867,
+    "cdf" : 0.3272119627497657
+  }, {
+    "strike" : 373.1927710843373,
+    "callPrice" : 17.618718981599557,
+    "secondDerivative" : 0.011366510420884877,
+    "density" : 0.011426928504479846,
+    "cdf" : 0.3337817461371946
+  }, {
+    "strike" : 373.7710843373494,
+    "callPrice" : 17.237381292511515,
+    "secondDerivative" : 0.011497912089453164,
+    "density" : 0.011559028631651707,
+    "cdf" : 0.340428362078954
+  }, {
+    "strike" : 374.34939759036143,
+    "callPrice" : 16.859888992554573,
+    "secondDerivative" : 0.011627718765794269,
+    "density" : 0.011689525288499753,
+    "cdf" : 0.34715091485628236
+  }, {
+    "strike" : 374.92771084337346,
+    "callPrice" : 16.48628549209934,
+    "secondDerivative" : 0.011755823572912048,
+    "density" : 0.011818311029928835,
+    "cdf" : 0.3539484458451494
+  }, {
+    "strike" : 375.50602409638554,
+    "callPrice" : 16.116613632474127,
+    "secondDerivative" : 0.011882124476869647,
+    "density" : 0.011945283279646115,
+    "cdf" : 0.3608199357197892
+  }, {
+    "strike" : 376.0843373493976,
+    "callPrice" : 15.750915651917722,
+    "secondDerivative" : 0.01200652625357179,
+    "density" : 0.012070346307397686,
+    "cdf" : 0.3677643076731385
+  }, {
+    "strike" : 376.66265060240966,
+    "callPrice" : 15.389233153720369,
+    "secondDerivative" : 0.012128942228173399,
+    "density" : 0.012193412977622928,
+    "cdf" : 0.3747804318504757
+  }, {
+    "strike" : 377.2409638554217,
+    "callPrice" : 15.031607077348411,
+    "secondDerivative" : 0.01224929746967973,
+    "density" : 0.012314407961035364,
+    "cdf" : 0.38186713133799033
+  }, {
+    "strike" : 377.81927710843377,
+    "callPrice" : 14.678077673540088,
+    "secondDerivative" : 0.012367533008728058,
+    "density" : 0.012433271974823749,
+    "cdf" : 0.38902319006172925
+  }, {
+    "strike" : 378.3975903614458,
+    "callPrice" : 14.328684484600672,
+    "secondDerivative" : 0.012483609134505967,
+    "density" : 0.012549965097094948,
+    "cdf" : 0.39624736303951147
+  }, {
+    "strike" : 378.9759036144578,
+    "callPrice" : 13.983466331414405,
+    "secondDerivative" : 0.012597512636602913,
+    "density" : 0.01266447404721918,
+    "cdf" : 0.40353838959269717
+  }, {
+    "strike" : 379.5542168674699,
+    "callPrice" : 13.642461309062895,
+    "secondDerivative" : 0.01270926209144818,
+    "density" : 0.012776817500367754,
+    "cdf" : 0.41089501019012975
+  }, {
+    "strike" : 380.13253012048193,
+    "callPrice" : 13.305706793382058,
+    "secondDerivative" : 0.012818917696222341,
+    "density" : 0.012887055973696167,
+    "cdf" : 0.41831598780200496
+  }, {
+    "strike" : 380.71084337349396,
+    "callPrice" : 12.97323946135748,
+    "secondDerivative" : 0.01292659145519792,
+    "density" : 0.012995302066829714,
+    "cdf" : 0.4258001348542928
+  }, {
+    "strike" : 381.28915662650604,
+    "callPrice" : 12.645095328945558,
+    "secondDerivative" : 0.013032460458362037,
+    "density" : 0.013101733811067955,
+    "cdf" : 0.4333463471086293
+  }, {
+    "strike" : 381.86746987951807,
+    "callPrice" : 12.3213098107652,
+    "secondDerivative" : 0.01313678344558866,
+    "density" : 0.01320661132160294,
+    "cdf" : 0.44095364613661625
+  }, {
+    "strike" : 382.4457831325301,
+    "callPrice" : 12.001899583684775,
+    "secondDerivative" : 0.01317115246592948,
+    "density" : 0.013241163028649455,
+    "cdf" : 0.4485907378316857
+  }, {
+    "strike" : 383.0240963855422,
+    "callPrice" : 11.686906088055537,
+    "secondDerivative" : 0.013263144728625774,
+    "density" : 0.013333644271341531,
+    "cdf" : 0.45627540839041913
+  }, {
+    "strike" : 383.6024096385542,
+    "callPrice" : 11.37634817359043,
+    "secondDerivative" : 0.01334690192607013,
+    "density" : 0.013417846675728871,
+    "cdf" : 0.46401118398060215
+  }, {
+    "strike" : 384.18072289156623,
+    "callPrice" : 11.070253839781941,
+    "secondDerivative" : 0.013421961011772506,
+    "density" : 0.013493304734022361,
+    "cdf" : 0.4717931553642911
+  }, {
+    "strike" : 384.7590361445783,
+    "callPrice" : 10.768669208249037,
+    "secondDerivative" : 0.013561211119395008,
+    "density" : 0.013633295018210177,
+    "cdf" : 0.4796533972202124
+  }, {
+    "strike" : 385.33734939759034,
+    "callPrice" : 10.47160846691628,
+    "secondDerivative" : 0.013628587726088878,
+    "density" : 0.013701029761685243,
+    "cdf" : 0.48755742096088406
+  }, {
+    "strike" : 385.91566265060237,
+    "callPrice" : 10.179105678037075,
+    "secondDerivative" : 0.013693177913864926,
+    "density" : 0.01376596327518044,
+    "cdf" : 0.4954998289543453
+  }, {
+    "strike" : 386.49397590361446,
+    "callPrice" : 9.891182431643927,
+    "secondDerivative" : 0.013754549513578237,
+    "density" : 0.013827661092378674,
+    "cdf" : 0.5034788725799604
+  }, {
+    "strike" : 387.0722891566265,
+    "callPrice" : 9.607859242808786,
+    "secondDerivative" : 0.013812326551487782,
+    "density" : 0.013885745241070424,
+    "cdf" : 0.5114925687262599
+  }, {
+    "strike" : 387.65060240963857,
+    "callPrice" : 9.32915542578894,
+    "secondDerivative" : 0.013866181814137232,
+    "density" : 0.013939886768513578,
+    "cdf" : 0.519538730375819
+  }, {
+    "strike" : 388.2289156626506,
+    "callPrice" : 9.05508898442659,
+    "secondDerivative" : 0.013915829924826536,
+    "density" : 0.013989798781103367,
+    "cdf" : 0.5276149926724938
+  }, {
+    "strike" : 388.8072289156627,
+    "callPrice" : 8.785676516418022,
+    "secondDerivative" : 0.013961020465558246,
+    "density" : 0.014035229529758752,
+    "cdf" : 0.535718835191335
+  }, {
+    "strike" : 389.3855421686747,
+    "callPrice" : 8.52093312946181,
+    "secondDerivative" : 0.014001533372720584,
+    "density" : 0.014075957781131491,
+    "cdf" : 0.5438476010534936
+  }, {
+    "strike" : 389.96385542168673,
+    "callPrice" : 8.26087236763118,
+    "secondDerivative" : 0.014037175515113628,
+    "density" : 0.014111789377443009,
+    "cdf" : 0.5519985134518622
+  }, {
+    "strike" : 390.5421686746988,
+    "callPrice" : 8.005506146610031,
+    "secondDerivative" : 0.014067776623960523,
+    "density" : 0.014142553144861793,
+    "cdf" : 0.5601686900214706
+  }, {
+    "strike" : 391.12048192771084,
+    "callPrice" : 7.754844696673985,
+    "secondDerivative" : 0.014093186803165732,
+    "density" : 0.014168098390527555,
+    "cdf" : 0.5683551554495122
+  }, {
+    "strike" : 391.69879518072287,
+    "callPrice" : 7.508896512515406,
+    "secondDerivative" : 0.01411327450568933,
+    "density" : 0.014188292868169052,
+    "cdf" : 0.5765548527135916
+  }, {
+    "strike" : 392.27710843373495,
+    "callPrice" : 7.267668309194391,
+    "secondDerivative" : 0.014127924634976804,
+    "density" : 0.01420302086944214,
+    "cdf" : 0.5847646531939181
+  }, {
+    "strike" : 392.855421686747,
+    "callPrice" : 7.031164983654691,
+    "secondDerivative" : 0.01413703771504515,
+    "density" : 0.014212182389604497,
+    "cdf" : 0.5929813659454597
+  }, {
+    "strike" : 393.433734939759,
+    "callPrice" : 6.79938958138095,
+    "secondDerivative" : 0.014140528537609495,
+    "density" : 0.014215691767451131,
+    "cdf" : 0.6012017463317811
+  }, {
+    "strike" : 394.0120481927711,
+    "callPrice" : 6.572343267890233,
+    "secondDerivative" : 0.0141383257414418,
+    "density" : 0.01421347726243718,
+    "cdf" : 0.6094225042382908
+  }, {
+    "strike" : 394.5903614457831,
+    "callPrice" : 6.350025304855734,
+    "secondDerivative" : 0.014130371357623513,
+    "density" : 0.014205480597513375,
+    "cdf" : 0.6176403119794721
+  }, {
+    "strike" : 395.16867469879514,
+    "callPrice" : 6.132433030745645,
+    "secondDerivative" : 0.01411662101418187,
+    "density" : 0.014191657164850083,
+    "cdf" : 0.6258518121172552
+  }, {
+    "strike" : 395.7469879518072,
+    "callPrice" : 5.919561845942354,
+    "secondDerivative" : 0.014097043526817284,
+    "density" : 0.014171975614389229,
+    "cdf" : 0.6340536252439565
+  }, {
+    "strike" : 396.32530120481925,
+    "callPrice" : 5.711405202370642,
+    "secondDerivative" : 0.014071621774291995,
+    "density" : 0.014146418733886017,
+    "cdf" : 0.642242357884083
+  }, {
+    "strike" : 396.90361445783134,
+    "callPrice" : 5.5079545977256,
+    "secondDerivative" : 0.0140403524994781,
+    "density" : 0.014114983248899458,
+    "cdf" : 0.6504146106025728
+  }, {
+    "strike" : 397.48192771084337,
+    "callPrice" : 5.309199574439631,
+    "secondDerivative" : 0.014003247338223442,
+    "density" : 0.014077680857127121,
+    "cdf" : 0.6585669863873367
+  }, {
+    "strike" : 398.06024096385545,
+    "callPrice" : 5.115127723572201,
+    "secondDerivative" : 0.013960333285467637,
+    "density" : 0.0140345386969988,
+    "cdf" : 0.6666960993936715
+  }, {
+    "strike" : 398.6385542168675,
+    "callPrice" : 4.925724693840451,
+    "secondDerivative" : 0.013911653098830353,
+    "density" : 0.013985599753410018,
+    "cdf" : 0.6747985840742654
+  }, {
+    "strike" : 399.2168674698795,
+    "callPrice" : 4.7409742060308275,
+    "secondDerivative" : 0.013857267032335582,
+    "density" : 0.01393092460066184,
+    "cdf" : 0.68287110476951
+  }, {
+    "strike" : 399.7951807228916,
+    "callPrice" : 4.5608580730513495,
+    "secondDerivative" : 0.013797252336189555,
+    "density" : 0.013870590899579873,
+    "cdf" : 0.6909103657188312
+  }, {
+    "strike" : 400.3734939759036,
+    "callPrice" : 4.385356225872528,
+    "secondDerivative" : 0.01373170496208331,
+    "density" : 0.013804695111881283,
+    "cdf" : 0.6989131215223292
+  }, {
+    "strike" : 400.95180722891564,
+    "callPrice" : 4.214446745589669,
+    "secondDerivative" : 0.013660739557508347,
+    "density" : 0.01373335249446023,
+    "cdf" : 0.7068761879454328
+  }, {
+    "strike" : 401.5301204819277,
+    "callPrice" : 4.048105901784595,
+    "secondDerivative" : 0.013584489926188322,
+    "density" : 0.013656697562266973,
+    "cdf" : 0.7147964529864255
+  }, {
+    "strike" : 402.10843373493975,
+    "callPrice" : 3.8863081972743743,
+    "secondDerivative" : 0.013503108812074057,
+    "density" : 0.013574883871154709,
+    "cdf" : 0.722670887976113
+  }, {
+    "strike" : 402.6867469879518,
+    "callPrice" : 3.7290264191926354,
+    "secondDerivative" : 0.013416767257012904,
+    "density" : 0.013488083372134658,
+    "cdf" : 0.7304965584301968
+  }, {
+    "strike" : 403.26506024096386,
+    "callPrice" : 3.5762316961341014,
+    "secondDerivative" : 0.013325652787443685,
+    "density" : 0.01339648458843249,
+    "cdf" : 0.7382706341901819
+  }, {
+    "strike" : 403.8433734939759,
+    "callPrice" : 3.427893560777136,
+    "secondDerivative" : 0.013229966390326807,
+    "density" : 0.013300289575344145,
+    "cdf" : 0.7459903981917944
+  }, {
+    "strike" : 404.4216867469879,
+    "callPrice" : 3.2839800169556668,
+    "secondDerivative" : 0.013129917431342618,
+    "density" : 0.013199708811422146,
+    "cdf" : 0.7536532529875748
+  }, {
+    "strike" : 405.0,
+    "callPrice" : 3.1444576095294536,
+    "secondDerivative" : 0.013025716748416015,
+    "density" : 0.013094954255289204,
+    "cdf" : 0.7612567237105913
+  }, {
+    "strike" : 405.578313253012,
+    "callPrice" : 3.00929149455834,
+    "secondDerivative" : 0.012917565396719509,
+    "density" : 0.012986228030815939,
+    "cdf" : 0.7687984558286183
+  }, {
+    "strike" : 406.1566265060241,
+    "callPrice" : 2.8784455061472727,
+    "secondDerivative" : 0.012805639784119192,
+    "density" : 0.012873707483555106,
+    "cdf" : 0.7762762053815305
+  }, {
+    "strike" : 406.73493975903614,
+    "callPrice" : 2.7518822148397817,
+    "secondDerivative" : 0.012690070360577009,
+    "density" : 0.012757523756868505,
+    "cdf" : 0.7836878187982038
+  }, {
+    "strike" : 407.3132530120482,
+    "callPrice" : 2.6295629705209933,
+    "secondDerivative" : 0.012570914157095102,
+    "density" : 0.01263773418490355,
+    "cdf" : 0.7910311985261702
+  }, {
+    "strike" : 407.89156626506025,
+    "callPrice" : 2.5114479204065816,
+    "secondDerivative" : 0.012448117308849758,
+    "density" : 0.012514284616520911,
+    "cdf" : 0.7983042499306714
+  }, {
+    "strike" : 408.4698795180723,
+    "callPrice" : 2.3974959898255577,
+    "secondDerivative" : 0.012321469500875535,
+    "density" : 0.012386963618837097,
+    "cdf" : 0.805504804085855
+  }, {
+    "strike" : 409.04819277108436,
+    "callPrice" : 2.287664810256736,
+    "secondDerivative" : 0.012190546601686945,
+    "density" : 0.012255344805918191,
+    "cdf" : 0.8126305105759761
+  }, {
+    "strike" : 409.6265060240964,
+    "callPrice" : 2.181910575668745,
+    "secondDerivative" : 0.0120546449181802,
+    "density" : 0.012118720744217016,
+    "cdf" : 0.8196786945077605
+  }, {
+    "strike" : 410.2048192771084,
+    "callPrice" : 2.0801878051579976,
+    "secondDerivative" : 0.01191270894480567,
+    "density" : 0.011976030317700146,
+    "cdf" : 0.8266461731307788
+  }, {
+    "strike" : 410.7831325301205,
+    "callPrice" : 1.9824489879924272,
+    "secondDerivative" : 0.011763260962993625,
+    "density" : 0.01182578795306313,
+    "cdf" : 0.8335290304954759
+  }, {
+    "strike" : 411.3614457831325,
+    "callPrice" : 1.888644087746826,
+    "secondDerivative" : 0.011604343526983028,
+    "density" : 0.01166602579984575,
+    "cdf" : 0.8403223542298309
+  }, {
+    "strike" : 411.93975903614455,
+    "callPrice" : 1.798719886967028,
+    "secondDerivative" : 0.01143349523715642,
+    "density" : 0.011494269374991364,
+    "cdf" : 0.8470199474934124
+  }, {
+    "strike" : 412.51807228915663,
+    "callPrice" : 1.7126191647469398,
+    "secondDerivative" : 0.01124778173107188,
+    "density" : 0.011307568718610045,
+    "cdf" : 0.8536140416531813
+  }, {
+    "strike" : 413.09638554216866,
+    "callPrice" : 1.6302797185599402,
+    "secondDerivative" : 0.011043911499086788,
+    "density" : 0.011102614825214149,
+    "cdf" : 0.8600950503308997
+  }, {
+    "strike" : 413.6746987951807,
+    "callPrice" : 1.551633269458513,
+    "secondDerivative" : 0.010818456232186689,
+    "density" : 0.010875961162794396,
+    "cdf" : 0.8664514203193463
+  }, {
+    "strike" : 414.2530120481928,
+    "callPrice" : 1.4766043248652565,
+    "secondDerivative" : 0.010568187286708051,
+    "density" : 0.010624361926003011,
+    "cdf" : 0.8726696445332877
+  }, {
+    "strike" : 414.8313253012048,
+    "callPrice" : 1.4051091107482918,
+    "secondDerivative" : 0.010290507194099517,
+    "density" : 0.010345205839582247,
+    "cdf" : 0.878734499807184
+  }, {
+    "strike" : 415.4096385542169,
+    "callPrice" : 1.3370547161644595,
+    "secondDerivative" : 0.009983924348944127,
+    "density" : 0.01003699336956562,
+    "cdf" : 0.8846295516901264
+  }, {
+    "strike" : 415.9879518072289,
+    "callPrice" : 1.2723386064628457,
+    "secondDerivative" : 0.009648483145952012,
+    "density" : 0.00969976914664099,
+    "cdf" : 0.8903379270208304
+  }, {
+    "strike" : 416.566265060241,
+    "callPrice" : 1.2108486460498327,
+    "secondDerivative" : 0.009286045727208146,
+    "density" : 0.00933540521101087,
+    "cdf" : 0.8958432983521044
+  }, {
+    "strike" : 417.144578313253,
+    "callPrice" : 1.152463722452005,
+    "secondDerivative" : 0.008900336572992272,
+    "density" : 0.008947645840232494,
+    "cdf" : 0.9011309666829792
+  }, {
+    "strike" : 417.72289156626505,
+    "callPrice" : 1.0970549855285299,
+    "secondDerivative" : 0.008496710930216976,
+    "density" : 0.008541874746749523,
+    "cdf" : 0.906188890098844
+  }, {
+    "strike" : 418.30120481927713,
+    "callPrice" : 1.0444876250914135,
+    "secondDerivative" : 0.008081675488824656,
+    "density" : 0.008124633206469823,
+    "cdf" : 0.9110085026293494
+  }, {
+    "strike" : 418.87951807228916,
+    "callPrice" : 0.9946230294236713,
+    "secondDerivative" : 0.0076622570645668,
+    "density" : 0.00770298538581151,
+    "cdf" : 0.9155852045821595
+  }, {
+    "strike" : 419.4578313253012,
+    "callPrice" : 0.947321117010933,
+    "secondDerivative" : 0.0072453455416621165,
+    "density" : 0.007283857791807619,
+    "cdf" : 0.9199184719628186
+  }, {
+    "strike" : 420.03614457831327,
+    "callPrice" : 0.9024426251752686,
+    "secondDerivative" : 0.006837132009707146,
+    "density" : 0.006873474422463247,
+    "cdf" : 0.9240116066252613
+  }, {
+    "strike" : 420.6144578313253,
+    "callPrice" : 0.8598511699086622,
+    "secondDerivative" : 0.006442721209509727,
+    "density" : 0.006476967152565391,
+    "cdf" : 0.9278712078769327
+  }, {
+    "strike" : 421.1927710843373,
+    "callPrice" : 0.8194149479797339,
+    "secondDerivative" : 0.0060659438503307675,
+    "density" : 0.006098187053306966,
+    "cdf" : 0.9315064768888041
+  }, {
+    "strike" : 421.7710843373494,
+    "callPrice" : 0.781008017934326,
+    "secondDerivative" : 0.005709348032212346,
+    "density" : 0.0057396957690207485,
+    "cdf" : 0.9349284658724106
+  }, {
+    "strike" : 422.34939759036143,
+    "callPrice" : 0.7445111557339352,
+    "secondDerivative" : 0.005374321118267743,
+    "density" : 0.005402888037275101,
+    "cdf" : 0.9381493629085084
+  }, {
+    "strike" : 422.92771084337346,
+    "callPrice" : 0.7098123243149814,
+    "secondDerivative" : 0.005061287325247576,
+    "density" : 0.005088190329722291,
+    "cdf" : 0.9411818722102577
+  }, {
+    "strike" : 423.50602409638554,
+    "callPrice" : 0.6768068216791505,
+    "secondDerivative" : 0.0047699311508608835,
+    "density" : 0.004795285467035656,
+    "cdf" : 0.9440387187759831
+  }, {
+    "strike" : 424.0843373493976,
+    "callPrice" : 0.6453971813647641,
+    "secondDerivative" : 0.0044994128302278105,
+    "density" : 0.004523329220609637,
+    "cdf" : 0.9467322819990843
+  }, {
+    "strike" : 424.6626506024096,
+    "callPrice" : 0.6154928967698972,
+    "secondDerivative" : 0.004248555134722664,
+    "density" : 0.004271138104322187,
+    "cdf" : 0.9492743468110213
+  }, {
+    "strike" : 425.2409638554217,
+    "callPrice" : 0.5870100315719604,
+    "secondDerivative" : 0.004015993140171758,
+    "density" : 0.0040373399388175316,
+    "cdf" : 0.9516759528774485
+  }, {
+    "strike" : 425.8192771084337,
+    "callPrice" : 0.5598707663505351,
+    "secondDerivative" : 0.0038002868507192025,
+    "density" : 0.0038204870740181436,
+    "cdf" : 0.9539473199289595
+  }, {
+    "strike" : 426.3975903614458,
+    "callPrice" : 0.5340029191665714,
+    "secondDerivative" : 0.0036000005465552922,
+    "density" : 0.0036191361586217774,
+    "cdf" : 0.9560978286161081
+  }, {
+    "strike" : 426.9759036144578,
+    "callPrice" : 0.5093394668129179,
+    "secondDerivative" : 0.0034137548553303523,
+    "density" : 0.003431900488298155,
+    "cdf" : 0.9581360393234432
+  }, {
+    "strike" : 427.5542168674699,
+    "callPrice" : 0.4858180843909068,
+    "secondDerivative" : 0.00324025861004884,
+    "density" : 0.003257482032922015,
+    "cdf" : 0.9600697350255407
+  }, {
+    "strike" : 428.13253012048193,
+    "callPrice" : 0.4633807138903556,
+    "secondDerivative" : 0.003078324716909719,
+    "density" : 0.00309468738875815,
+    "cdf" : 0.9619059777766116
+  }, {
+    "strike" : 428.71084337349396,
+    "callPrice" : 0.44197316734884495,
+    "secondDerivative" : 0.0029268762446577052,
+    "density" : 0.002942433900180278,
+    "cdf" : 0.9636511714115102
+  }, {
+    "strike" : 429.28915662650604,
+    "callPrice" : 0.4215447666229881,
+    "secondDerivative" : 0.002784945059630672,
+    "density" : 0.002799748287463112,
+    "cdf" : 0.9653111254554265
+  }, {
+    "strike" : 429.86746987951807,
+    "callPrice" : 0.4020480194637628,
+    "secondDerivative" : 0.002651666627428994,
+    "density" : 0.002665761420820256,
+    "cdf" : 0.9668911170165702
+  }, {
+    "strike" : 430.4457831325301,
+    "callPrice" : 0.38343833014415907,
+    "secondDerivative" : 0.0025262720647845067,
+    "density" : 0.0025397003300252916,
+    "cdf" : 0.9683959487867431
+  }, {
+    "strike" : 431.0240963855422,
+    "callPrice" : 0.36567374207592884,
+    "secondDerivative" : 0.0024080794432279613,
+    "density" : 0.0024208794618543416,
+    "cdf" : 0.9698300021543754
+  }, {
+    "strike" : 431.6024096385542,
+    "callPrice" : 0.3487147094762175,
+    "secondDerivative" : 0.002296484523611752,
+    "density" : 0.002308691365358643,
+    "cdf" : 0.9711972850649387
+  }, {
+    "strike" : 432.18072289156623,
+    "callPrice" : 0.3325238950522831,
+    "secondDerivative" : 0.0021909520476981466,
+    "density" : 0.0022025979371636745,
+    "cdf" : 0.9725014746447522
+  }, {
+    "strike" : 432.7590361445783,
+    "callPrice" : 0.31706599075732456,
+    "secondDerivative" : 0.0020910074873370372,
+    "density" : 0.0021021221267901015,
+    "cdf" : 0.9737459548451254
+  }, {
+    "strike" : 433.33734939759034,
+    "callPrice" : 0.3023075588583026,
+    "secondDerivative" : 0.0019962293372088875,
+    "density" : 0.0020068401884292065,
+    "cdf" : 0.9749338494874429
+  }, {
+    "strike" : 433.91566265060237,
+    "callPrice" : 0.28821689079480883,
+    "secondDerivative" : 0.0019062425280935709,
+    "density" : 0.0019163750592003058,
+    "cdf" : 0.9760680511525343
+  }, {
+    "strike" : 434.49397590361446,
+    "callPrice" : 0.2747638815689406,
+    "secondDerivative" : 0.0018207123801516896,
+    "density" : 0.0018303902802910567,
+    "cdf" : 0.9771512463620827
+  }, {
+    "strike" : 435.0722891566265,
+    "callPrice" : 0.2619199176626239,
+    "secondDerivative" : 0.0017393393001441377,
+    "density" : 0.0017485846659903727,
+    "cdf" : 0.9781859374992538
+  }, {
+    "strike" : 435.65060240963857,
+    "callPrice" : 0.2496577767244439,
+    "secondDerivative" : 0.0016618543007496098,
+    "density" : 0.001670687799189101,
+    "cdf" : 0.9791744618764207
+  }, {
+    "strike" : 436.2289156626506,
+    "callPrice" : 0.2379515374936716,
+    "secondDerivative" : 0.0015880150087355103,
+    "density" : 0.001596456018332577,
+    "cdf" : 0.9801190083189867
+  }, {
+    "strike" : 436.8072289156627,
+    "callPrice" : 0.22677649863203797,
+    "secondDerivative" : 0.0015176021221918743,
+    "density" : 0.0015256688558231582,
+    "cdf" : 0.9810216316025698
+  }, {
+    "strike" : 437.3855421686747,
+    "callPrice" : 0.21610910531427585,
+    "secondDerivative" : 0.0014504166266249283,
+    "density" : 0.0014581262393160797,
+    "cdf" : 0.9818842650373854
+  }, {
+    "strike" : 437.96385542168673,
+    "callPrice" : 0.20592688258666847,
+    "secondDerivative" : 0.001386277098447408,
+    "density" : 0.0013936457808766162,
+    "cdf" : 0.9827087314554628
+  }, {
+    "strike" : 438.5421686746988,
+    "callPrice" : 0.19620837464088225,
+    "secondDerivative" : 0.001325017637299197,
+    "density" : 0.001332060698310082,
+    "cdf" : 0.9834967528250311
+  }, {
+    "strike" : 439.12048192771084,
+    "callPrice" : 0.18693308926960484,
+    "secondDerivative" : 0.0012664858960675927,
+    "density" : 0.0012732178347107724,
+    "cdf" : 0.9842499586802306
+  }, {
+    "strike" : 439.69879518072287,
+    "callPrice" : 0.17808144687310978,
+    "secondDerivative" : 0.0012105415244434423,
+    "density" : 0.001216976093744907,
+    "cdf" : 0.9849698935410981
+  }, {
+    "strike" : 440.27710843373495,
+    "callPrice" : 0.1696347334749344,
+    "secondDerivative" : 0.0011570546700312432,
+    "density" : 0.001163204932793458,
+    "cdf" : 0.9856580234531553
+  }, {
+    "strike" : 440.855421686747,
+    "callPrice" : 0.1615750572792134,
+    "secondDerivative" : 0.0011059049985107092,
+    "density" : 0.0011117833779054392,
+    "cdf" : 0.9863157417813071
+  }, {
+    "strike" : 441.433734939759,
+    "callPrice" : 0.15388530836900483,
+    "secondDerivative" : 0.0010569803986726354,
+    "density" : 0.001062598721950456,
+    "cdf" : 0.9869443743525415
+  }, {
+    "strike" : 442.0120481927711,
+    "callPrice" : 0.14654912119839825,
+    "secondDerivative" : 0.0010101762104142151,
+    "density" : 0.001015545748510473,
+    "cdf" : 0.9875451840382093
+  }, {
+    "strike" : 442.5903614457831,
+    "callPrice" : 0.13955083957956393,
+    "secondDerivative" : 9.653945230780889E-4,
+    "density" : 9.705260264892226E-4,
+    "cdf" : 0.9881193748602817
+  }, {
+    "strike" : 443.16867469879514,
+    "callPrice" : 0.13287548390647252,
+    "secondDerivative" : 9.225434073556469E-4,
+    "density" : 9.274471379327277E-4,
+    "cdf" : 0.9886680956701844
+  }, {
+    "strike" : 443.7469879518072,
+    "callPrice" : 0.12650872039085925,
+    "secondDerivative" : 8.815363454317546E-4,
+    "density" : 8.862221051449942E-4,
+    "cdf" : 0.9891924434753138
+  }, {
+    "strike" : 444.3253012048193,
+    "callPrice" : 0.12043683211627965,
+    "secondDerivative" : 8.422917293415819E-4,
+    "density" : 8.467688863783807E-4,
+    "cdf" : 0.9896934664406783
+  }, {
+    "strike" : 444.9036144578313,
+    "callPrice" : 0.11464669174062259,
+    "secondDerivative" : 8.047324968174506E-4,
+    "density" : 8.090100097448104E-4,
+    "cdf" : 0.9901721666247341
+  }, {
+    "strike" : 445.48192771084337,
+    "callPrice" : 0.1091257356999904,
+    "secondDerivative" : 7.687856140137227E-4,
+    "density" : 7.728720531911104E-4,
+    "cdf" : 0.9906295024688776
+  }, {
+    "strike" : 446.06024096385545,
+    "callPrice" : 0.1038619397845304,
+    "secondDerivative" : 7.343818705152215E-4,
+    "density" : 7.382854384178113E-4,
+    "cdf" : 0.9910663910819207
+  }, {
+    "strike" : 446.6385542168675,
+    "callPrice" : 0.09884379597311543,
+    "secondDerivative" : 7.014554785911286E-4,
+    "density" : 7.051840280028986E-4,
+    "cdf" : 0.9914837103372964
+  }, {
+    "strike" : 447.2168674698795,
+    "callPrice" : 0.09406029042751829,
+    "secondDerivative" : 6.699438539925494E-4,
+    "density" : 6.735049050342205E-4,
+    "cdf" : 0.9918823008101069
+  }, {
+    "strike" : 447.7951807228916,
+    "callPrice" : 0.08950088255787403,
+    "secondDerivative" : 6.397874166452765E-4,
+    "density" : 6.431881727428435E-4,
+    "cdf" : 0.9922629675671717
+  }, {
+    "strike" : 448.3734939759036,
+    "callPrice" : 0.0851554850823324,
+    "secondDerivative" : 6.109293044787022E-4,
+    "density" : 6.14176666810838E-4,
+    "cdf" : 0.992626481836166
+  }, {
+    "strike" : 448.95180722891564,
+    "callPrice" : 0.08101444501122002,
+    "secondDerivative" : 5.833152350476211E-4,
+    "density" : 5.864158162575385E-4,
+    "cdf" : 0.9929735825545105
+  }, {
+    "strike" : 449.5301204819277,
+    "callPrice" : 0.07706852549473542,
+    "secondDerivative" : 5.568934170696592E-4,
+    "density" : 5.598535545067552E-4,
+    "cdf" : 0.9933049778220383
+  }, {
+    "strike" : 450.10843373493975,
+    "callPrice" : 0.0733088884790365,
+    "secondDerivative" : 5.316142051015048E-4,
+    "density" : 5.34439972227454E-4,
+    "cdf" : 0.9936213462621403
+  }, {
+    "strike" : 450.6867469879518,
+    "callPrice" : 0.06972707812117118,
+    "secondDerivative" : 5.074302162455523E-4,
+    "density" : 5.101274346607491E-4,
+    "cdf" : 0.9939233383003477
+  }, {
+    "strike" : 451.26506024096386,
+    "callPrice" : 0.06631500491865916,
+    "secondDerivative" : 4.8429600845167886E-4,
+    "density" : 4.8687025821170905E-4,
+    "cdf" : 0.9942115773708494
+  }, {
+    "strike" : 451.8433734939759,
+    "callPrice" : 0.06306493051332618,
+    "secondDerivative" : 4.6216801994347623E-4,
+    "density" : 4.646246495536123E-4,
+    "cdf" : 0.9944866610559611
+  }, {
+    "strike" : 452.4216867469879,
+    "callPrice" : 0.05996945313275015,
+    "secondDerivative" : 4.410045637115444E-4,
+    "density" : 4.4334870009197033E-4,
+    "cdf" : 0.9947491621638324
+  }, {
+    "strike" : 453.0,
+    "callPrice" : 0.057021493636385756,
+    "secondDerivative" : 4.207656591148633E-4,
+    "density" : 4.230022166707851E-4,
+    "cdf" : 0.9949996297544064
+  } ],
+  "convergence" : [ {
+    "steps" : 5,
+    "crrPrice" : 13.343875562984078,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 8,
+    "crrPrice" : 12.391625610338886,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 11,
+    "crrPrice" : 13.018828945062866,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 14,
+    "crrPrice" : 12.54436727741683,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 17,
+    "crrPrice" : 12.92412641317017,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 20,
+    "crrPrice" : 12.606222166711012,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 23,
+    "crrPrice" : 12.879029801720234,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 26,
+    "crrPrice" : 12.639695029418576,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 29,
+    "crrPrice" : 12.852658572558301,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 32,
+    "crrPrice" : 12.660672414085889,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 35,
+    "crrPrice" : 12.835356203902716,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 38,
+    "crrPrice" : 12.675049940510316,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 41,
+    "crrPrice" : 12.823131392672341,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 44,
+    "crrPrice" : 12.685518655285804,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 47,
+    "crrPrice" : 12.814035189586352,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 50,
+    "crrPrice" : 12.693481737979187,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 53,
+    "crrPrice" : 12.80700288625473,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 56,
+    "crrPrice" : 12.699742562397944,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 59,
+    "crrPrice" : 12.801403646253108,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 62,
+    "crrPrice" : 12.704794233323812,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 65,
+    "crrPrice" : 12.79683994140809,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 68,
+    "crrPrice" : 12.708956178056832,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 71,
+    "crrPrice" : 12.793048825399753,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 74,
+    "crrPrice" : 12.712444420308639,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 77,
+    "crrPrice" : 12.789849426643197,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 80,
+    "crrPrice" : 12.715410288174851,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 83,
+    "crrPrice" : 12.787113244025676,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 86,
+    "crrPrice" : 12.717962945722881,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 89,
+    "crrPrice" : 12.784746472199547,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 92,
+    "crrPrice" : 12.720183121439495,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 95,
+    "crrPrice" : 12.782679032279269,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 98,
+    "crrPrice" : 12.722131800781073,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 101,
+    "crrPrice" : 12.780857516585163,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 104,
+    "crrPrice" : 12.723855913813889,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 107,
+    "crrPrice" : 12.779240509560863,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 110,
+    "crrPrice" : 12.725392163762708,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 113,
+    "crrPrice" : 12.777795400843006,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 116,
+    "crrPrice" : 12.726769668799259,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 119,
+    "crrPrice" : 12.776496163329664,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 122,
+    "crrPrice" : 12.728011825151675,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 125,
+    "crrPrice" : 12.775321771780956,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 128,
+    "crrPrice" : 12.729137646805155,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 131,
+    "crrPrice" : 12.77425505632032,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 134,
+    "crrPrice" : 12.73016274559938,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 137,
+    "crrPrice" : 12.77328185750453,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 140,
+    "crrPrice" : 12.731100059581497,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 143,
+    "crrPrice" : 12.772390394237373,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 146,
+    "crrPrice" : 12.731960401901693,
+    "bsPrice" : 12.752050221192519
+  }, {
+    "steps" : 149,
+    "crrPrice" : 12.771570784569695,
+    "bsPrice" : 12.752050221192519
+  } ]
+}

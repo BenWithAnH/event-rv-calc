@@ -1,0 +1,1176 @@
+{
+  "quoteDate": "2023-01-03",
+  "expireDate": "2023-02-17",
+  "dte": 45.0,
+  "rawS0": 380.82,
+  "S0": 381.09981914845264,
+  "atmK": 381.0,
+  "atmCallMid": 12.870000000000001,
+  "atmPutMid": 10.915,
+  "T": 0.1232876712328767,
+  "r": 0.043,
+  "q": 0.0,
+  "N": 100,
+  "quotes": [
+    {
+      "strike": 324.0,
+      "eta": -1,
+      "mid": 0.675,
+      "bid": 0.67,
+      "ask": 0.68,
+      "exchangeIv": 0.28063,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 325.0,
+      "eta": -1,
+      "mid": 0.705,
+      "bid": 0.7,
+      "ask": 0.71,
+      "exchangeIv": 0.27887,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 326.0,
+      "eta": -1,
+      "mid": 0.735,
+      "bid": 0.73,
+      "ask": 0.74,
+      "exchangeIv": 0.27724,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 327.0,
+      "eta": -1,
+      "mid": 0.765,
+      "bid": 0.76,
+      "ask": 0.77,
+      "exchangeIv": 0.27504,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 328.0,
+      "eta": -1,
+      "mid": 0.805,
+      "bid": 0.8,
+      "ask": 0.81,
+      "exchangeIv": 0.27316,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 329.0,
+      "eta": -1,
+      "mid": 0.845,
+      "bid": 0.84,
+      "ask": 0.85,
+      "exchangeIv": 0.27197,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 330.0,
+      "eta": -1,
+      "mid": 0.885,
+      "bid": 0.88,
+      "ask": 0.89,
+      "exchangeIv": 0.26965,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 331.0,
+      "eta": -1,
+      "mid": 0.925,
+      "bid": 0.92,
+      "ask": 0.93,
+      "exchangeIv": 0.26785,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 332.0,
+      "eta": -1,
+      "mid": 0.975,
+      "bid": 0.97,
+      "ask": 0.98,
+      "exchangeIv": 0.26732,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 333.0,
+      "eta": -1,
+      "mid": 1.0350000000000001,
+      "bid": 1.03,
+      "ask": 1.04,
+      "exchangeIv": 0.26579,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 334.0,
+      "eta": -1,
+      "mid": 1.085,
+      "bid": 1.08,
+      "ask": 1.09,
+      "exchangeIv": 0.26442,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 335.0,
+      "eta": -1,
+      "mid": 1.145,
+      "bid": 1.14,
+      "ask": 1.15,
+      "exchangeIv": 0.26337,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 336.0,
+      "eta": -1,
+      "mid": 1.1949999999999998,
+      "bid": 1.19,
+      "ask": 1.2,
+      "exchangeIv": 0.26097,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 337.0,
+      "eta": -1,
+      "mid": 1.2650000000000001,
+      "bid": 1.26,
+      "ask": 1.27,
+      "exchangeIv": 0.26083,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 338.0,
+      "eta": -1,
+      "mid": 1.335,
+      "bid": 1.33,
+      "ask": 1.34,
+      "exchangeIv": 0.25963,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 339.0,
+      "eta": -1,
+      "mid": 1.415,
+      "bid": 1.41,
+      "ask": 1.42,
+      "exchangeIv": 0.25886,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 340.0,
+      "eta": -1,
+      "mid": 1.495,
+      "bid": 1.49,
+      "ask": 1.5,
+      "exchangeIv": 0.25759,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 341.0,
+      "eta": -1,
+      "mid": 1.5750000000000002,
+      "bid": 1.57,
+      "ask": 1.58,
+      "exchangeIv": 0.25586,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 342.0,
+      "eta": -1,
+      "mid": 1.6549999999999998,
+      "bid": 1.65,
+      "ask": 1.66,
+      "exchangeIv": 0.25503,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 343.0,
+      "eta": -1,
+      "mid": 1.755,
+      "bid": 1.75,
+      "ask": 1.76,
+      "exchangeIv": 0.25359,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 344.0,
+      "eta": -1,
+      "mid": 1.855,
+      "bid": 1.85,
+      "ask": 1.86,
+      "exchangeIv": 0.25291,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 345.0,
+      "eta": -1,
+      "mid": 1.955,
+      "bid": 1.95,
+      "ask": 1.96,
+      "exchangeIv": 0.2518,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 346.0,
+      "eta": -1,
+      "mid": 2.065,
+      "bid": 2.06,
+      "ask": 2.07,
+      "exchangeIv": 0.25088,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 347.0,
+      "eta": -1,
+      "mid": 2.175,
+      "bid": 2.17,
+      "ask": 2.18,
+      "exchangeIv": 0.25029,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 348.0,
+      "eta": -1,
+      "mid": 2.3049999999999997,
+      "bid": 2.3,
+      "ask": 2.31,
+      "exchangeIv": 0.24928,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 349.0,
+      "eta": -1,
+      "mid": 2.435,
+      "bid": 2.43,
+      "ask": 2.44,
+      "exchangeIv": 0.2482,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 350.0,
+      "eta": -1,
+      "mid": 2.565,
+      "bid": 2.56,
+      "ask": 2.57,
+      "exchangeIv": 0.24776,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 351.0,
+      "eta": -1,
+      "mid": 2.6900000000000004,
+      "bid": 2.68,
+      "ask": 2.7,
+      "exchangeIv": 0.24592,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 352.0,
+      "eta": -1,
+      "mid": 2.855,
+      "bid": 2.85,
+      "ask": 2.86,
+      "exchangeIv": 0.24626,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 353.0,
+      "eta": -1,
+      "mid": 3.0149999999999997,
+      "bid": 3.01,
+      "ask": 3.02,
+      "exchangeIv": 0.24551,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 354.0,
+      "eta": -1,
+      "mid": 3.175,
+      "bid": 3.17,
+      "ask": 3.18,
+      "exchangeIv": 0.24427,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 355.0,
+      "eta": -1,
+      "mid": 3.34,
+      "bid": 3.33,
+      "ask": 3.35,
+      "exchangeIv": 0.24296,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 356.0,
+      "eta": -1,
+      "mid": 3.5199999999999996,
+      "bid": 3.51,
+      "ask": 3.53,
+      "exchangeIv": 0.2426,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 357.0,
+      "eta": -1,
+      "mid": 3.71,
+      "bid": 3.7,
+      "ask": 3.72,
+      "exchangeIv": 0.24225,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 358.0,
+      "eta": -1,
+      "mid": 3.9000000000000004,
+      "bid": 3.89,
+      "ask": 3.91,
+      "exchangeIv": 0.24065,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 359.0,
+      "eta": -1,
+      "mid": 4.109999999999999,
+      "bid": 4.1,
+      "ask": 4.12,
+      "exchangeIv": 0.24046,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 360.0,
+      "eta": -1,
+      "mid": 4.3149999999999995,
+      "bid": 4.31,
+      "ask": 4.32,
+      "exchangeIv": 0.23927,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 361.0,
+      "eta": -1,
+      "mid": 4.529999999999999,
+      "bid": 4.52,
+      "ask": 4.54,
+      "exchangeIv": 0.23832,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 362.0,
+      "eta": -1,
+      "mid": 4.76,
+      "bid": 4.75,
+      "ask": 4.77,
+      "exchangeIv": 0.23769,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 363.0,
+      "eta": -1,
+      "mid": 4.995,
+      "bid": 4.98,
+      "ask": 5.01,
+      "exchangeIv": 0.23686,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 364.0,
+      "eta": -1,
+      "mid": 5.24,
+      "bid": 5.23,
+      "ask": 5.25,
+      "exchangeIv": 0.23603,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 365.0,
+      "eta": -1,
+      "mid": 5.49,
+      "bid": 5.48,
+      "ask": 5.5,
+      "exchangeIv": 0.23486,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 366.0,
+      "eta": -1,
+      "mid": 5.755,
+      "bid": 5.74,
+      "ask": 5.77,
+      "exchangeIv": 0.23429,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 367.0,
+      "eta": -1,
+      "mid": 6.025,
+      "bid": 6.01,
+      "ask": 6.04,
+      "exchangeIv": 0.23312,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 368.0,
+      "eta": -1,
+      "mid": 6.305,
+      "bid": 6.29,
+      "ask": 6.32,
+      "exchangeIv": 0.23157,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 369.0,
+      "eta": -1,
+      "mid": 6.595000000000001,
+      "bid": 6.58,
+      "ask": 6.61,
+      "exchangeIv": 0.23129,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 370.0,
+      "eta": -1,
+      "mid": 6.895,
+      "bid": 6.88,
+      "ask": 6.91,
+      "exchangeIv": 0.22956,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 371.0,
+      "eta": -1,
+      "mid": 7.205,
+      "bid": 7.19,
+      "ask": 7.22,
+      "exchangeIv": 0.22909,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 372.0,
+      "eta": -1,
+      "mid": 7.525,
+      "bid": 7.51,
+      "ask": 7.54,
+      "exchangeIv": 0.22737,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 373.0,
+      "eta": -1,
+      "mid": 7.865,
+      "bid": 7.85,
+      "ask": 7.88,
+      "exchangeIv": 0.22714,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 374.0,
+      "eta": -1,
+      "mid": 8.195,
+      "bid": 8.18,
+      "ask": 8.21,
+      "exchangeIv": 0.22574,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 375.0,
+      "eta": -1,
+      "mid": 8.545,
+      "bid": 8.53,
+      "ask": 8.56,
+      "exchangeIv": 0.22412,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 376.0,
+      "eta": -1,
+      "mid": 8.879999999999999,
+      "bid": 8.87,
+      "ask": 8.89,
+      "exchangeIv": 0.22279,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 377.0,
+      "eta": -1,
+      "mid": 9.285,
+      "bid": 9.27,
+      "ask": 9.3,
+      "exchangeIv": 0.22229,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 378.0,
+      "eta": -1,
+      "mid": 9.665,
+      "bid": 9.65,
+      "ask": 9.68,
+      "exchangeIv": 0.22122,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 379.0,
+      "eta": -1,
+      "mid": 10.065000000000001,
+      "bid": 10.05,
+      "ask": 10.08,
+      "exchangeIv": 0.2198,
+      "callMid": 14.065000000000001,
+      "putMid": 10.065000000000001,
+      "callWeight": 0.0,
+      "putWeight": 1.0
+    },
+    {
+      "strike": 380.0,
+      "eta": 0,
+      "mid": 11.21875,
+      "bid": 11.2025,
+      "ask": 11.235,
+      "exchangeIv": 0.22009,
+      "callMid": 13.45,
+      "putMid": 10.475000000000001,
+      "callWeight": 0.25,
+      "putWeight": 0.75
+    },
+    {
+      "strike": 381.0,
+      "eta": 0,
+      "mid": 11.8925,
+      "bid": 11.875,
+      "ask": 11.91,
+      "exchangeIv": 0.22102,
+      "callMid": 12.870000000000001,
+      "putMid": 10.915,
+      "callWeight": 0.5,
+      "putWeight": 0.5
+    },
+    {
+      "strike": 382.0,
+      "eta": 0,
+      "mid": 12.058750000000002,
+      "bid": 12.04,
+      "ask": 12.0775,
+      "exchangeIv": 0.2215025,
+      "callMid": 12.3,
+      "putMid": 11.335,
+      "callWeight": 0.75,
+      "putWeight": 0.25
+    },
+    {
+      "strike": 383.0,
+      "eta": 1,
+      "mid": 11.75,
+      "bid": 11.73,
+      "ask": 11.77,
+      "exchangeIv": 0.22226,
+      "callMid": 11.75,
+      "putMid": 11.785,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 384.0,
+      "eta": 1,
+      "mid": 11.205,
+      "bid": 11.19,
+      "ask": 11.22,
+      "exchangeIv": 0.22042,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 385.0,
+      "eta": 1,
+      "mid": 10.695,
+      "bid": 10.68,
+      "ask": 10.71,
+      "exchangeIv": 0.21966,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 386.0,
+      "eta": 1,
+      "mid": 10.18,
+      "bid": 10.16,
+      "ask": 10.2,
+      "exchangeIv": 0.21885,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 387.0,
+      "eta": 1,
+      "mid": 9.705,
+      "bid": 9.69,
+      "ask": 9.72,
+      "exchangeIv": 0.21723,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 388.0,
+      "eta": 1,
+      "mid": 9.175,
+      "bid": 9.16,
+      "ask": 9.19,
+      "exchangeIv": 0.21508,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 389.0,
+      "eta": 1,
+      "mid": 8.73,
+      "bid": 8.71,
+      "ask": 8.75,
+      "exchangeIv": 0.21413,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 390.0,
+      "eta": 1,
+      "mid": 8.26,
+      "bid": 8.25,
+      "ask": 8.27,
+      "exchangeIv": 0.21263,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 391.0,
+      "eta": 1,
+      "mid": 7.805,
+      "bid": 7.79,
+      "ask": 7.82,
+      "exchangeIv": 0.21163,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 392.0,
+      "eta": 1,
+      "mid": 7.385,
+      "bid": 7.37,
+      "ask": 7.4,
+      "exchangeIv": 0.2106,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 393.0,
+      "eta": 1,
+      "mid": 6.965,
+      "bid": 6.95,
+      "ask": 6.98,
+      "exchangeIv": 0.20956,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 394.0,
+      "eta": 1,
+      "mid": 6.555,
+      "bid": 6.54,
+      "ask": 6.57,
+      "exchangeIv": 0.20776,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 395.0,
+      "eta": 1,
+      "mid": 6.18,
+      "bid": 6.17,
+      "ask": 6.19,
+      "exchangeIv": 0.20657,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 396.0,
+      "eta": 1,
+      "mid": 5.805,
+      "bid": 5.79,
+      "ask": 5.82,
+      "exchangeIv": 0.20585,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 397.0,
+      "eta": 1,
+      "mid": 5.4399999999999995,
+      "bid": 5.43,
+      "ask": 5.45,
+      "exchangeIv": 0.20415,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 398.0,
+      "eta": 1,
+      "mid": 5.109999999999999,
+      "bid": 5.1,
+      "ask": 5.12,
+      "exchangeIv": 0.20293,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 399.0,
+      "eta": 1,
+      "mid": 4.779999999999999,
+      "bid": 4.77,
+      "ask": 4.79,
+      "exchangeIv": 0.20192,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 400.0,
+      "eta": 1,
+      "mid": 4.465,
+      "bid": 4.46,
+      "ask": 4.47,
+      "exchangeIv": 0.20007,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 401.0,
+      "eta": 1,
+      "mid": 4.18,
+      "bid": 4.17,
+      "ask": 4.19,
+      "exchangeIv": 0.19943,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 402.0,
+      "eta": 1,
+      "mid": 3.875,
+      "bid": 3.87,
+      "ask": 3.88,
+      "exchangeIv": 0.19842,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 403.0,
+      "eta": 1,
+      "mid": 3.605,
+      "bid": 3.6,
+      "ask": 3.61,
+      "exchangeIv": 0.19684,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 404.0,
+      "eta": 1,
+      "mid": 3.355,
+      "bid": 3.35,
+      "ask": 3.36,
+      "exchangeIv": 0.19592,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 405.0,
+      "eta": 1,
+      "mid": 3.12,
+      "bid": 3.11,
+      "ask": 3.13,
+      "exchangeIv": 0.19524,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 406.0,
+      "eta": 1,
+      "mid": 2.885,
+      "bid": 2.88,
+      "ask": 2.89,
+      "exchangeIv": 0.19378,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 407.0,
+      "eta": 1,
+      "mid": 2.675,
+      "bid": 2.67,
+      "ask": 2.68,
+      "exchangeIv": 0.19327,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 408.0,
+      "eta": 1,
+      "mid": 2.4699999999999998,
+      "bid": 2.46,
+      "ask": 2.48,
+      "exchangeIv": 0.19173,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 409.0,
+      "eta": 1,
+      "mid": 2.2800000000000002,
+      "bid": 2.27,
+      "ask": 2.29,
+      "exchangeIv": 0.19143,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 410.0,
+      "eta": 1,
+      "mid": 2.105,
+      "bid": 2.1,
+      "ask": 2.11,
+      "exchangeIv": 0.18984,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 411.0,
+      "eta": 1,
+      "mid": 1.9449999999999998,
+      "bid": 1.94,
+      "ask": 1.95,
+      "exchangeIv": 0.1892,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 412.0,
+      "eta": 1,
+      "mid": 1.79,
+      "bid": 1.78,
+      "ask": 1.8,
+      "exchangeIv": 0.1886,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 413.0,
+      "eta": 1,
+      "mid": 1.65,
+      "bid": 1.64,
+      "ask": 1.66,
+      "exchangeIv": 0.18855,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 414.0,
+      "eta": 1,
+      "mid": 1.5150000000000001,
+      "bid": 1.51,
+      "ask": 1.52,
+      "exchangeIv": 0.18792,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 415.0,
+      "eta": 1,
+      "mid": 1.395,
+      "bid": 1.39,
+      "ask": 1.4,
+      "exchangeIv": 0.18701,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 416.0,
+      "eta": 1,
+      "mid": 1.28,
+      "bid": 1.27,
+      "ask": 1.29,
+      "exchangeIv": 0.18661,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 417.0,
+      "eta": 1,
+      "mid": 1.1749999999999998,
+      "bid": 1.17,
+      "ask": 1.18,
+      "exchangeIv": 0.18654,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 418.0,
+      "eta": 1,
+      "mid": 1.08,
+      "bid": 1.07,
+      "ask": 1.09,
+      "exchangeIv": 0.18556,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 419.0,
+      "eta": 1,
+      "mid": 0.995,
+      "bid": 0.99,
+      "ask": 1.0,
+      "exchangeIv": 0.18547,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 420.0,
+      "eta": 1,
+      "mid": 0.905,
+      "bid": 0.9,
+      "ask": 0.91,
+      "exchangeIv": 0.18512,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 421.0,
+      "eta": 1,
+      "mid": 0.835,
+      "bid": 0.83,
+      "ask": 0.84,
+      "exchangeIv": 0.18442,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 422.0,
+      "eta": 1,
+      "mid": 0.765,
+      "bid": 0.76,
+      "ask": 0.77,
+      "exchangeIv": 0.18425,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 423.0,
+      "eta": 1,
+      "mid": 0.695,
+      "bid": 0.69,
+      "ask": 0.7,
+      "exchangeIv": 0.18389,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 424.0,
+      "eta": 1,
+      "mid": 0.645,
+      "bid": 0.64,
+      "ask": 0.65,
+      "exchangeIv": 0.18435,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 425.0,
+      "eta": 1,
+      "mid": 0.595,
+      "bid": 0.59,
+      "ask": 0.6,
+      "exchangeIv": 0.18428,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 426.0,
+      "eta": 1,
+      "mid": 0.545,
+      "bid": 0.54,
+      "ask": 0.55,
+      "exchangeIv": 0.18439,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 427.0,
+      "eta": 1,
+      "mid": 0.495,
+      "bid": 0.49,
+      "ask": 0.5,
+      "exchangeIv": 0.18406,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 428.0,
+      "eta": 1,
+      "mid": 0.455,
+      "bid": 0.45,
+      "ask": 0.46,
+      "exchangeIv": 0.18363,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 429.0,
+      "eta": 1,
+      "mid": 0.425,
+      "bid": 0.42,
+      "ask": 0.43,
+      "exchangeIv": 0.18459,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 430.0,
+      "eta": 1,
+      "mid": 0.385,
+      "bid": 0.38,
+      "ask": 0.39,
+      "exchangeIv": 0.18443,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 431.0,
+      "eta": 1,
+      "mid": 0.355,
+      "bid": 0.35,
+      "ask": 0.36,
+      "exchangeIv": 0.18464,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 432.0,
+      "eta": 1,
+      "mid": 0.325,
+      "bid": 0.32,
+      "ask": 0.33,
+      "exchangeIv": 0.18418,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 433.0,
+      "eta": 1,
+      "mid": 0.305,
+      "bid": 0.3,
+      "ask": 0.31,
+      "exchangeIv": 0.18559,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 434.0,
+      "eta": 1,
+      "mid": 0.28500000000000003,
+      "bid": 0.28,
+      "ask": 0.29,
+      "exchangeIv": 0.18634,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 435.0,
+      "eta": 1,
+      "mid": 0.255,
+      "bid": 0.25,
+      "ask": 0.26,
+      "exchangeIv": 0.18574,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 436.0,
+      "eta": 1,
+      "mid": 0.245,
+      "bid": 0.24,
+      "ask": 0.25,
+      "exchangeIv": 0.18675,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 437.0,
+      "eta": 1,
+      "mid": 0.225,
+      "bid": 0.22,
+      "ask": 0.23,
+      "exchangeIv": 0.18696,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    },
+    {
+      "strike": 438.0,
+      "eta": 1,
+      "mid": 0.20500000000000002,
+      "bid": 0.2,
+      "ask": 0.21,
+      "exchangeIv": 0.1875,
+      "callWeight": 1.0,
+      "putWeight": 0.0
+    }
+  ]
+}
