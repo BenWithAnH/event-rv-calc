@@ -132,6 +132,31 @@ class PolymarketTest {
         }
     }
 
+    @Test
+    @DisplayName("Scrapes Federal Reserve FOMC dates and matches top-volume active Polymarket FOMC market")
+    void testFomcDatesAndMarketDiscovery() throws Exception {
+        List< java.time.LocalDate > dates = Polymarket.fetchFomcDecisionDates();
+        assertThat(dates).isNotEmpty();
+        assertThat(dates).contains(java.time.LocalDate.of(2026, 10, 28), java.time.LocalDate.of(2026, 12, 9));
+
+        List<Polymarket.Event> activeFomc = Polymarket.fetchActiveFomcEvents();
+        assertThat(activeFomc).isNotEmpty();
+
+        // Verify sorted by volume descending
+        for (int i = 0; i < activeFomc.size() - 1; i++) {
+            assertThat(activeFomc.get(i).volume()).isGreaterThanOrEqualTo(activeFomc.get(i + 1).volume());
+        }
+
+        // Match December 9, 2026 FOMC decision to Polymarket's December event
+        java.util.Optional<Polymarket.Event> decMatch = Polymarket.findFomcEventForDate(
+                java.time.LocalDate.of(2026, 12, 9), activeFomc);
+        assertThat(decMatch).isPresent();
+        assertThat(decMatch.get().slug()).contains("fed-decision-in-december");
+
+        double pHike = decMatch.get().yesProbability();
+        assertThat(pHike).isBetween(0.0, 1.0);
+    }
+
     private static double gauss(double x, double mu, double sigma) {
         double z = (x - mu) / sigma;
         return Math.exp(-0.5 * z * z) / (sigma * Math.sqrt(2.0 * Math.PI));

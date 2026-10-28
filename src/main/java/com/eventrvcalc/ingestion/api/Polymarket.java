@@ -12,13 +12,20 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * Polymarket Gamma API client for extracting prediction market outcome probabilities p
+ * Polymarket Gamma API client for extracting prediction market outcome
+ * probabilities p
  * and feeding them into Breeden-Litzenberger (BL) event jump calculations.
  */
 public class Polymarket {
@@ -32,7 +39,8 @@ public class Polymarket {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    public record Outcome(String name, double price) {}
+    public record Outcome(String name, double price) {
+    }
 
     public record Market(
             String id,
@@ -41,10 +49,10 @@ public class Polymarket {
             String groupItemTitle,
             List<Outcome> outcomes,
             double volume,
-            boolean closed
-    ) {
+            boolean closed) {
         /**
-         * Returns the price (implied probability p in [0, 1]) for a named outcome (e.g. "Yes"),
+         * Returns the price (implied probability p in [0, 1]) for a named outcome (e.g.
+         * "Yes"),
          * or the first outcome if no exact match is found.
          */
         public double probabilityOf(String outcomeName) {
@@ -65,10 +73,31 @@ public class Polymarket {
             String id,
             String slug,
             String title,
-            List<Market> markets
-    ) {
+            String endDate,
+            double volume,
+            List<Market> markets) {
+        public Event(String id, String slug, String title, List<Market> markets) {
+            this(id, slug, title, "", markets.stream().mapToDouble(Market::volume).sum(), markets);
+        }
+
+        public Optional<LocalDate> resolutionDate() {
+            if (endDate != null && endDate.length() >= 10) {
+                try {
+                    return Optional.of(LocalDate.parse(endDate.substring(0, 10)));
+                } catch (Exception ignored) {
+                }
+            }
+            for (Market m : markets) {
+                if (m != null) {
+                    // fallback if needed
+                }
+            }
+            return Optional.empty();
+        }
+
         /**
-         * Returns a map of bracket/outcome label (groupItemTitle or question) to its "Yes" probability.
+         * Returns a map of bracket/outcome label (groupItemTitle or question) to its
+         * "Yes" probability.
          */
         public Map<String, Double> outcomeProbabilities() {
             Map<String, Double> map = new LinkedHashMap<>();
@@ -82,7 +111,8 @@ public class Polymarket {
         }
 
         /**
-         * Looks up the "Yes" probability for a specific sub-market by its groupItemTitle, slug, or id.
+         * Looks up the "Yes" probability for a specific sub-market by its
+         * groupItemTitle, slug, or id.
          */
         public double probabilityOfBracket(String bracketOrId) {
             for (Market m : markets) {
@@ -98,7 +128,8 @@ public class Polymarket {
 
         /**
          * Sums the "Yes" probabilities across all rate-hike / increase brackets
-         * (e.g. "25 bps increase", "50+ bps increase") into a single binary "Yes" probability.
+         * (e.g. "25 bps increase", "50+ bps increase") into a single binary "Yes"
+         * probability.
          */
         public double yesProbability() {
             if (markets.size() == 1) {
@@ -107,7 +138,8 @@ public class Polymarket {
             double sum = 0.0;
             boolean matchedHike = false;
             for (Market m : markets) {
-                String label = ((m.groupItemTitle() != null ? m.groupItemTitle() : "") + " " + m.question()).toLowerCase();
+                String label = ((m.groupItemTitle() != null ? m.groupItemTitle() : "") + " " + m.question())
+                        .toLowerCase();
                 if (label.contains("increase") || label.contains("hike")) {
                     sum += m.yesProbability();
                     matchedHike = true;
@@ -121,7 +153,8 @@ public class Polymarket {
     }
 
     /**
-     * Placeholder for future market discovery logic once selection criteria are defined.
+     * Placeholder for future market discovery logic once selection criteria are
+     * defined.
      */
     @FunctionalInterface
     public interface MarketResolver {
@@ -129,7 +162,8 @@ public class Polymarket {
     }
 
     /**
-     * Extracts the event/market slug if a full polymarket.com URL is passed, otherwise returns trimmed input.
+     * Extracts the event/market slug if a full polymarket.com URL is passed,
+     * otherwise returns trimmed input.
      */
     public static String extractSlug(String urlOrSlug) {
         if (urlOrSlug == null || urlOrSlug.isBlank()) {
@@ -137,15 +171,19 @@ public class Polymarket {
         }
         String s = urlOrSlug.trim();
         int qIdx = s.indexOf('?');
-        if (qIdx >= 0) s = s.substring(0, qIdx);
-        while (s.endsWith("/")) s = s.substring(0, s.length() - 1);
+        if (qIdx >= 0)
+            s = s.substring(0, qIdx);
+        while (s.endsWith("/"))
+            s = s.substring(0, s.length() - 1);
         int lastSlash = s.lastIndexOf('/');
         return lastSlash >= 0 ? s.substring(lastSlash + 1) : s;
     }
 
     /**
-     * Fetches a Polymarket Event (and all its constituent sub-markets) from the Gamma API
-     * given an event slug or full Polymarket URL (e.g. "https://polymarket.com/event/fed-decision-in-december-...").
+     * Fetches a Polymarket Event (and all its constituent sub-markets) from the
+     * Gamma API
+     * given an event slug or full Polymarket URL (e.g.
+     * "https://polymarket.com/event/fed-decision-in-december-...").
      */
     public static Event fetchEvent(String urlOrSlug) throws IOException, InterruptedException {
         String slug = extractSlug(urlOrSlug);
@@ -172,9 +210,27 @@ public class Polymarket {
         if (eventNode == null || eventNode.isNull()) {
             throw new IllegalArgumentException("Empty or missing event in Gamma API response");
         }
+        return parseEventNode(eventNode);
+    }
+
+    public static List<Event> parseEventsListJson(String json) throws IOException {
+        JsonNode root = MAPPER.readTree(json);
+        if (!root.isArray()) {
+            return List.of(parseEventNode(root));
+        }
+        List<Event> events = new ArrayList<>(root.size());
+        for (JsonNode node : root) {
+            events.add(parseEventNode(node));
+        }
+        return events;
+    }
+
+    private static Event parseEventNode(JsonNode eventNode) throws IOException {
         String id = eventNode.path("id").asText("");
         String slug = eventNode.path("slug").asText("");
         String title = eventNode.path("title").asText("");
+        String endDate = eventNode.path("endDate").asText("");
+        double volume = eventNode.path("volume").asDouble(0.0);
 
         List<Market> markets = new ArrayList<>();
         JsonNode marketsNode = eventNode.get("markets");
@@ -184,6 +240,112 @@ public class Polymarket {
             }
         }
         return new Event(id, slug, title, markets);
+        if (volume <= 0.0) {
+            volume = markets.stream().mapToDouble(Market::volume).sum();
+        }
+        return new Event(id, slug, title, endDate, volume, markets);
+    }
+
+    // --- FOMC Calendar Scraping & Market Discovery ---
+
+    public static final String FED_CALENDAR_URL = "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm";
+
+    /**
+     * Scrapes the official Federal Reserve calendar page for FOMC decision dates.
+     */
+    public static List<LocalDate> fetchFomcDecisionDates() throws IOException, InterruptedException {
+        String html = getJson(FED_CALENDAR_URL);
+        return parseFomcDecisionDatesHtml(html);
+    }
+
+    public static List<LocalDate> parseFomcDecisionDatesHtml(String html) {
+        List<LocalDate> dates = new ArrayLi
+                st<>();
+        Pattern panelPat = Pattern.compil
+                e("(?s)<div class=\"panel panel-default\">.*?(\\d{4}) FOMC Meetings.*?(?=<div class=\"panel panel-default\">|</html>)");
+        Pattern rowPat = Pattern.compile("(?s)fomc-meeting__month[^>]*>\\s*<strong>([A-Za-z/]+)</strong>.*?fomc-meeting__date[^>]*>\\s*(\\d{1,2})(?:-(\\d{1,2}))?");
+
+        Matcher pm = panelPat.matcher(html);
+        while (pm.find()) {
+            int year = Integer.parseInt(pm.group(1));
+            String panelHtml = pm.group(0);
+            Matcher rm = rowPat.matcher(panelHtml);
+            while (rm.find()) {
+                String monthRaw = rm.group(1).trim();
+                String endDayRaw = rm.group(3) != null ? rm.group(3) : rm.group(2);
+                // 
+                // If meeting spans two months like "April/May", the decision day (second number) is in the second month
+                String monthName = monthRaw.contains("/") ? monthRaw.substring(monthRaw.indexOf('/') + 1) : monthRaw;
+                try {
+                    Month month = Month.valueOf(monthName.toUpperCase());
+                    int day = Integer.parseInt(endDayRaw);
+                    dates.add(LocalDate.of(ye
+                ar, month, day));
+                } catch (Exception ignored) {}
+            }
+        }
+        dates.sort(Comparator.naturalOrder());
+        return dates;
+    }
+
+    /**
+     * 
+     * Queries Polymarket Gamma API for active FOMC events (`series_slug=fomc&clos
+     * d=false`),
+     * filters to valid rate-decision markets (those containing hike/cut/no-change brackets),
+     * and sorts by volume descending.
+     */
+    public static List<Event> fetchActiveFomcEvents() throws IOException, InterruptedException {
+        String json = getJson(GAMMA_API_BASE + "/events?series_slug=fomc&closed=false&limit=25");
+        List<Event> all = parseEventsListJson(json);
+        List<Event> valid = new ArrayList<>();
+        for (Event e : all) {
+            if (isValidFomcDecisionEvent(e)) {
+                valid.add(e);
+            }
+        }
+        valid.sort(Comparator.comparingDouble(Event::volume).reversed());
+        return valid;
+    }
+
+    /**
+     * 
+     * Finds the best matching active Polymarket FOMC event for a specific FOMC de
+     * ision date:
+     * requires valid rate-decision brackets, matches resolution date within +/-
+     * 3 days of the FOMC decision
+     * (or matching month/year in title), and picks the highest volume market if multiple exist.
+     */
+    public static Optional<Event> findFomcEventForDate(LocalDate decisionDate, List<Event> activeEvents) {
+        String targetMonth = decisionDate.getMonth().name().toLowerCase();
+        return activeEvents.stream()
+                .filter(Polymarket::isValidFomcDecisionEvent)
+                .filter(e -> {
+                    Optional<LocalDate> resDate = e.resolutionDate();
+                    if (resDate.isPresent()) {
+                        long daysDiff = Ma
+                            h.abs(resDate.get().toEpochDay() - decisionDate.toEpochDay());
+                        if (daysDiff <= 4) return true;
+                    }
+                    return e.title().toLowerCase().contains(targetMonth)
+                            && e.resolutionDate().map(d -> d.getYear() == decisionDate.getYear()).orElse(true);
+                })
+                .max(Comparator.comparingDouble(Event::volume));
+    }
+
+    private static boolean isValidFomcDecisionEvent(Event e) {
+            
+        if (e == null || e.markets() == null || e.markets().isEmpty()) return false;
+        boolean hasHike = false;
+        boolean hasOther = false;
+        for (Market m : e.markets()) {
+            String label = ((m.groupItemTitle() != null ? m.groupItem
+                itle() : "") + " " + m.question()).toLowerCase();
+            if (label.contains("increase") || label.contains("hike")) hasHike = true;
+                
+            if (label.contains("decrease") || label.contains("cut") || label.contains("no change")) hasOther = true;
+        }
+        return hasHike && hasOther;
     }
 
     public static Market parseMarketJson(String json) throws IOException {
@@ -215,9 +377,11 @@ public class Polymarket {
         return new Market(id, question, slug, groupItemTitle, outcomes, volume, closed);
     }
 
-    private static List<String> parseStringArrayField(JsonNode node) throws IOException {
+    private static List<String> parseStrin
+            ArrayField(JsonNode node) throws IOException {
         if (node == null || node.isNull()) return List.of();
-        JsonNode arrNode = node.isTextual() ? MAPPER.readTree(node.asText()) : node;
+        JsonNode arrNode = node
+            isTextual() ? MAPPER.readTree(node.asText()) : node;
         if (!arrNode.isArray()) return List.of();
         List<String> result = new ArrayList<>(arrNode.size());
         for (JsonNode item : arrNode) {
@@ -244,6 +408,7 @@ public class Polymarket {
     // --- BL.java Calculation Bridges ---
 
     /**
+     * 
      * Passes a market's "Yes" outcome probability p into BL.solveZeroDriftJump(sigmaEvent, p).
      */
     public static BL.ZeroDriftJump solveZeroDriftJump(Market market, double sigmaEvent) {
@@ -251,6 +416,7 @@ public class Polymarket {
     }
 
     /**
+     * 
      * Passes an Event's aggregated hike "Yes" probability p into BL.solveZeroDriftJump(sigmaEvent, p).
      */
     public static BL.ZeroDriftJump solveZeroDriftJump(Event event, double sigmaEvent) {
@@ -258,6 +424,7 @@ public class Polymarket {
     }
 
     /**
+     * 
      * Passes a specific bracket's probability p from a multi-bracket Event into BL.solveZeroDriftJump(sigmaEvent, p).
      */
     public static BL.ZeroDriftJump solveZeroDriftJump(Event event, String bracketOrId, double sigmaEvent) {
@@ -265,6 +432,7 @@ public class Polymarket {
     }
 
     /**
+     * 
      * Passes a market's "Yes" outcome probability p into BL.fitGaussianMixture(jumpDensity, p).
      */
     public static BL.GaussianMixture fitGaussianMixture(List<BL.LogReturnPoint> jumpDensity, Market market) {
@@ -272,6 +440,7 @@ public class Polymarket {
     }
 
     /**
+     * 
      * Passes an Event's aggregated hike "Yes" probability p into BL.fitGaussianMixture(jumpDensity, p).
      */
     public static BL.GaussianMixture fitGaussianMixture(List<BL.LogReturnPoint> jumpDensity, Event event) {
@@ -279,11 +448,11 @@ public class Polymarket {
     }
 
     /**
+     * 
      * Passes a specific bracket's probability p from a multi-bracket Event into BL.fitGaussianMixture(jumpDensity, p).
      */
-    public static BL.GaussianMixture fitGaussianMixture(List<BL.LogReturnPoint> jumpDensity,
+            List<BL.LogReturnPoint> jumpDensity,
                                                         Event event, String bracketOrId) {
         return BL.fitGaussianMixture(jumpDensity, event.probabilityOfBracket(bracketOrId));
-    }
-}
+ 
 
