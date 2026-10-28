@@ -43,6 +43,130 @@ public class SurfaceRunner {
             double putWeight
     ) {}
 
+    public record SurfaceResult(
+            double S0,
+            double T,
+            double r,
+            double q,
+            double forwardPrice,
+            BS.SviVolCurve svi,
+            List<BL.DensityPoint> densitySlice,
+            double logVariance,
+            double blTotalProb,
+            double blExpectedST
+    ) {}
+
+    public record EventPureMoveResult(
+            SurfaceResult t1Result,
+            SurfaceResult t2Result,
+            SurfaceResult t3Result,
+            double vT1,
+            double vT2,
+            double vT3,
+            double v1Day,
+            double sigmaEvent
+    ) {}
+
+    /**
+     * Executes the full CRR de-Americanization, SVI fitting, and BL density extraction
+     * pipeline on a single option slice JSON node.
+     */
+    public static SurfaceResult processOptionSlice(JsonNode root) {
+        double S0 = root.get("S0").asDouble();
+        double T = root.get("T").asDouble();
+        double r = root.get("r").asDouble();
+        double q = root.get("q").asDouble();
+        int N = root.has("N") ? root.get("N").asInt() : 100;
+
+        if (root.has("atmK") && root.has("atmCallMid") && root.has("atmPutMid")) {
+            double atmK = root.get("atmK").asDouble();
+            double cMid = root.get("atmCallMid").asDouble();
+            double pMid = root.get("atmPutMid").asDouble();
+            if (cMid > 0.0 && pMid > 0.0) {
+                try {
+                    S0 = CRR.implyEffectiveSpot(atmK, cMid, pMid, T, r, N);
+                    q = 0.0;
+                } catch (Exception ignored) {}
+            }
+        }
+
+        List<Double> validStrikes = new ArrayList<>();
+        List<Double> validVols = new ArrayList<>();
+
+        JsonNode quotesNode = root.get("quotes");
+        if (quotesNode != null && quotesNode.isArray()) {
+            for (JsonNode qNode : quotesNode) {
+                double strike = qNode.get("strike").asDouble();
+                int eta = qNode.has("eta") ? qNode.get("eta").asInt() : 0;
+                double mid = qNode.has("mid") ? qNode.get("mid").asDouble() : 0.0;
+                double callMid = qNode.has("callMid") ? qNode.get("callMid").asDouble() : (eta == 1 ? mid : 0.0);
+                double putMid = qNode.has("putMid") ? qNode.get("putMid").asDouble() : (eta == -1 ? mid : 0.0);
+                double callWeight = qNode.has("callWeight") ? qNode.get("callWeight").asDouble() : (eta == 1 ? 1.0 : 0.0);
+                double putWeight = qNode.has("putWeight") ? qNode.get("putWeight").asDouble() : (eta == -1 ? 1.0 : 0.0);
+
+                try {
+                    double sigmaHat;
+                    if (callWeight > 0.0 && putWeight > 0.0) {
+                        double sigCall = CRR.findSigmaHat(S0, strike, T, r, q, N, 1, callMid);
+                        double sigPut = CRR.findSigmaHat(S0, strike, T, r, q, N, -1, putMid);
+                        sigmaHat = callWeight * sigCall + putWeight * sigPut;
+                    } else if (callWeight >= 1.0 || eta == 1) {
+                        sigmaHat = CRR.findSigmaHat(S0, strike, T, r, q, N, 1, mid);
+                    } else {
+                        sigmaHat = CRR.findSigmaHat(S0, strike, T, r, q, N, -1, mid);
+                    }
+                    if (sigmaHat > 0.005 && sigmaHat < 3.0) {
+                        validStrikes.add(strike);
+                        validVols.add(sigmaHat);
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+
+        double[] strikesArr = validStrikes.stream().mapToDouble(Double::doubleValue).toArray();
+        double[] volsArr = validVols.stream().mapToDouble(Double::doubleValue).toArray();
+
+        BS.SviVolCurve fittedSvi = BS.fitSvi(S0, T, strikesArr, volsArr, 0.10, 0.025);
+
+        double blMinK = strikesArr.length > 0 ? strikesArr[0] - 15.0 : S0 * 0.75;
+        double blMaxK = strikesArr.length > 0 ? strikesArr[strikesArr.length - 1] + 15.0 : S0 * 1.25;
+        int blSteps = 250;
+        double[] blStrikes = new double[blSteps];
+        double blStep = (blMaxK - blMinK) / (blSteps - 1);
+        for (int i = 0; i < blSteps; i++) {
+            blStrikes[i] = blMinK + i * blStep;
+        }
+
+        List<BL.DensityPoint> densitySlice = BL.generateDensitySlice(S0, blStrikes, T, r, q, fittedSvi, 0.05);
+        double forwardPrice = S0 * Math.exp((r - q) * T);
+        double blExpectedST = BL.calculateExpectedST(densitySlice);
+        double blTotalProb = BL.calculateTotalProbability(densitySlice);
+        double logVariance = BL.calculateLogVariance(densitySlice, forwardPrice);
+
+        return new SurfaceResult(S0, T, r, q, forwardPrice, fittedSvi, densitySlice, logVariance, blTotalProb, blExpectedST);
+    }
+
+    /**
+     * Computes the 3-expiry pure event move decomposition:
+     *   V_1 = (V_{T3} - V_{T2}) / tradingDaysT2ToT3
+     *   sigma_{event} = sqrt(max(0, V_{T2} - V_{T1} - windowDays * V_1))
+     */
+    public static EventPureMoveResult calculateEventWindow(JsonNode t1Root, JsonNode t2Root, JsonNode t3Root,
+                                                           double tradingDaysT2ToT3, double windowDays) {
+        SurfaceResult resT1 = processOptionSlice(t1Root);
+        SurfaceResult resT2 = processOptionSlice(t2Root);
+        SurfaceResult resT3 = processOptionSlice(t3Root);
+
+        double vT1 = resT1.logVariance();
+        double vT2 = resT2.logVariance();
+        double vT3 = resT3.logVariance();
+
+        double v1Day = BL.calculateDailyNoiseVariance(vT2, vT3, tradingDaysT2ToT3);
+        double sigmaEvent = BL.impliedPureEventMove(vT1, vT2, v1Day, windowDays);
+
+        return new EventPureMoveResult(resT1, resT2, resT3, vT1, vT2, vT3, v1Day, sigmaEvent);
+    }
+
     public static void main(String[] args) throws Exception {
         String inputFile = args.length > 0 ? args[0] : "spy_input.json";
         String outputFile = args.length > 1 ? args[1] : "surface_data.json";

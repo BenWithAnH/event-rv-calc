@@ -16,22 +16,24 @@ import java.util.Optional;
 public class FomcSelectorFrame extends JFrame {
 
     private final JComboBox<LocalDate> dateCombo = new JComboBox<>();
+    private final JCheckBox fetchYfCheckbox = new JCheckBox("Live yfinance ($SPY)", true);
     private final JTextField sigmaField = new JTextField("0.02", 6);
-    private final JTextArea outputArea = new JTextArea(18, 60);
+    private final JTextArea outputArea = new JTextArea(20, 65);
     private List<Polymarket.Event> cachedEvents = List.of();
 
     public FomcSelectorFrame() {
-        super("Event RV Calc - FOMC Polymarket Selector");
+        super("Event RV Calc - FOMC & Real $SPY Options");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout(8, 8));
 
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        topPanel.add(new JLabel("Event: FOMC Decision Date:"));
+        topPanel.add(new JLabel("FOMC Date:"));
         topPanel.add(dateCombo);
-        topPanel.add(new JLabel("Implied Event Vol (sigma_event):"));
+        topPanel.add(fetchYfCheckbox);
+        topPanel.add(new JLabel("Manual sigma_event:"));
         topPanel.add(sigmaField);
 
-        JButton fetchBtn = new JButton("Find Market & Run BL");
+        JButton fetchBtn = new JButton("Fetch Market & Run Math Engine");
         topPanel.add(fetchBtn);
         add(topPanel, BorderLayout.NORTH);
 
@@ -123,17 +125,69 @@ public class FomcSelectorFrame extends JFrame {
         sb.append(String.format("%nAggregated Hike Probability (p): %.4f (%.2f%%)%n", pHike, pHike * 100.0));
 
         if (pHike > 0.0 && pHike < 1.0) {
-            BL.ZeroDriftJump jump = Polymarket.solveZeroDriftJump(ev, sigmaEvent);
-            sb.append("\n--- BL.java Zero-Drift Jump Solution ---\n");
-            sb.append(String.format("  sigma_event : %.4f%n", sigmaEvent));
-            sb.append(String.format("  Jump if Hike (u) : %+.6f (%+.2f%%)%n", jump.u(), jump.u() * 100.0));
-            sb.append(String.format("  Drop if Not  (d) : %+.6f (%+.2f%%)%n", jump.d(), jump.d() * 100.0));
-            sb.append(String.format("  Expected Drift   : %.2e%n", pHike * jump.u() + (1.0 - pHike) * jump.d()));
+            if (fetchYfCheckbox.isSelected()) {
+                sb.append("\n--- Fetching Real $SPY Options via yfinance (T1, T2, T3) ---\n");
+                outputArea.setText(sb.toString());
+                final double finalPHike = pHike;
+                final StringBuilder currentSb = new StringBuilder(sb);
+
+                SwingWorker<SurfaceRunner.EventPureMoveResult, Void> optWorker = new SwingWorker<>() {
+                    private Exception optError;
+
+                    @Override
+                    protected SurfaceRunner.EventPureMoveResult doInBackground() {
+                        try {
+                            var manifest = YFinanceOptionsIngestion.fetchEventOptions("SPY", selectedDate, null);
+                            return YFinanceOptionsIngestion.computePureEventMove(manifest, 5.0);
+                        } catch (Exception ex) {
+                            optError = ex;
+                            return null;
+                        }
+                    }
+
+                    @Override
+                    protected void done() {
+                        try {
+                            var optRes = get();
+                            if (optError != null || optRes == null) {
+                                currentSb.append("Warning: Could not fetch yfinance options (").append(optError != null ? optError.getMessage() : "unknown").append(")\n");
+                                currentSb.append("Falling back to manual sigma_event: ").append(sigmaEvent).append("\n");
+                                appendJumpCalculations(currentSb, finalPHike, sigmaEvent);
+                            } else {
+                                currentSb.append(String.format("  V_T1 (1d before)   : %.6f (vol: %.2f%%)%n", optRes.vT1(), Math.sqrt(optRes.vT1() * 365.0) * 100.0));
+                                currentSb.append(String.format("  V_T2 (1d after)    : %.6f (vol: %.2f%%)%n", optRes.vT2(), Math.sqrt(optRes.vT2() * 365.0) * 100.0));
+                                currentSb.append(String.format("  V_T3 (1-wk after)  : %.6f (vol: %.2f%%)%n", optRes.vT3(), Math.sqrt(optRes.vT3() * 365.0) * 100.0));
+                                currentSb.append(String.format("  V_1 (daily noise)  : %.6f%n", optRes.v1Day()));
+                                currentSb.append(String.format("  Cleaned Pure sigma : %.6f (%.2f%% pure move)%n", optRes.sigmaEvent(), optRes.sigmaEvent() * 100.0));
+                                sigmaField.setText(String.format("%.4f", optRes.sigmaEvent()));
+                                appendJumpCalculations(currentSb, finalPHike, optRes.sigmaEvent());
+                            }
+                        } catch (Exception ex) {
+                            currentSb.append("Options error: ").append(ex.getMessage()).append("\n");
+                            appendJumpCalculations(currentSb, finalPHike, sigmaEvent);
+                        }
+                        outputArea.setText(currentSb.toString());
+                    }
+                };
+                optWorker.execute();
+                return;
+            } else {
+                appendJumpCalculations(sb, pHike, sigmaEvent);
+            }
         } else {
             sb.append("\nProbability p is at boundary (0 or 1); cannot compute interior zero-drift jump.\n");
         }
 
         outputArea.setText(sb.toString());
+    }
+
+    private void appendJumpCalculations(StringBuilder sb, double pHike, double sigmaEvent) {
+        BL.ZeroDriftJump jump = BL.solveZeroDriftJump(sigmaEvent, pHike);
+        sb.append("\n--- BL.java Zero-Drift Jump Solution ---\n");
+        sb.append(String.format("  sigma_event : %.4f%n", sigmaEvent));
+        sb.append(String.format("  Jump if Hike (u) : %+.6f (%+.2f%%)%n", jump.u(), jump.u() * 100.0));
+        sb.append(String.format("  Drop if Not  (d) : %+.6f (%+.2f%%)%n", jump.d(), jump.d() * 100.0));
+        sb.append(String.format("  Expected Drift   : %.2e%n", pHike * jump.u() + (1.0 - pHike) * jump.d()));
     }
 
     public static void main(String[] args) {
