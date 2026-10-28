@@ -6,9 +6,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 /**
  * Ingestion coordinator for real options data via yfinance Python script
@@ -17,6 +20,9 @@ import java.util.List;
 public class YFinanceOptionsIngestion {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final Pattern SAFE_SYMBOL_PATTERN = Pattern.compile("^[A-Za-z0-9^.=_\\-]+$");
+
+    public static final List<String> SUPPORTED_TICKERS = List.of("SPY", "TLT", "IEF", "HYG");
 
     public record OptionsManifest(
             String symbol,
@@ -31,14 +37,129 @@ public class YFinanceOptionsIngestion {
             Path t3Path
     ) {}
 
+    public record FedFundsProbabilityResult(
+            String preContract,
+            String meetingContract,
+            String postContract,
+            double prePrice,
+            double meetingPrice,
+            double ratePrePct,
+            double ratePostImpliedPct,
+            double deltaRatePct,
+            double rawDeltaRatePct,
+            double pBonds,
+            double pBondsUnadjusted,
+            boolean isHikeImplied
+    ) {
+        public FedFundsProbabilityResult(
+                double ratePrePct,
+                double ratePostImpliedPct,
+                double deltaRatePct,
+                double pBonds,
+                boolean isHikeImplied) {
+            this(null, null, null, 100.0 - ratePrePct, 0.0, ratePrePct, ratePostImpliedPct,
+                    deltaRatePct, deltaRatePct, pBonds, pBonds, isHikeImplied);
+        }
+    }
+
     /**
-     * Executes fetch_options_yfinance.py to download SPY options around the target event date.
+     * Executes fetch_options_yfinance.py to download Fed Funds Futures data for the target FOMC date.
+     */
+    public static FedFundsProbabilityResult fetchFedFundsProbability(LocalDate eventDate, Path outputDir)
+            throws IOException, InterruptedException {
+        File outDir = outputDir != null ? outputDir.toFile() : new File("target/options");
+        if (!outDir.exists() && !outDir.mkdirs() && !outDir.isDirectory()) {
+            throw new IOException("Failed to create options output directory: " + outDir.getAbsolutePath());
+        }
+
+        ProcessBuilder pb = new ProcessBuilder(
+                "py", "-3.13", "scripts/fetch_options_yfinance.py",
+                "--fetch-zq",
+                "--event-date", eventDate.toString(),
+                "--output-dir", outDir.getAbsolutePath()
+        );
+        pb.redirectErrorStream(true);
+        Process proc = pb.start();
+        byte[] outputBytes;
+        try (var is = proc.getInputStream()) {
+            outputBytes = is.readAllBytes();
+        }
+        boolean finished = proc.waitFor(45, TimeUnit.SECONDS);
+        if (!finished) {
+            proc.destroyForcibly();
+            throw new IOException("fetch_options_yfinance.py --fetch-zq timed out after 45s");
+        }
+        int exitCode = proc.exitValue();
+        if (exitCode != 0) {
+            String err = new String(outputBytes, StandardCharsets.UTF_8);
+            throw new IOException("fetch_options_yfinance.py --fetch-zq failed (exit " + exitCode + "): " + err);
+        }
+
+        File zqFile = new File(outDir, "zq_fomc_" + eventDate + ".json");
+        if (!zqFile.exists()) {
+            throw new IOException("Fed Funds file not found: " + zqFile.getAbsolutePath());
+        }
+
+        JsonNode root = MAPPER.readTree(zqFile);
+        return new FedFundsProbabilityResult(
+                root.path("preContract").asText(""),
+                root.path("meetingContract").asText(""),
+                root.path("postContract").asText(""),
+                root.path("prePrice").asDouble(),
+                root.path("meetingPrice").asDouble(),
+                root.path("ratePrePct").asDouble(),
+                root.path("ratePostImpliedPct").asDouble(),
+                root.path("deltaRatePct").asDouble(),
+                root.path("rawDeltaRatePct").asDouble(),
+                root.path("pBonds").asDouble(),
+                root.path("pBondsUnadjusted").asDouble(),
+                root.path("isHikeImplied").asBoolean()
+        );
+    }
+
+    /**
+     * Computes implied post-meeting target Fed Funds rate and probability of 25bps move
+     * from pre-meeting and meeting-month 30-Day Fed Funds futures prices.
+     */
+    public static FedFundsProbabilityResult computeFedFundsProbability(
+            double prePrice, double meetingPrice, Double postPrice, LocalDate meetingDate) {
+        double rPre = 100.0 - prePrice;
+        int d = meetingDate.getDayOfMonth();
+        int nDays = meetingDate.lengthOfMonth();
+        int daysPost = nDays - (d - 1);
+
+        double rPost;
+        if (daysPost <= 2 && postPrice != null) {
+            rPost = 100.0 - postPrice;
+        } else {
+            double rAvg = 100.0 - meetingPrice;
+            rPost = (nDays * rAvg - (d - 1) * rPre) / daysPost;
+        }
+
+        double delta = rPost - rPre;
+        double p = Math.min(1.0, Math.max(0.0, Math.abs(delta) / 0.25));
+        boolean isHike = delta >= 0.0;
+        return new FedFundsProbabilityResult(rPre, rPost, delta, p, isHike);
+    }
+
+    public static FedFundsProbabilityResult computeFedFundsProbability(
+            double prePrice, double meetingPrice, LocalDate meetingDate) {
+        return computeFedFundsProbability(prePrice, meetingPrice, null, meetingDate);
+    }
+
+    /**
+     * Executes fetch_options_yfinance.py to download options around the target event date.
      */
     public static OptionsManifest fetchEventOptions(String symbol, LocalDate eventDate, Path outputDir)
             throws IOException, InterruptedException {
-        String sym = (symbol == null || symbol.isBlank()) ? "SPY" : symbol.toUpperCase();
+        String sym = (symbol == null || symbol.isBlank()) ? "SPY" : symbol.trim().toUpperCase();
+        if (!SAFE_SYMBOL_PATTERN.matcher(sym).matches()) {
+            throw new IllegalArgumentException("Invalid ticker symbol format: " + symbol);
+        }
         File outDir = outputDir != null ? outputDir.toFile() : new File("target/options");
-        if (!outDir.exists()) outDir.mkdirs();
+        if (!outDir.exists() && !outDir.mkdirs() && !outDir.isDirectory()) {
+            throw new IOException("Failed to create options output directory: " + outDir.getAbsolutePath());
+        }
 
         ProcessBuilder pb = new ProcessBuilder(
                 "py", "-3.13", "scripts/fetch_options_yfinance.py",
@@ -48,9 +169,18 @@ public class YFinanceOptionsIngestion {
         );
         pb.redirectErrorStream(true);
         Process proc = pb.start();
-        int exitCode = proc.waitFor();
+        byte[] outputBytes;
+        try (var is = proc.getInputStream()) {
+            outputBytes = is.readAllBytes();
+        }
+        boolean finished = proc.waitFor(60, TimeUnit.SECONDS);
+        if (!finished) {
+            proc.destroyForcibly();
+            throw new IOException("fetch_options_yfinance.py timed out after 60s for symbol " + sym);
+        }
+        int exitCode = proc.exitValue();
         if (exitCode != 0) {
-            String err = new String(proc.getInputStream().readAllBytes());
+            String err = new String(outputBytes, StandardCharsets.UTF_8);
             throw new IOException("fetch_options_yfinance.py failed (exit " + exitCode + "): " + err);
         }
 

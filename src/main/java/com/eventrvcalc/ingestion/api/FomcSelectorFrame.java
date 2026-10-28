@@ -5,6 +5,8 @@ import com.eventrvcalc.core.surface.SurfaceRunner;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -17,23 +19,30 @@ import java.util.Optional;
 public class FomcSelectorFrame extends JFrame {
 
     private final JComboBox<LocalDate> dateCombo = new JComboBox<>();
-    private final JCheckBox fetchYfCheckbox = new JCheckBox("Live yfinance ($SPY)", true);
+    private final JComboBox<String> tickerCombo = new JComboBox<>(new String[]{"SPY", "TLT", "IEF", "HYG", "ALL (SPY, TLT, IEF, HYG)"});
+    private final JComboBox<String> probSourceCombo = new JComboBox<>(new String[]{"Fed Funds ZQ (Institutional)", "Polymarket (Retail)"});
+    private final JCheckBox fetchYfCheckbox = new JCheckBox("Live yfinance", true);
     private final JCheckBox eventBullishCheckbox = new JCheckBox("Hike is Bullish", false);
     private final JTextField sigmaField = new JTextField("0.02", 6);
-    private final JTextArea outputArea = new JTextArea(22, 75);
+    private final JTextArea outputArea = new JTextArea(25, 85);
     private final JButton openPlotBtn = new JButton("Open Surface Plot (.png)");
     private List<Polymarket.Event> cachedEvents = List.of();
-    private File lastGeneratedPlot = new File("surface_exploration.png");
-    private File lastEventSliceFile = null;
+    private volatile File lastGeneratedPlot = new File("surface_exploration.png");
+    private volatile File lastEventSliceFile = null;
 
     public FomcSelectorFrame() {
-        super("Event RV Calc - FOMC & Real $SPY Options");
+        super("Event RV Calc - FOMC, Bond Market & Options RV");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout(8, 8));
 
-        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 12));
+        topPanel.setBorder(BorderFactory.createEmptyBorder(8, 10, 16, 10));
         topPanel.add(new JLabel("FOMC Date:"));
         topPanel.add(dateCombo);
+        topPanel.add(new JLabel("Ticker:"));
+        topPanel.add(tickerCombo);
+        topPanel.add(new JLabel("P-Source:"));
+        topPanel.add(probSourceCombo);
         topPanel.add(fetchYfCheckbox);
         topPanel.add(eventBullishCheckbox);
         topPanel.add(new JLabel("Manual sigma_event:"));
@@ -86,11 +95,11 @@ public class FomcSelectorFrame extends JFrame {
     }
 
     private void generatePlotTask(File sliceJson, boolean openWhenReady) {
-        SwingWorker<Void, Void> plotWorker = new SwingWorker<>() {
+        SwingWorker<File, Void> plotWorker = new SwingWorker<>() {
             private Exception error;
 
             @Override
-            protected Void doInBackground() {
+            protected File doInBackground() {
                 try {
                     File outPng = new File("event_surface.png");
                     ProcessBuilder pb = new ProcessBuilder(
@@ -100,16 +109,31 @@ public class FomcSelectorFrame extends JFrame {
                     );
                     pb.redirectErrorStream(true);
                     Process p = pb.start();
-                    int code = p.waitFor();
-                    if (code != 0) {
-                        String err = new String(p.getInputStream().readAllBytes());
-                        throw new IOException("Plot generation failed: " + err);
+                    String output;
+                    try (var is = p.getInputStream()) {
+                        output = new String(is.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
                     }
-                    lastGeneratedPlot = outPng;
+                    boolean completed = p.waitFor(30, java.util.concurrent.TimeUnit.SECONDS);
+                    if (!completed) {
+                        p.destroyForcibly();
+                        throw new IOException("Plot generation timed out after 30s");
+                    }
+                    int code = p.exitValue();
+                    if (code != 0) {
+                        throw new IOException("Plot generation failed: " + output);
+                    }
+                    // Parse output in case fallback filename was used (e.g. event_surface_latest.png)
+                    for (String line : output.split("\n")) {
+                        if (line.contains("Saved visualization to")) {
+                            String path = line.substring(line.indexOf("Saved visualization to") + "Saved visualization to".length()).trim();
+                            return new File(path);
+                        }
+                    }
+                    return outPng;
                 } catch (Exception ex) {
                     error = ex;
+                    return null;
                 }
-                return null;
             }
 
             @Override
@@ -117,9 +141,17 @@ public class FomcSelectorFrame extends JFrame {
                 if (error != null) {
                     outputArea.append("Plot generation error: " + error.getMessage() + "\n");
                 } else {
-                    outputArea.append("Generated fresh event surface plot: " + lastGeneratedPlot.getAbsolutePath() + "\n");
-                    if (openWhenReady) {
-                        openImageExternally();
+                    try {
+                        File resultPng = get();
+                        if (resultPng != null && resultPng.exists()) {
+                            lastGeneratedPlot = resultPng;
+                            outputArea.append("Generated fresh event surface plot: " + lastGeneratedPlot.getAbsolutePath() + "\n");
+                            if (openWhenReady) {
+                                openImageExternally();
+                            }
+                        }
+                    } catch (Exception ex) {
+                        outputArea.append("Plot error: " + ex.getMessage() + "\n");
                     }
                 }
             }
@@ -158,9 +190,9 @@ public class FomcSelectorFrame extends JFrame {
                 }
                 outputArea.append(String.format("Loaded %d upcoming FOMC decision dates and %d active Polymarket FOMC events.%n",
                         dateCombo.getItemCount(), cachedEvents.size()));
+                outputArea.append("Select an FOMC date above and click 'Fetch Market & Run Math Engine' to begin calculations.\n");
                 if (dateCombo.getItemCount() > 0) {
                     dateCombo.setSelectedIndex(0);
-                    evaluateSelectedDate();
                 }
             }
         };
@@ -171,138 +203,160 @@ public class FomcSelectorFrame extends JFrame {
         LocalDate selectedDate = (LocalDate) dateCombo.getSelectedItem();
         if (selectedDate == null) return;
 
-        double sigmaEvent;
+        double sigmaManual;
         try {
-            sigmaEvent = Double.parseDouble(sigmaField.getText().trim());
+            sigmaManual = Double.parseDouble(sigmaField.getText().trim());
         } catch (NumberFormatException ex) {
             outputArea.setText("Invalid sigma_event number: " + sigmaField.getText());
             return;
         }
 
-        Optional<Polymarket.Event> matchOpt = Polymarket.findFomcEventForDate(selectedDate, cachedEvents);
-        StringBuilder sb = new StringBuilder();
-        sb.append("Selected FOMC Decision Date: ").append(selectedDate).append("\n");
+        String chosenTicker = (String) tickerCombo.getSelectedItem();
+        String chosenProbSource = (String) probSourceCombo.getSelectedItem();
+        boolean useBondsProb = chosenProbSource != null && chosenProbSource.startsWith("Fed Funds");
 
-        if (matchOpt.isEmpty()) {
-            sb.append("No active Polymarket FOMC market found matching ").append(selectedDate).append("\n");
-            outputArea.setText(sb.toString());
-            return;
-        }
+        outputArea.setText("Gathering market data for FOMC Date: " + selectedDate + "...\n");
 
-        Polymarket.Event ev = matchOpt.get();
-        sb.append("Matched Polymarket Event:    ").append(ev.title()).append("\n");
-        sb.append("Slug:                        ").append(ev.slug()).append("\n");
-        sb.append("Resolution End Date:         ").append(ev.endDate()).append("\n");
-        sb.append(String.format("Total Volume:                $%,.2f%n%n", ev.volume()));
+        SwingWorker<Void, String> mainWorker = new SwingWorker<>() {
+            private final StringBuilder sb = new StringBuilder();
+            private Polymarket.Event matchedEvent;
+            private YFinanceOptionsIngestion.FedFundsProbabilityResult fedFundsRes;
 
-        sb.append("--- Sub-Market Outcome Brackets ---\n");
-        for (Map.Entry<String, Double> entry : ev.outcomeProbabilities().entrySet()) {
-            sb.append(String.format("  %-25s : %.4f (%.2f%%)%n", entry.getKey(), entry.getValue(), entry.getValue() * 100.0));
-        }
+            @Override
+            protected Void doInBackground() {
+                sb.append("Selected FOMC Decision Date: ").append(selectedDate).append("\n");
 
-        double pHike = ev.yesProbability();
-        sb.append(String.format("%nAggregated Hike Probability (p): %.4f (%.2f%%)%n", pHike, pHike * 100.0));
+                // 1. Discover Polymarket event
+                Optional<Polymarket.Event> matchOpt = Polymarket.findFomcEventForDate(selectedDate, cachedEvents);
+                double pPolymarket = Double.NaN;
+                if (matchOpt.isPresent()) {
+                    matchedEvent = matchOpt.get();
+                    sb.append("Matched Polymarket Event:    ").append(matchedEvent.title()).append("\n");
+                    sb.append(String.format("Polymarket Total Volume:     $%,.2f%n", matchedEvent.volume()));
+                    pPolymarket = matchedEvent.yesProbability();
+                    sb.append(String.format("Polymarket Hike Prob (p):    %.4f (%.2f%%)%n%n", pPolymarket, pPolymarket * 100.0));
+                } else {
+                    sb.append("Polymarket: No direct market match found for ").append(selectedDate).append("\n\n");
+                }
 
-        if (pHike > 0.0 && pHike < 1.0) {
-            if (fetchYfCheckbox.isSelected()) {
-                sb.append("\n--- Fetching Real $SPY Options via yfinance (T1, T2, T3) ---\n");
-                outputArea.setText(sb.toString());
-                final double finalPHike = pHike;
-                final StringBuilder currentSb = new StringBuilder(sb);
+                // 2. Discover Layer B: CME 30-Day Fed Funds Futures (ZQ)
+                sb.append("=== Layer B: Institutional Ground Truth (CME 30-Day Fed Funds Futures ZQ) ===\n");
+                double pBonds = Double.NaN;
+                try {
+                    fedFundsRes = YFinanceOptionsIngestion.fetchFedFundsProbability(selectedDate, null);
+                    pBonds = fedFundsRes.pBonds();
+                    sb.append(String.format("  Pre-FOMC Contract  (%s) : Price = %.4f -> Implied Rate = %.4f%%%n",
+                            fedFundsRes.preContract(), fedFundsRes.prePrice(), fedFundsRes.ratePrePct()));
+                    sb.append(String.format("  Meeting Contract   (%s) : Price = %.4f%n",
+                            fedFundsRes.meetingContract(), fedFundsRes.meetingPrice()));
+                    sb.append(String.format("  Day-Weighted Post-FOMC Target Rate : %.4f%%%n", fedFundsRes.ratePostImpliedPct()));
+                    sb.append(String.format("  Implied Rate Change (Delta)       : %+.2f bps (%s)%n",
+                            fedFundsRes.deltaRatePct() * 100.0, fedFundsRes.isHikeImplied() ? "HIKE implied" : "CUT implied"));
+                    sb.append(String.format("  CME Day-Weighted Prob (p_Bonds)    : %.4f (%.2f%%)%n",
+                            fedFundsRes.pBonds(), fedFundsRes.pBonds() * 100.0));
+                    sb.append(String.format("  Unadjusted Month-Avg Prob         : %.4f (%.2f%%)%n",
+                            fedFundsRes.pBondsUnadjusted(), fedFundsRes.pBondsUnadjusted() * 100.0));
+                } catch (Exception ex) {
+                    sb.append("  Fed Funds Futures Ingestion Note: ").append(ex.getMessage()).append("\n");
+                }
 
-                SwingWorker<SurfaceRunner.EventPureMoveResult, Void> optWorker = new SwingWorker<>() {
-                    private Exception optError;
-                    private YFinanceOptionsIngestion.OptionsManifest manifest;
+                // 3. Probability Comparison Matrix
+                sb.append("\n=== Probability Source Comparison ===\n");
+                if (!Double.isNaN(pPolymarket)) {
+                    sb.append(String.format("  Polymarket (Retail)       : %.2f%%%n", pPolymarket * 100.0));
+                }
+                if (!Double.isNaN(pBonds)) {
+                    sb.append(String.format("  Fed Funds ZQ (Institutional): %.2f%%%n", pBonds * 100.0));
+                }
+                if (!Double.isNaN(pPolymarket) && !Double.isNaN(pBonds)) {
+                    double spread = (pBonds - pPolymarket) * 100.0;
+                    sb.append(String.format("  Institutional Divergence   : %+.2f pts (%s)%n",
+                            spread, spread > 0 ? "Bonds price HIGHER hike probability than Retail" : "Retail pricing MORE aggressive than Bonds"));
+                }
 
-                    @Override
-                    protected SurfaceRunner.EventPureMoveResult doInBackground() {
+                double activeP = useBondsProb && !Double.isNaN(pBonds) ? pBonds : (!Double.isNaN(pPolymarket) ? pPolymarket : 0.50);
+                String activeSourceName = useBondsProb && !Double.isNaN(pBonds) ? "Fed Funds ZQ (Institutional)" : "Polymarket (Retail)";
+                sb.append(String.format("  -> ACTIVE PROBABILITY USED : %.2f%% (%s)%n%n", activeP * 100.0, activeSourceName));
+
+                // 4. Layer A: Options Processing
+                if (fetchYfCheckbox.isSelected()) {
+                    sb.append("=== Layer A: Multi-Asset Options RV & BL Density Decomposition ===\n");
+                    List<String> tickersToRun = "ALL (SPY, TLT, IEF, HYG)".equalsIgnoreCase(chosenTicker)
+                            ? YFinanceOptionsIngestion.SUPPORTED_TICKERS
+                            : List.of(chosenTicker != null ? chosenTicker : "SPY");
+
+                    for (String ticker : tickersToRun) {
+                        sb.append(String.format("\n--- Processing %s ---%n", ticker));
                         try {
-                            manifest = YFinanceOptionsIngestion.fetchEventOptions("SPY", selectedDate, null);
+                            var manifest = YFinanceOptionsIngestion.fetchEventOptions(ticker, selectedDate, null);
+                            var optRes = YFinanceOptionsIngestion.computePureEventMove(manifest);
                             lastEventSliceFile = manifest.t2Path().toFile();
-                            return YFinanceOptionsIngestion.computePureEventMove(manifest);
+
+                            double t1Years = optRes.t1Result().T();
+                            double t2Years = optRes.t2Result().T();
+                            double t3Years = optRes.t3Result().T();
+
+                            double t1AnnVol = Math.sqrt(optRes.vT1() / Math.max(1e-6, t1Years));
+                            double t2AnnVol = Math.sqrt(optRes.vT2() / Math.max(1e-6, t2Years));
+                            double t3AnnVol = Math.sqrt(optRes.vT3() / Math.max(1e-6, t3Years));
+                            double skewness = BL.calculateLogSkewness(optRes.t2Result().densitySlice(), optRes.t2Result().forwardPrice());
+
+                            sb.append(String.format("  Spot S0: $%.2f | Expiries: T1=%s, T2=%s, T3=%s%n",
+                                    optRes.t2Result().S0(), manifest.t1Expiry(), manifest.t2Expiry(), manifest.t3Expiry()));
+                            sb.append(String.format("  Annualized Vols: T1=%.2f%% | T2=%.2f%% | T3=%.2f%%%n",
+                                    t1AnnVol * 100.0, t2AnnVol * 100.0, t3AnnVol * 100.0));
+                            sb.append(String.format("  Noise V1: %.8f/day | Cleaned Pure Event Move (sigma): %.4f (%.2f%%)%n",
+                                    optRes.v1Day(), optRes.sigmaEvent(), optRes.sigmaEvent() * 100.0));
+                            sb.append(String.format("  Breeden-Litzenberger Risk-Neutral Skewness: %+.4f (%s)%n",
+                                    skewness, getSkewInterpretation(ticker, skewness)));
+
+                            appendJumpCalculations(sb, ticker, activeP, optRes.sigmaEvent());
+                            final double discoveredSigma = optRes.sigmaEvent();
+                            SwingUtilities.invokeLater(() -> sigmaField.setText(String.format("%.4f", discoveredSigma)));
                         } catch (Exception ex) {
-                            optError = ex;
-                            return null;
+                            sb.append(String.format("  Could not fetch/process options for %s: %s%n", ticker, ex.getMessage()));
+                            appendJumpCalculations(sb, ticker, activeP, sigmaManual);
                         }
                     }
 
-                    @Override
-                    protected void done() {
-                        try {
-                            var optRes = get();
-                            if (optError != null || optRes == null) {
-                                currentSb.append("Warning: Could not fetch yfinance options (").append(optError != null ? optError.getMessage() : "unknown").append(")\n");
-                                currentSb.append("Falling back to manual sigma_event: ").append(sigmaEvent).append("\n");
-                                appendJumpCalculations(currentSb, finalPHike, sigmaEvent);
-                            } else {
-                                double t1Years = optRes.t1Result().T();
-                                double t2Years = optRes.t2Result().T();
-                                double t3Years = optRes.t3Result().T();
-
-                                double t1AnnVol = Math.sqrt(optRes.vT1() / Math.max(1e-6, t1Years));
-                                double t2AnnVol = Math.sqrt(optRes.vT2() / Math.max(1e-6, t2Years));
-                                double t3AnnVol = Math.sqrt(optRes.vT3() / Math.max(1e-6, t3Years));
-
-                                currentSb.append(String.format("  T1 (%s, DTE=%.0fd) : V_T1=%.6f (ann vol: %.2f%%)%n",
-                                        manifest.t1Expiry(), t1Years * 365.0, optRes.vT1(), t1AnnVol * 100.0));
-                                currentSb.append(String.format("  T2 (%s, DTE=%.0fd) : V_T2=%.6f (ann vol: %.2f%%)%n",
-                                        manifest.t2Expiry(), t2Years * 365.0, optRes.vT2(), t2AnnVol * 100.0));
-                                currentSb.append(String.format("  T3 (%s, DTE=%.0fd) : V_T3=%.6f (ann vol: %.2f%%)%n",
-                                        manifest.t3Expiry(), t3Years * 365.0, optRes.vT3(), t3AnnVol * 100.0));
-
-                                currentSb.append(String.format("  Daily Noise (V_1)     : %.8f (from %s to %s, %.0f trading days)%n",
-                                        optRes.v1Day(), manifest.t2Expiry(), manifest.t3Expiry(), manifest.tradingDaysT2ToT3()));
-                                currentSb.append(String.format("  Window Gap (T1 -> T2) : %.0f trading days (subtracting %.0f * V_1 noise)%n",
-                                        manifest.tradingDaysT1ToT2(), manifest.tradingDaysT1ToT2()));
-                                currentSb.append(String.format("  Cleaned Pure sigma    : %.6f (%.2f%% pure event move)%n",
-                                        optRes.sigmaEvent(), optRes.sigmaEvent() * 100.0));
-                                sigmaField.setText(String.format("%.4f", optRes.sigmaEvent()));
-                                appendJumpCalculations(currentSb, finalPHike, optRes.sigmaEvent());
-
-                                // Automatically re-generate surface plot with the event's actual post-event slice (T2)
-                                if (lastEventSliceFile != null && lastEventSliceFile.exists()) {
-                                    currentSb.append("\nRegenerating surface plot for this event...\n");
-                                    generateAndOpenPlotInBackground(lastEventSliceFile);
-                                }
-                            }
-                        } catch (Exception ex) {
-                            currentSb.append("Options error: ").append(ex.getMessage()).append("\n");
-                            appendJumpCalculations(currentSb, finalPHike, sigmaEvent);
-                        }
-                        outputArea.setText(currentSb.toString());
+                    if (lastEventSliceFile != null && lastEventSliceFile.exists()) {
+                        generateAndOpenPlotInBackground(lastEventSliceFile);
                     }
-                };
-                optWorker.execute();
-                return;
-            } else {
-                appendJumpCalculations(sb, pHike, sigmaEvent);
+                } else {
+                    appendJumpCalculations(sb, chosenTicker, activeP, sigmaManual);
+                }
+
+                return null;
             }
-        } else {
-            sb.append("\nProbability p is at boundary (0 or 1); cannot compute interior zero-drift jump.\n");
-        }
 
-        outputArea.setText(sb.toString());
+            @Override
+            protected void done() {
+                outputArea.setText(sb.toString());
+            }
+        };
+
+        mainWorker.execute();
     }
 
-    private void appendJumpCalculations(StringBuilder sb, double pHike, double sigmaEvent) {
+    private static String getSkewInterpretation(String ticker, double skew) {
+        if ("TLT".equalsIgnoreCase(ticker)) {
+            return skew >= -0.1 ? "Symmetric / Call-Demand Smile (Flight to Safety)" : "Mild Put Tilt";
+        } else if ("HYG".equalsIgnoreCase(ticker)) {
+            return skew < -0.2 ? "Severe Left-Tail Credit Spread / Default Risk Blowout" : "Normal Credit Skew";
+        } else if ("IEF".equalsIgnoreCase(ticker)) {
+            return "Benchmark 10Y Duration Smile";
+        } else {
+            return skew < -0.3 ? "Typical Equity Smirk (Downside Crash Protection)" : "Equity Vol Smile";
+        }
+    }
+
+    private void appendJumpCalculations(StringBuilder sb, String ticker, double p, double sigmaEvent) {
         boolean isBullish = eventBullishCheckbox.isSelected();
-        BL.ZeroDriftJump jump = BL.solveZeroDriftJump(sigmaEvent, pHike, isBullish);
+        BL.ZeroDriftJump jump = BL.solveZeroDriftJump(sigmaEvent, p, isBullish);
 
-        sb.append("\n--- BL.java Zero-Drift Jump Solution (Forward Martingale) ---\n");
-        sb.append(String.format("  sigma_event : %.4f (%.2f%%)%n", sigmaEvent, sigmaEvent * 100.0));
-        sb.append(String.format("  Event (Rate Hike) Probability: %.2f%% [Direction: %s]%n",
-                pHike * 100.0, isBullish ? "BULLISH (+)" : "BEARISH (-)"));
-        sb.append(String.format("  Surprise (Pause/Cut) Prob   : %.2f%%%n", (1.0 - pHike) * 100.0));
-
-        sb.append(String.format("  Move if Fed HIKES    : %+.4f%% (drop/small expected branch)%n", jump.moveIfEvent() * 100.0));
-        sb.append(String.format("  Move if PAUSE/CUT    : %+.4f%% (rally/surprise relief branch)%n", jump.moveIfNotEvent() * 100.0));
-
-        double drift = pHike * jump.moveIfEvent() + (1.0 - pHike) * jump.moveIfNotEvent();
-        double varianceCheck = pHike * jump.moveIfEvent() * jump.moveIfEvent()
-                + (1.0 - pHike) * jump.moveIfNotEvent() * jump.moveIfNotEvent();
-
-        sb.append(String.format("  Forward Martingale Drift    : %.2e (p*move_event + (1-p)*move_no_event = 0)%n", drift));
-        sb.append(String.format("  Implied Variance Match      : %.6f == %.6f (sigma^2)%n", varianceCheck, sigmaEvent * sigmaEvent));
+        sb.append(String.format("  Zero-Drift Jump Solution for %s (Martingale Drift=0.0):%n", ticker));
+        sb.append(String.format("    Move if Fed HIKES (%5.2f%% prob) : %+.4f%%%n", p * 100.0, jump.moveIfEvent() * 100.0));
+        sb.append(String.format("    Move if SURPRISE   (%5.2f%% prob) : %+.4f%%%n", (1.0 - p) * 100.0, jump.moveIfNotEvent() * 100.0));
     }
 
     public static void main(String[] args) {

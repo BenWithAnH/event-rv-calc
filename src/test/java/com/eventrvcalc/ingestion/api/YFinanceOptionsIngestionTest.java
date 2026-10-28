@@ -92,6 +92,88 @@ class YFinanceOptionsIngestionTest {
         assertThat(res.sigmaEvent()).isGreaterThanOrEqualTo(0.0);
     }
 
+    @Test
+    @DisplayName("computeFedFundsProbability computes correct post rate and pBonds for rate hike")
+    void testFedFundsProbabilityCalculation_Hike() {
+        // Pre-FOMC price 95.625 (rate 4.375%), meeting month price 95.455 on Dec 9 (31 days in Dec, d=9)
+        LocalDate meetingDate = LocalDate.of(2026, 12, 9);
+        double prePrice = 95.625;
+        double meetingPrice = 95.455;
+
+        var res = YFinanceOptionsIngestion.computeFedFundsProbability(prePrice, meetingPrice, meetingDate);
+
+        assertThat(res.ratePrePct()).isCloseTo(4.375, within(0.001));
+        // 31 days in Dec, d=9: 8 days at 4.375%, 23 days at rPost => (31*4.545 - 8*4.375)/23 = 4.60413%
+        assertThat(res.ratePostImpliedPct()).isCloseTo(4.6041, within(0.001));
+        assertThat(res.deltaRatePct()).isCloseTo(0.2291, within(0.001));
+        assertThat(res.pBonds()).isCloseTo(0.9165, within(0.005));
+        assertThat(res.isHikeImplied()).isTrue();
+    }
+
+    @Test
+    @DisplayName("computeFedFundsProbability computes correct post rate and pBonds for rate cut")
+    void testFedFundsProbabilityCalculation_Cut() {
+        // Pre-FOMC price 95.00 (rate 5.00%), meeting on Sep 16 (30 days in Sep, d=16, 15 pre days / 15 post days)
+        // Implied post rate 4.75% (-25bps cut) => meeting month avg rate = (15*5.00 + 15*4.75)/30 = 4.875% => price 95.125
+        LocalDate meetingDate = LocalDate.of(2026, 9, 16);
+        double prePrice = 95.00;
+        double meetingPrice = 95.125;
+
+        var res = YFinanceOptionsIngestion.computeFedFundsProbability(prePrice, meetingPrice, meetingDate);
+
+        assertThat(res.ratePrePct()).isCloseTo(5.00, within(0.001));
+        assertThat(res.ratePostImpliedPct()).isCloseTo(4.75, within(0.001));
+        assertThat(res.deltaRatePct()).isCloseTo(-0.25, within(0.001));
+        assertThat(res.pBonds()).isCloseTo(1.0, within(0.001));
+        assertThat(res.isHikeImplied()).isFalse();
+    }
+
+    @Test
+    @DisplayName("computeFedFundsProbability falls back to postPrice when meeting is at end of month (daysPost <= 2)")
+    void testFedFundsProbabilityCalculation_EndOfMonthFallback() {
+        // Jan 30 meeting (31 days in Jan, d=30 => daysPost = 31 - 29 = 2 <= 2)
+        LocalDate meetingDate = LocalDate.of(2026, 1, 30);
+        double prePrice = 95.50; // rate 4.50%
+        double meetingPrice = 95.40;
+        double postPrice = 95.30; // Feb futures price => rate 4.70% (+20bps)
+
+        var res = YFinanceOptionsIngestion.computeFedFundsProbability(prePrice, meetingPrice, postPrice, meetingDate);
+
+        assertThat(res.ratePrePct()).isCloseTo(4.50, within(0.001));
+        assertThat(res.ratePostImpliedPct()).isCloseTo(4.70, within(0.001));
+        assertThat(res.deltaRatePct()).isCloseTo(0.20, within(0.001));
+        assertThat(res.pBonds()).isCloseTo(0.80, within(0.001));
+        assertThat(res.isHikeImplied()).isTrue();
+    }
+
+    @Test
+    @DisplayName("SUPPORTED_TICKERS contains SPY, TLT, IEF, HYG")
+    void testSupportedTickers() {
+        assertThat(YFinanceOptionsIngestion.SUPPORTED_TICKERS)
+                .containsExactly("SPY", "TLT", "IEF", "HYG");
+    }
+
+    @Test
+    @DisplayName("SurfaceRunner and BL compute valid log variance and log skewness on bond ETF option slice")
+    void testBondEtfSlicesSkewnessAndVariance() throws Exception {
+        double S0 = 100.0;
+        double T = 30.0 / 365.0;
+        double r = 0.045;
+        double q = 0.0;
+        double vol = 0.15;
+        int nStrikes = 50;
+
+        JsonNode tlfSlice = createSyntheticSlice(S0, T, r, q, vol, nStrikes);
+        SurfaceRunner.SurfaceResult result = SurfaceRunner.processOptionSlice(tlfSlice);
+
+        assertThat(result.logVariance()).isGreaterThan(0.0);
+        assertThat(result.densitySlice()).isNotEmpty();
+
+        double skewness = BL.calculateLogSkewness(result.densitySlice(), result.forwardPrice());
+        // Synthetic symmetric Black-Scholes curve should yield skewness near 0.0
+        assertThat(skewness).isCloseTo(0.0, within(0.25));
+    }
+
     private JsonNode createSyntheticSlice(double S0, double T, double r, double q, double vol, int nStrikes) {
         var node = MAPPER.createObjectNode();
         node.put("S0", S0);

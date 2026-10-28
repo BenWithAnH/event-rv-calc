@@ -271,6 +271,11 @@ def plot_surface(data, output_png="surface_exploration.png"):
     exch_vols = np.array([q_item["exchangeIv"] * 100 for q_item in quotes])
     etas = [q_item["eta"] for q_item in quotes]
 
+    # Calculate dynamic blend window around Spot S0 (+/- 0.5% or at least $2.00)
+    blend_half_width = max(2.0, S0 * 0.005)
+    blend_low = S0 - blend_half_width
+    blend_high = S0 + blend_half_width
+
     k_grid = np.linspace(strikes.min() - 5, strikes.max() + 5, 250)
 
     # Plot 5-parameter SVI fit: w(k) = a + b * (rho * (k - m) + sqrt((k - m)^2 + s^2))
@@ -313,7 +318,7 @@ def plot_surface(data, output_png="surface_exploration.png"):
     if np.any(exch_vols > 0):
         ax1.plot(strikes, exch_vols, color="#7f7f7f", linestyle=":", lw=1.3, alpha=0.7, label="Exchange Quoted IV")
 
-    ax1.axvspan(379, 383, color="#9467bd", alpha=0.10, label=r"Blend Window $[379, 383]$")
+    ax1.axvspan(blend_low, blend_high, color="#9467bd", alpha=0.10, label=rf"Blend Window $[{blend_low:.1f}, {blend_high:.1f}]$")
     ax1.axvline(S0, color="gray", linestyle="--", alpha=0.7, label=f"Spot = ${S0:.2f}")
 
     handles, labels = ax1.get_legend_handles_labels()
@@ -323,6 +328,7 @@ def plot_surface(data, output_png="surface_exploration.png"):
     ax1.set_title("1. Real SPY CRR De-Americanized Volatility & 5-Parameter SVI Fit", fontweight="bold", fontsize=11)
     ax1.set_xlabel("Strike ($K$)")
     ax1.set_ylabel("Implied Volatility (%)")
+    ax1.set_xlim(strikes.min() - 5, strikes.max() + 5)
 
     # -------------------------------------------------------------
     # Panel 2: Synthetic European Call & Put Price Curves
@@ -347,11 +353,12 @@ def plot_surface(data, output_png="surface_exploration.png"):
         else:
             ax2.scatter(s, mid, color="#d62728", marker="o", s=35, zorder=5, alpha=0.8)
 
-    ax2.axvspan(379, 383, color="#9467bd", alpha=0.10)
+    ax2.axvspan(blend_low, blend_high, color="#9467bd", alpha=0.10)
     ax2.axvline(S0, color="gray", linestyle="--", alpha=0.7)
     ax2.set_title("2. Synthetic European Price Curves vs Real SPY Quotes", fontweight="bold", fontsize=11)
     ax2.set_xlabel("Strike ($K$)")
     ax2.set_ylabel("Option Price ($)")
+    ax2.set_xlim(strikes.min() - 5, strikes.max() + 5)
     ax2.legend(loc="center right", framealpha=0.9, fontsize=9)
 
     # -------------------------------------------------------------
@@ -378,12 +385,13 @@ def plot_surface(data, output_png="surface_exploration.png"):
 
     ax3.bar(strikes_list, premia, width=1.4, color=bar_colors, alpha=0.85, edgecolor="black", linewidth=0.5,
             label=r"Tree Early Exercise Premium ($V^{Am}_{Tree} - V^{Euro}_{CRR}$)")
-    ax3.axvspan(379, 383, color="#9467bd", alpha=0.10, label=r"Blend Window $[379, 383]$")
+    ax3.axvspan(blend_low, blend_high, color="#9467bd", alpha=0.10, label=rf"Blend Window $[{blend_low:.1f}, {blend_high:.1f}]$")
     ax3.axhline(0, color="black", lw=1)
     ax3.axvline(S0, color="gray", linestyle="--", alpha=0.7, label=rf"$S_{{implied}} = \${S0:.2f}$")
     ax3.set_title(r"3. Early Exercise Premium via CRR Tree ($V^{Am} - V^{Euro}_{CRR}$)", fontweight="bold", fontsize=11)
     ax3.set_xlabel("Strike ($K$)")
     ax3.set_ylabel("Early Exercise Premium ($)")
+    ax3.set_xlim(strikes.min() - 5, strikes.max() + 5)
     ax3.legend(loc="upper right", framealpha=0.9, fontsize=9)
 
     # -------------------------------------------------------------
@@ -437,7 +445,35 @@ def plot_surface(data, output_png="surface_exploration.png"):
         ax4.set_title("4. Breeden-Litzenberger Density (Data Unavailable)", fontweight="bold", fontsize=11)
 
     plt.tight_layout()
-    plt.savefig(output_png, dpi=180)
+
+    # On Windows, if the file is currently open in Windows Photos or another viewer,
+    # builtins.open(filename, 'w+b') raises OSError [Errno 22] or PermissionError.
+    # Write to a temporary file first, then attempt atomic or fallback replace.
+    tmp_png = output_png + ".tmp.png"
+    try:
+        plt.savefig(tmp_png, dpi=180)
+        plt.close(fig)
+        if os.path.exists(output_png):
+            try:
+                os.remove(output_png)
+            except OSError:
+                pass
+        try:
+            os.replace(tmp_png, output_png)
+        except OSError:
+            # If still locked by viewer, save with timestamp or alternate name
+            alt_png = output_png.replace(".png", "_latest.png")
+            if os.path.exists(alt_png):
+                try:
+                    os.remove(alt_png)
+                except OSError:
+                    pass
+            os.replace(tmp_png, alt_png)
+            output_png = alt_png
+    except Exception as e:
+        plt.close(fig)
+        raise e
+
     print(f"Saved visualization to {os.path.abspath(output_png)}")
 
     artifact_dir = r"C:\Users\USER\.gemini\antigravity-ide\brain\040c6a35-8e7b-45b7-8912-f09b47a64fbe"

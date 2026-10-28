@@ -84,8 +84,18 @@ public class SurfaceRunner {
             double pMid = root.get("atmPutMid").asDouble();
             if (cMid > 0.0 && pMid > 0.0) {
                 try {
-                    S0 = CRR.implyEffectiveSpot(atmK, cMid, pMid, T, r, N);
-                    q = 0.0;
+                    // Imply true spot from Put-Call parity while preserving any dividend yield q
+                    // C - P = S0 * exp(-q*T) - K * exp(-r*T)  =>  S0 = [ (C - P) + K * exp(-r*T) ] * exp(q*T)
+                    double discRate = Math.exp(-r * T);
+                    double discDiv = Math.exp(-q * T);
+                    double impliedForward = (cMid - pMid) + atmK * discRate;
+                    double parityS0 = impliedForward / (discDiv > 0 ? discDiv : 1.0);
+                    if (parityS0 > 0.5 * S0 && parityS0 < 1.5 * S0) {
+                        S0 = parityS0;
+                    } else {
+                        S0 = CRR.implyEffectiveSpot(atmK, cMid, pMid, T, r, N);
+                        q = 0.0;
+                    }
                 } catch (Exception ignored) {}
             }
         }
