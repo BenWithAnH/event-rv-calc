@@ -195,6 +195,33 @@ class BLTest {
                 .isCloseTo(0.0, within(1e-12));
     }
 
+    @Test
+    void testCrossAssetTriangulationAndYieldShock() {
+        // Prompt specific values: p = 81.95%, sigmaTLT = 0.03943 (or moves -1.85% vs +8.40%)
+        // With p = 0.8195 and isEventBullish = false (hike drops bonds):
+        // d = -sigma * sqrt(p / (1-p)) -> if sigma = 0.03943: moveIfEvent = -0.0185 (-1.85%), moveIfNotEvent = +0.0840 (+8.40%)
+        double p = 0.8195;
+        double sigmaTlt = 0.039435;
+        BL.ZeroDriftJump tltJump = BL.solveZeroDriftJump(sigmaTlt, p, false);
+        assertThat(tltJump.moveIfEvent()).isCloseTo(-0.0185, within(0.001));
+        assertThat(tltJump.moveIfNotEvent()).isCloseTo(0.0840, within(0.001));
+
+        // Yield shock in basis points via D_mod = 16.5:
+        // Move if Hike: -1.85% bond price drop -> -(-0.0185) / 16.5 * 10000 = +11.21 bps yield jump
+        double yieldShockHikeBps = -(tltJump.moveIfEvent() / BL.TLT_MODIFIED_DURATION) * 10000.0;
+        double yieldShockSurpriseBps = -(tltJump.moveIfNotEvent() / BL.TLT_MODIFIED_DURATION) * 10000.0;
+        assertThat(yieldShockHikeBps).isCloseTo(11.21, within(0.1));
+        assertThat(yieldShockSurpriseBps).isCloseTo(-50.91, within(0.1));
+
+        // Cross-asset triangulation scenario from prompt:
+        // TLT pricing 2.50% move (+-15.15 bps yield shock) while SPY prices only 0.60%
+        BL.CrossAssetTriangulation res = BL.triangulateFomcVenues(0.80, 0.85, 0.025, 0.006, false);
+        assertThat(res.tltImpliedYieldShockBps()).isCloseTo(15.15, within(0.1));
+        assertThat(res.tltToSpyVolRatio()).isCloseTo(4.167, within(0.01));
+        assertThat(res.regimeVerdict()).contains("EQUITY VOL CHEAP");
+        assertThat(res.spyVolEdgePct()).isGreaterThan(0.0);
+    }
+
     private static double gauss(double x, double mu, double sigma) {
         double z = (x - mu) / sigma;
         return Math.exp(-0.5 * z * z) / (sigma * Math.sqrt(2.0 * Math.PI));

@@ -532,14 +532,11 @@ public class BL {
      *                         moveIfNotEvent = +\sigma \sqrt{p/(1-p)}
      */
     public static ZeroDriftJump solveZeroDriftJump(double sigmaEvent, double pEvent, boolean isEventBullish) {
-        if (sigmaEvent < 0.0) {
-            throw new IllegalArgumentException("sigmaEvent must be non-negative");
-        }
-        if (pEvent <= 0.0 || pEvent >= 1.0) {
-            throw new IllegalArgumentException("Probability p must be strictly in (0, 1)");
-        }
-        double branchSmall = sigmaEvent * Math.sqrt((1.0 - pEvent) / pEvent);
-        double branchSurprise = sigmaEvent * Math.sqrt(pEvent / (1.0 - pEvent));
+        double safeSigma = (Double.isNaN(sigmaEvent) || sigmaEvent < 0.0) ? 0.0 : sigmaEvent;
+        double safeP = Double.isNaN(pEvent) ? 0.50 : Math.max(1e-4, Math.min(1.0 - 1e-4, pEvent));
+
+        double branchSmall = safeSigma * Math.sqrt((1.0 - safeP) / safeP);
+        double branchSurprise = safeSigma * Math.sqrt(safeP / (1.0 - safeP));
 
         double moveIfEvent;
         double moveIfNotEvent;
@@ -613,5 +610,118 @@ public class BL {
                 im[i] /= n;
             }
         }
+    }
+
+    // --- Cross-Asset FOMC Triangulation & Mispricing Models ---
+
+    public static final double TLT_MODIFIED_DURATION = 16.5;
+    public static final double IEF_MODIFIED_DURATION = 7.5;
+
+    public record CrossAssetTriangulation(
+            double pPolymarket,
+            double pRates,
+            double pTriangulated,
+            double sigmaTlt,
+            double sigmaSpy,
+            double tltImpliedYieldShockBps,
+            double tltYieldMoveIfEventBps,
+            double tltYieldMoveIfNotEventBps,
+            double spyMoveIfEventPct,
+            double spyMoveIfNotEventPct,
+            double tltToSpyVolRatio,
+            double spyMovePer10BpsYieldPct,
+            double triangulatedSpyFairSigma,
+            double spyVolEdgePct,
+            String regimeVerdict,
+            String detailedExplanation
+    ) {}
+
+    /**
+     * Triangulates across 3 venues:
+     * 1. Venue 1 (Prediction Market - Polymarket/Kalshi)
+     * 2. Venue 2 (Short-Term Rates - CME Fed Funds ZQ)
+     * 3. Venue 3 (TLT & SPY Breeden-Litzenberger Surfaces with TLT Duration Conversion)
+     */
+    public static CrossAssetTriangulation triangulateFomcVenues(
+            double pPolymarket,
+            double pRates,
+            double sigmaTlt,
+            double sigmaSpy,
+            boolean isEventBullish) {
+
+        double safeSigmaTlt = (Double.isNaN(sigmaTlt) || sigmaTlt < 0.0) ? 0.0 : sigmaTlt;
+        double safeSigmaSpy = (Double.isNaN(sigmaSpy) || sigmaSpy < 0.0) ? 0.0 : sigmaSpy;
+
+        // 1. Synthesize Consensus Event Probability
+        double pTri;
+        if (!Double.isNaN(pPolymarket) && !Double.isNaN(pRates)) {
+            pTri = 0.65 * pRates + 0.35 * pPolymarket; // institutional bond desks lead rate cuts/hikes
+        } else if (!Double.isNaN(pRates)) {
+            pTri = pRates;
+        } else if (!Double.isNaN(pPolymarket)) {
+            pTri = pPolymarket;
+        } else {
+            pTri = 0.50;
+        }
+        pTri = Double.isNaN(pTri) ? 0.50 : Math.max(1e-4, Math.min(1.0 - 1e-4, pTri));
+
+        // 2. TLT Duration to 20Y Yield Shock (bps)
+        // Delta_y_bps = -(Delta_P / P) / D_mod * 10,000
+        double tltYieldShockBps = (safeSigmaTlt / TLT_MODIFIED_DURATION) * 10000.0;
+        ZeroDriftJump tltJump = solveZeroDriftJump(safeSigmaTlt, pTri, isEventBullish);
+        // Note: Bond price drops when yields rise (Hike/Event is bearish bonds -> positive yield shock)
+        double tltYieldMoveIfEventBps = -(tltJump.moveIfEvent() / TLT_MODIFIED_DURATION) * 10000.0;
+        double tltYieldMoveIfNotEventBps = -(tltJump.moveIfNotEvent() / TLT_MODIFIED_DURATION) * 10000.0;
+
+        // 3. SPY Jump Solution
+        ZeroDriftJump spyJump = solveZeroDriftJump(safeSigmaSpy, pTri, isEventBullish);
+
+        // 4. Cross-Asset Vol Ratio (MOVE vs VIX event proxy)
+        double ratio = safeSigmaSpy > 1e-6 ? (safeSigmaTlt / safeSigmaSpy) : Double.NaN;
+
+        // Empirical macro baseline: ~0.80% SPY move per 10 bps 20Y Treasury shock (TLT/SPY ratio ~1.25)
+        double spyMovePer10Bps = (tltYieldShockBps > 1e-4) ? (safeSigmaSpy / (tltYieldShockBps / 10.0)) : Double.NaN;
+        double fairSpySigma = (tltYieldShockBps / 10.0) * 0.0080;
+        double spyVolEdge = fairSpySigma - safeSigmaSpy;
+
+        String verdict;
+        String explanation;
+        if (Double.isNaN(ratio) || safeSigmaSpy <= 1e-6 || safeSigmaTlt <= 1e-6) {
+            verdict = "INSUFFICIENT DATA (UNABLE TO TRIANGULATE)";
+            explanation = "Insufficient or zero volatility estimates for TLT or SPY to determine cross-asset pricing regime.";
+        } else if (ratio > 1.80) {
+            verdict = "EQUITY VOL CHEAP vs RATES (MOVE/VIX DIVERGENCE)";
+            explanation = String.format("TLT B-L prices a heavy %+.1f bps 20Y yield shock while SPY B-L prices only %+.2f%% equity move. " +
+                    "Equity options are asleep at the wheel relative to rates volatility; SPY straddles are underpriced relative to what bonds know.",
+                    tltYieldShockBps, safeSigmaSpy * 100.0);
+        } else if (ratio < 0.75) {
+            verdict = "RATES VOL CHEAP vs EQUITIES";
+            explanation = String.format("Equity options are pricing a large %+.2f%% move while TLT options only price %+.1f bps of yield shock. " +
+                    "TLT straddles are cheap relative to SPY straddles.",
+                    safeSigmaSpy * 100.0, tltYieldShockBps);
+        } else {
+            verdict = "CROSS-ASSET VOL IN EQUILIBRIUM";
+            explanation = String.format("TLT (implied yield shock %+.1f bps) and SPY (implied move %+.2f%%) B-L surfaces are pricing consistent macro event risk (ratio %.2f).",
+                    tltYieldShockBps, safeSigmaSpy * 100.0, ratio);
+        }
+
+        return new CrossAssetTriangulation(
+                pPolymarket,
+                pRates,
+                pTri,
+                safeSigmaTlt,
+                safeSigmaSpy,
+                tltYieldShockBps,
+                tltYieldMoveIfEventBps,
+                tltYieldMoveIfNotEventBps,
+                spyJump.moveIfEvent(),
+                spyJump.moveIfNotEvent(),
+                ratio,
+                spyMovePer10Bps,
+                fairSpySigma,
+                spyVolEdge,
+                verdict,
+                explanation
+        );
     }
 }
