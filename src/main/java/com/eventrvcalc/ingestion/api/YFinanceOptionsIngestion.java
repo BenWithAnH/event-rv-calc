@@ -24,6 +24,8 @@ public class YFinanceOptionsIngestion {
             String t1Expiry,
             String t2Expiry,
             String t3Expiry,
+            double tradingDaysT1ToT2,
+            double tradingDaysT2ToT3,
             Path t1Path,
             Path t2Path,
             Path t3Path
@@ -64,6 +66,8 @@ public class YFinanceOptionsIngestion {
                 root.path("t1Expiry").asText(),
                 root.path("t2Expiry").asText(),
                 root.path("t3Expiry").asText(),
+                root.path("tradingDaysT1ToT2").asDouble(1.0),
+                root.path("tradingDaysT2ToT3").asDouble(5.0),
                 Path.of(root.path("t1File").asText()),
                 Path.of(root.path("t2File").asText()),
                 Path.of(root.path("t3File").asText())
@@ -71,15 +75,28 @@ public class YFinanceOptionsIngestion {
     }
 
     /**
-     * Loads the 3 event option slices and runs the complete SurfaceRunner/BL pure event move decomposition.
+     * Loads the 3 event option slices and runs the complete SurfaceRunner/BL pure event move decomposition,
+     * subtracting (tradingDaysT1ToT2 * V1) noise variance across the exact window gap.
      */
+    public static SurfaceRunner.EventPureMoveResult computePureEventMove(OptionsManifest manifest) throws IOException {
+        JsonNode t1Root = MAPPER.readTree(manifest.t1Path().toFile());
+        JsonNode t2Root = MAPPER.readTree(manifest.t2Path().toFile());
+        JsonNode t3Root = MAPPER.readTree(manifest.t3Path().toFile());
+
+        return SurfaceRunner.calculateEventWindow(
+                t1Root, t2Root, t3Root,
+                manifest.tradingDaysT2ToT3(),
+                manifest.tradingDaysT1ToT2()
+        );
+    }
+
     public static SurfaceRunner.EventPureMoveResult computePureEventMove(OptionsManifest manifest,
                                                                          double tradingDaysT2ToT3) throws IOException {
         JsonNode t1Root = MAPPER.readTree(manifest.t1Path().toFile());
         JsonNode t2Root = MAPPER.readTree(manifest.t2Path().toFile());
         JsonNode t3Root = MAPPER.readTree(manifest.t3Path().toFile());
 
-        return SurfaceRunner.calculateEventWindow(t1Root, t2Root, t3Root, tradingDaysT2ToT3, 1.0);
+        return SurfaceRunner.calculateEventWindow(t1Root, t2Root, t3Root, tradingDaysT2ToT3, manifest.tradingDaysT1ToT2());
     }
 
     /**

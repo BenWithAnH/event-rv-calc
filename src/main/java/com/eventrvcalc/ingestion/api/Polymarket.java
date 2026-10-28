@@ -331,16 +331,29 @@ public class Polymarket {
 
     // --- BL.java Calculation Bridges ---
 
+    public static BL.ZeroDriftJump solveZeroDriftJump(Market market, double sigmaEvent, boolean isEventBullish) {
+        return BL.solveZeroDriftJump(sigmaEvent, market.yesProbability(), isEventBullish);
+    }
+
     public static BL.ZeroDriftJump solveZeroDriftJump(Market market, double sigmaEvent) {
-        return BL.solveZeroDriftJump(sigmaEvent, market.yesProbability());
+        return BL.solveZeroDriftJump(sigmaEvent, market.yesProbability(), true);
+    }
+
+    public static BL.ZeroDriftJump solveZeroDriftJump(Event event, double sigmaEvent, boolean isEventBullish) {
+        return BL.solveZeroDriftJump(sigmaEvent, event.yesProbability(), isEventBullish);
     }
 
     public static BL.ZeroDriftJump solveZeroDriftJump(Event event, double sigmaEvent) {
-        return BL.solveZeroDriftJump(sigmaEvent, event.yesProbability());
+        // By default for FOMC rate-hike aggregated probability, a rate hike is bearish for equities (false)
+        return BL.solveZeroDriftJump(sigmaEvent, event.yesProbability(), false);
+    }
+
+    public static BL.ZeroDriftJump solveZeroDriftJump(Event event, String bracketOrId, double sigmaEvent, boolean isEventBullish) {
+        return BL.solveZeroDriftJump(sigmaEvent, event.probabilityOfBracket(bracketOrId), isEventBullish);
     }
 
     public static BL.ZeroDriftJump solveZeroDriftJump(Event event, String bracketOrId, double sigmaEvent) {
-        return BL.solveZeroDriftJump(sigmaEvent, event.probabilityOfBracket(bracketOrId));
+        return BL.solveZeroDriftJump(sigmaEvent, event.probabilityOfBracket(bracketOrId), true);
     }
 
     public static BL.GaussianMixture fitGaussianMixture(List<BL.LogReturnPoint> jumpDensity, Market market) {

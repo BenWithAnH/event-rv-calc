@@ -97,9 +97,10 @@ class PolymarketTest {
 
         double sigmaEvent = 0.025; // 2.5% implied pure event move
         BL.ZeroDriftJump jump = Polymarket.solveZeroDriftJump(event, sigmaEvent);
-        assertThat(jump.u()).isCloseTo(sigmaEvent * Math.sqrt((1.0 - pHike) / pHike), within(1e-9));
-        assertThat(jump.d()).isCloseTo(-sigmaEvent * Math.sqrt(pHike / (1.0 - pHike)), within(1e-9));
-        assertThat(pHike * jump.u() + (1.0 - pHike) * jump.d()).isCloseTo(0.0, within(1e-12));
+        // Event (hike) is bearish: moveIfEvent = -sigma * sqrt((1-p)/p), moveIfNotEvent = +sigma * sqrt(p/(1-p))
+        assertThat(jump.moveIfEvent()).isCloseTo(-sigmaEvent * Math.sqrt((1.0 - pHike) / pHike), within(1e-9));
+        assertThat(jump.moveIfNotEvent()).isCloseTo(sigmaEvent * Math.sqrt(pHike / (1.0 - pHike)), within(1e-9));
+        assertThat(pHike * jump.moveIfEvent() + (1.0 - pHike) * jump.moveIfNotEvent()).isCloseTo(0.0, within(1e-12));
 
         // Verify Gaussian mixture fitting with aggregated Polymarket hike probability
         List<BL.LogReturnPoint> syntheticJumpDensity = new ArrayList<>();
@@ -128,7 +129,7 @@ class PolymarketTest {
         assertThat(pHike).isBetween(0.0, 1.0);
         if (pHike > 0.0 && pHike < 1.0) {
             BL.ZeroDriftJump jump = Polymarket.solveZeroDriftJump(event, 0.02);
-            assertThat(pHike * jump.u() + (1.0 - pHike) * jump.d()).isCloseTo(0.0, within(1e-12));
+            assertThat(pHike * jump.moveIfEvent() + (1.0 - pHike) * jump.moveIfNotEvent()).isCloseTo(0.0, within(1e-12));
         }
     }
 

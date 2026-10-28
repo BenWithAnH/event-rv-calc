@@ -78,12 +78,14 @@ class YFinanceOptionsIngestionTest {
                 root.path("t1Expiry").asText(),
                 root.path("t2Expiry").asText(),
                 root.path("t3Expiry").asText(),
+                root.path("tradingDaysT1ToT2").asDouble(1.0),
+                root.path("tradingDaysT2ToT3").asDouble(5.0),
                 Path.of(root.path("t1File").asText()),
                 Path.of(root.path("t2File").asText()),
                 Path.of(root.path("t3File").asText())
         );
 
-        SurfaceRunner.EventPureMoveResult res = YFinanceOptionsIngestion.computePureEventMove(manifest, 5.0);
+        SurfaceRunner.EventPureMoveResult res = YFinanceOptionsIngestion.computePureEventMove(manifest);
         assertThat(res.vT1()).isGreaterThan(0.0);
         assertThat(res.vT2()).isGreaterThan(0.0);
         assertThat(res.vT3()).isGreaterThan(0.0);

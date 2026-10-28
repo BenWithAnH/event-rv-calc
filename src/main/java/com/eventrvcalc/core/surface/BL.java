@@ -188,7 +188,17 @@ public class BL {
         }
     }
 
-    public record ZeroDriftJump(double u, double d) {}
+    public record ZeroDriftJump(
+            double moveIfEvent,
+            double moveIfNotEvent,
+            double u,
+            double d,
+            boolean isEventBullish
+    ) {
+        public ZeroDriftJump(double u, double d) {
+            this(u, d, u, d, true);
+        }
+    }
 
     /**
      * Probability spread to wings: \Delta CDF(K) = F_{T2}(K) - F_{T1}(K)
@@ -464,22 +474,98 @@ public class BL {
     }
 
     /**
-     * Combines event probability p \in (0, 1) with the zero-drift forward condition:
-     *   p * u - (1 - p) * d = 0,   Var(J) = \sigma_{event}^2
-     * yielding:
-     *   jump if good (u) = +\sigma_{event} * \sqrt{(1 - p) / p}
-     *   drop if poor (d) = -\sigma_{event} * \sqrt{p / (1 - p)}
+     * Calculates the 3rd centralized moment (skewness numerator / standardized skewness)
+     * of log-returns from a Breeden-Litzenberger density slice:
+     *   Skew = \frac{1}{\sigma^3} \int (x - \mu)^3 f_X(x) dx
      */
-    public static ZeroDriftJump solveZeroDriftJump(double sigmaEvent, double p) {
+    public static double calculateLogSkewness(List<DensityPoint> slice, double forward) {
+        if (slice == null || slice.size() < 2 || forward <= 0.0) {
+            throw new IllegalArgumentException("Valid density slice and forward required");
+        }
+        double totalProb = 0.0;
+        double mean = 0.0;
+        int n = slice.size();
+        double[] x = new double[n];
+        double[] pdf = new double[n];
+        for (int i = 0; i < n; i++) {
+            DensityPoint dp = slice.get(i);
+            x[i] = Math.log(dp.strike() / forward);
+            pdf[i] = dp.density();
+        }
+        for (int i = 0; i < n - 1; i++) {
+            double dK = slice.get(i + 1).strike() - slice.get(i).strike();
+            double pMid = 0.5 * (pdf[i] + pdf[i + 1]);
+            double xMid = 0.5 * (x[i] + x[i + 1]);
+            totalProb += pMid * dK;
+            mean += xMid * pMid * dK;
+        }
+        if (totalProb > 0) mean /= totalProb;
+
+        double var = 0.0;
+        double m3 = 0.0;
+        for (int i = 0; i < n - 1; i++) {
+            double dK = slice.get(i + 1).strike() - slice.get(i).strike();
+            double pMid = 0.5 * (pdf[i] + pdf[i + 1]);
+            double xMid = 0.5 * (x[i] + x[i + 1]);
+            double diff = xMid - mean;
+            var += diff * diff * pMid * dK;
+            m3 += diff * diff * diff * pMid * dK;
+        }
+        if (totalProb > 0) {
+            var /= totalProb;
+            m3 /= totalProb;
+        }
+        double std = Math.sqrt(Math.max(1e-10, var));
+        return m3 / (std * std * std);
+    }
+
+    /**
+     * Solves the zero-drift jump outcomes under the zero-drift forward martingale condition:
+     *   p * moveIfEvent + (1 - p) * moveIfNotEvent = 0,   Var(J) = \sigma_{event}^2
+     *
+     * @param sigmaEvent     Cleaned pure event volatility
+     * @param pEvent         Probability of the specified event happening
+     * @param isEventBullish True if event occurrence is bullish for underlying (e.g. rate cut, positive earnings);
+     *                       False if event occurrence is bearish (e.g. rate hike).
+     *                       If event is bearish (isEventBullish = false):
+     *                         moveIfEvent = -\sigma \sqrt{(1-p)/p}
+     *                         moveIfNotEvent = +\sigma \sqrt{p/(1-p)}
+     */
+    public static ZeroDriftJump solveZeroDriftJump(double sigmaEvent, double pEvent, boolean isEventBullish) {
         if (sigmaEvent < 0.0) {
             throw new IllegalArgumentException("sigmaEvent must be non-negative");
         }
-        if (p <= 0.0 || p >= 1.0) {
+        if (pEvent <= 0.0 || pEvent >= 1.0) {
             throw new IllegalArgumentException("Probability p must be strictly in (0, 1)");
         }
-        double u = sigmaEvent * Math.sqrt((1.0 - p) / p);
-        double d = -sigmaEvent * Math.sqrt(p / (1.0 - p));
-        return new ZeroDriftJump(u, d);
+        double branchSmall = sigmaEvent * Math.sqrt((1.0 - pEvent) / pEvent);
+        double branchSurprise = sigmaEvent * Math.sqrt(pEvent / (1.0 - pEvent));
+
+        double moveIfEvent;
+        double moveIfNotEvent;
+        double u;
+        double d;
+
+        if (isEventBullish) {
+            moveIfEvent = +branchSmall;
+            moveIfNotEvent = -branchSurprise;
+            u = moveIfEvent;
+            d = moveIfNotEvent;
+        } else {
+            // Bearish event: event occurrence causes downward drop; non-occurrence (relief/pause) causes upward jump
+            moveIfEvent = -branchSmall;
+            moveIfNotEvent = +branchSurprise;
+            u = moveIfNotEvent;
+            d = moveIfEvent;
+        }
+        return new ZeroDriftJump(moveIfEvent, moveIfNotEvent, u, d, isEventBullish);
+    }
+
+    /**
+     * Backward-compatible overload defaulting to isEventBullish = true (canonical notes notation).
+     */
+    public static ZeroDriftJump solveZeroDriftJump(double sigmaEvent, double p) {
+        return solveZeroDriftJump(sigmaEvent, p, true);
     }
 
     private static double normalPdf(double x, double mu, double sigma) {

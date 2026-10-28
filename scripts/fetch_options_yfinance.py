@@ -15,9 +15,24 @@ import json
 import os
 import sys
 
+def count_trading_days(d1, d2):
+    """
+    Counts weekdays (Monday through Friday) between date d1 and date d2 (exclusive of d1, inclusive of d2).
+    """
+    if d1 > d2:
+        d1, d2 = d2, d1
+    day_count = 0
+    cur = d1 + datetime.timedelta(days=1)
+    while cur <= d2:
+        if cur.weekday() < 5:
+            day_count += 1
+        cur += datetime.timedelta(days=1)
+    return max(1, day_count)
+
 def select_event_expiries(available_expiries, event_date_str):
     """
-    Selects T1 (before), T2 (after), and T3 (~1 week after T2) from available expiry strings YYYY-MM-DD.
+    Selects T1 (before), T2 (after), and T3 after T2 from available expiry strings YYYY-MM-DD.
+    Also returns the trading day counts: tradingDaysT1ToT2 and tradingDaysT2ToT3.
     """
     event_dt = datetime.datetime.strptime(event_date_str, "%Y-%m-%d").date()
     exp_dates = sorted([datetime.datetime.strptime(e, "%Y-%m-%d").date() for e in available_expiries])
@@ -35,24 +50,25 @@ def select_event_expiries(available_expiries, event_date_str):
     if t1_candidates:
         t1 = t1_candidates[-1]
     else:
-        # If event is today or earlier than all expiries, pick the earliest two expiries
         if len(exp_dates) < 3:
             raise ValueError("Insufficient expiries available (need at least 3)")
         t1, t2 = exp_dates[0], exp_dates[1]
     
-    # T3: ~1 week (5 to 10 trading days, 5 to 14 calendar days) after T2
+    # T3: expiry after T2 (ideally 1 to 2 weeks after T2)
     t3_candidates = [d for d in exp_dates if d > t2 and (d - t2).days >= 4]
     if not t3_candidates:
-        # fallback to next available expiry after T2
         remaining = [d for d in exp_dates if d > t2]
         if not remaining:
             raise ValueError(f"No available options expiry after T2 ({t2})")
         t3 = remaining[0]
     else:
-        # prefer ~7 calendar days
+        # Prefer ~7 to 14 calendar days
         t3 = min(t3_candidates, key=lambda d: abs((d - t2).days - 7))
         
-    return t1.strftime("%Y-%m-%d"), t2.strftime("%Y-%m-%d"), t3.strftime("%Y-%m-%d")
+    trading_days_t1_t2 = count_trading_days(t1, t2)
+    trading_days_t2_t3 = count_trading_days(t2, t3)
+    
+    return t1.strftime("%Y-%m-%d"), t2.strftime("%Y-%m-%d"), t3.strftime("%Y-%m-%d"), trading_days_t1_t2, trading_days_t2_t3
 
 def format_option_slice(ticker, expiry_str, current_spot, risk_free_rate=0.043):
     """
@@ -178,8 +194,12 @@ def main():
     args = parser.parse_args()
     
     if args.test_expiries:
-        t1, t2, t3 = select_event_expiries(args.test_expiries, args.event_date)
-        print(json.dumps({"t1": t1, "t2": t2, "t3": t3}))
+        t1, t2, t3, days_t1_t2, days_t2_t3 = select_event_expiries(args.test_expiries, args.event_date)
+        print(json.dumps({
+            "t1": t1, "t2": t2, "t3": t3,
+            "tradingDaysT1ToT2": days_t1_t2,
+            "tradingDaysT2ToT3": days_t2_t3
+        }))
         return
         
     import yfinance as yf
@@ -192,8 +212,8 @@ def main():
     if not expiries:
         raise RuntimeError(f"No option expiries returned by yfinance for {args.symbol}")
         
-    t1_str, t2_str, t3_str = select_event_expiries(expiries, args.event_date)
-    print(f"Selected expiries: T1(pre)={t1_str}, T2(post)={t2_str}, T3(1-wk)={t3_str}")
+    t1_str, t2_str, t3_str, days_t1_t2, days_t2_t3 = select_event_expiries(expiries, args.event_date)
+    print(f"Selected expiries: T1(pre)={t1_str}, T2(post)={t2_str} ({days_t1_t2} trading days gap), T3(noise)={t3_str} ({days_t2_t3} trading days gap)")
     
     hist = ticker.history(period="1d")
     current_spot = float(hist["Close"].iloc[-1]) if not hist.empty else float(ticker.fast_info["last_price"])
@@ -215,6 +235,8 @@ def main():
         "t1Expiry": t1_str,
         "t2Expiry": t2_str,
         "t3Expiry": t3_str,
+        "tradingDaysT1ToT2": days_t1_t2,
+        "tradingDaysT2ToT3": days_t2_t3,
         "t1File": out_files["t1"],
         "t2File": out_files["t2"],
         "t3File": out_files["t3"]

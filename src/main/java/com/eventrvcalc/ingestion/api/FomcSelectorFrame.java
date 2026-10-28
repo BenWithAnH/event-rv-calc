@@ -1,6 +1,7 @@
 package com.eventrvcalc.ingestion.api;
 
 import com.eventrvcalc.core.surface.BL;
+import com.eventrvcalc.core.surface.SurfaceRunner;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,9 +18,13 @@ public class FomcSelectorFrame extends JFrame {
 
     private final JComboBox<LocalDate> dateCombo = new JComboBox<>();
     private final JCheckBox fetchYfCheckbox = new JCheckBox("Live yfinance ($SPY)", true);
+    private final JCheckBox eventBullishCheckbox = new JCheckBox("Hike is Bullish", false);
     private final JTextField sigmaField = new JTextField("0.02", 6);
-    private final JTextArea outputArea = new JTextArea(20, 65);
+    private final JTextArea outputArea = new JTextArea(22, 75);
+    private final JButton openPlotBtn = new JButton("Open Surface Plot (.png)");
     private List<Polymarket.Event> cachedEvents = List.of();
+    private File lastGeneratedPlot = new File("surface_exploration.png");
+    private File lastEventSliceFile = null;
 
     public FomcSelectorFrame() {
         super("Event RV Calc - FOMC & Real $SPY Options");
@@ -30,11 +35,13 @@ public class FomcSelectorFrame extends JFrame {
         topPanel.add(new JLabel("FOMC Date:"));
         topPanel.add(dateCombo);
         topPanel.add(fetchYfCheckbox);
+        topPanel.add(eventBullishCheckbox);
         topPanel.add(new JLabel("Manual sigma_event:"));
         topPanel.add(sigmaField);
 
         JButton fetchBtn = new JButton("Fetch Market & Run Math Engine");
         topPanel.add(fetchBtn);
+        topPanel.add(openPlotBtn);
         add(topPanel, BorderLayout.NORTH);
 
         outputArea.setEditable(false);
@@ -42,10 +49,82 @@ public class FomcSelectorFrame extends JFrame {
         add(new JScrollPane(outputArea), BorderLayout.CENTER);
 
         fetchBtn.addActionListener(e -> evaluateSelectedDate());
+        openPlotBtn.addActionListener(e -> openImageExternally());
 
         pack();
         setLocationRelativeTo(null);
         loadInitialData();
+    }
+
+    private void openImageExternally() {
+        if (!lastGeneratedPlot.exists() && lastEventSliceFile != null) {
+            outputArea.append("Generating surface plot from event slice: " + lastEventSliceFile.getName() + "...\n");
+            generateAndOpenPlot(lastEventSliceFile);
+            return;
+        }
+        if (lastGeneratedPlot.exists()) {
+            try {
+                if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+                    Desktop.getDesktop().open(lastGeneratedPlot);
+                } else {
+                    new ProcessBuilder("cmd", "/c", "start", "", lastGeneratedPlot.getAbsolutePath()).start();
+                }
+            } catch (Exception ex) {
+                outputArea.append("Could not open plot image: " + ex.getMessage() + "\n");
+            }
+        } else {
+            outputArea.append("No plot file found. Run 'Fetch Market & Run Math Engine' first.\n");
+        }
+    }
+
+    private void generateAndOpenPlot(File sliceJson) {
+        generatePlotTask(sliceJson, true);
+    }
+
+    private void generateAndOpenPlotInBackground(File sliceJson) {
+        generatePlotTask(sliceJson, false);
+    }
+
+    private void generatePlotTask(File sliceJson, boolean openWhenReady) {
+        SwingWorker<Void, Void> plotWorker = new SwingWorker<>() {
+            private Exception error;
+
+            @Override
+            protected Void doInBackground() {
+                try {
+                    File outPng = new File("event_surface.png");
+                    ProcessBuilder pb = new ProcessBuilder(
+                            "py", "-3.13", "scripts/visualize_surface.py",
+                            "--input-file", sliceJson.getAbsolutePath(),
+                            "--output-png", outPng.getAbsolutePath()
+                    );
+                    pb.redirectErrorStream(true);
+                    Process p = pb.start();
+                    int code = p.waitFor();
+                    if (code != 0) {
+                        String err = new String(p.getInputStream().readAllBytes());
+                        throw new IOException("Plot generation failed: " + err);
+                    }
+                    lastGeneratedPlot = outPng;
+                } catch (Exception ex) {
+                    error = ex;
+                }
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                if (error != null) {
+                    outputArea.append("Plot generation error: " + error.getMessage() + "\n");
+                } else {
+                    outputArea.append("Generated fresh event surface plot: " + lastGeneratedPlot.getAbsolutePath() + "\n");
+                    if (openWhenReady) {
+                        openImageExternally();
+                    }
+                }
+            }
+        };
+        plotWorker.execute();
     }
 
     private void loadInitialData() {
@@ -133,12 +212,14 @@ public class FomcSelectorFrame extends JFrame {
 
                 SwingWorker<SurfaceRunner.EventPureMoveResult, Void> optWorker = new SwingWorker<>() {
                     private Exception optError;
+                    private YFinanceOptionsIngestion.OptionsManifest manifest;
 
                     @Override
                     protected SurfaceRunner.EventPureMoveResult doInBackground() {
                         try {
-                            var manifest = YFinanceOptionsIngestion.fetchEventOptions("SPY", selectedDate, null);
-                            return YFinanceOptionsIngestion.computePureEventMove(manifest, 5.0);
+                            manifest = YFinanceOptionsIngestion.fetchEventOptions("SPY", selectedDate, null);
+                            lastEventSliceFile = manifest.t2Path().toFile();
+                            return YFinanceOptionsIngestion.computePureEventMove(manifest);
                         } catch (Exception ex) {
                             optError = ex;
                             return null;
@@ -154,13 +235,35 @@ public class FomcSelectorFrame extends JFrame {
                                 currentSb.append("Falling back to manual sigma_event: ").append(sigmaEvent).append("\n");
                                 appendJumpCalculations(currentSb, finalPHike, sigmaEvent);
                             } else {
-                                currentSb.append(String.format("  V_T1 (1d before)   : %.6f (vol: %.2f%%)%n", optRes.vT1(), Math.sqrt(optRes.vT1() * 365.0) * 100.0));
-                                currentSb.append(String.format("  V_T2 (1d after)    : %.6f (vol: %.2f%%)%n", optRes.vT2(), Math.sqrt(optRes.vT2() * 365.0) * 100.0));
-                                currentSb.append(String.format("  V_T3 (1-wk after)  : %.6f (vol: %.2f%%)%n", optRes.vT3(), Math.sqrt(optRes.vT3() * 365.0) * 100.0));
-                                currentSb.append(String.format("  V_1 (daily noise)  : %.6f%n", optRes.v1Day()));
-                                currentSb.append(String.format("  Cleaned Pure sigma : %.6f (%.2f%% pure move)%n", optRes.sigmaEvent(), optRes.sigmaEvent() * 100.0));
+                                double t1Years = optRes.t1Result().T();
+                                double t2Years = optRes.t2Result().T();
+                                double t3Years = optRes.t3Result().T();
+
+                                double t1AnnVol = Math.sqrt(optRes.vT1() / Math.max(1e-6, t1Years));
+                                double t2AnnVol = Math.sqrt(optRes.vT2() / Math.max(1e-6, t2Years));
+                                double t3AnnVol = Math.sqrt(optRes.vT3() / Math.max(1e-6, t3Years));
+
+                                currentSb.append(String.format("  T1 (%s, DTE=%.0fd) : V_T1=%.6f (ann vol: %.2f%%)%n",
+                                        manifest.t1Expiry(), t1Years * 365.0, optRes.vT1(), t1AnnVol * 100.0));
+                                currentSb.append(String.format("  T2 (%s, DTE=%.0fd) : V_T2=%.6f (ann vol: %.2f%%)%n",
+                                        manifest.t2Expiry(), t2Years * 365.0, optRes.vT2(), t2AnnVol * 100.0));
+                                currentSb.append(String.format("  T3 (%s, DTE=%.0fd) : V_T3=%.6f (ann vol: %.2f%%)%n",
+                                        manifest.t3Expiry(), t3Years * 365.0, optRes.vT3(), t3AnnVol * 100.0));
+
+                                currentSb.append(String.format("  Daily Noise (V_1)     : %.8f (from %s to %s, %.0f trading days)%n",
+                                        optRes.v1Day(), manifest.t2Expiry(), manifest.t3Expiry(), manifest.tradingDaysT2ToT3()));
+                                currentSb.append(String.format("  Window Gap (T1 -> T2) : %.0f trading days (subtracting %.0f * V_1 noise)%n",
+                                        manifest.tradingDaysT1ToT2(), manifest.tradingDaysT1ToT2()));
+                                currentSb.append(String.format("  Cleaned Pure sigma    : %.6f (%.2f%% pure event move)%n",
+                                        optRes.sigmaEvent(), optRes.sigmaEvent() * 100.0));
                                 sigmaField.setText(String.format("%.4f", optRes.sigmaEvent()));
                                 appendJumpCalculations(currentSb, finalPHike, optRes.sigmaEvent());
+
+                                // Automatically re-generate surface plot with the event's actual post-event slice (T2)
+                                if (lastEventSliceFile != null && lastEventSliceFile.exists()) {
+                                    currentSb.append("\nRegenerating surface plot for this event...\n");
+                                    generateAndOpenPlotInBackground(lastEventSliceFile);
+                                }
                             }
                         } catch (Exception ex) {
                             currentSb.append("Options error: ").append(ex.getMessage()).append("\n");
@@ -182,12 +285,24 @@ public class FomcSelectorFrame extends JFrame {
     }
 
     private void appendJumpCalculations(StringBuilder sb, double pHike, double sigmaEvent) {
-        BL.ZeroDriftJump jump = BL.solveZeroDriftJump(sigmaEvent, pHike);
-        sb.append("\n--- BL.java Zero-Drift Jump Solution ---\n");
-        sb.append(String.format("  sigma_event : %.4f%n", sigmaEvent));
-        sb.append(String.format("  Jump if Hike (u) : %+.6f (%+.2f%%)%n", jump.u(), jump.u() * 100.0));
-        sb.append(String.format("  Drop if Not  (d) : %+.6f (%+.2f%%)%n", jump.d(), jump.d() * 100.0));
-        sb.append(String.format("  Expected Drift   : %.2e%n", pHike * jump.u() + (1.0 - pHike) * jump.d()));
+        boolean isBullish = eventBullishCheckbox.isSelected();
+        BL.ZeroDriftJump jump = BL.solveZeroDriftJump(sigmaEvent, pHike, isBullish);
+
+        sb.append("\n--- BL.java Zero-Drift Jump Solution (Forward Martingale) ---\n");
+        sb.append(String.format("  sigma_event : %.4f (%.2f%%)%n", sigmaEvent, sigmaEvent * 100.0));
+        sb.append(String.format("  Event (Rate Hike) Probability: %.2f%% [Direction: %s]%n",
+                pHike * 100.0, isBullish ? "BULLISH (+)" : "BEARISH (-)"));
+        sb.append(String.format("  Surprise (Pause/Cut) Prob   : %.2f%%%n", (1.0 - pHike) * 100.0));
+
+        sb.append(String.format("  Move if Fed HIKES    : %+.4f%% (drop/small expected branch)%n", jump.moveIfEvent() * 100.0));
+        sb.append(String.format("  Move if PAUSE/CUT    : %+.4f%% (rally/surprise relief branch)%n", jump.moveIfNotEvent() * 100.0));
+
+        double drift = pHike * jump.moveIfEvent() + (1.0 - pHike) * jump.moveIfNotEvent();
+        double varianceCheck = pHike * jump.moveIfEvent() * jump.moveIfEvent()
+                + (1.0 - pHike) * jump.moveIfNotEvent() * jump.moveIfNotEvent();
+
+        sb.append(String.format("  Forward Martingale Drift    : %.2e (p*move_event + (1-p)*move_no_event = 0)%n", drift));
+        sb.append(String.format("  Implied Variance Match      : %.6f == %.6f (sigma^2)%n", varianceCheck, sigmaEvent * sigmaEvent));
     }
 
     public static void main(String[] args) {

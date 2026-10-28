@@ -213,14 +213,20 @@ def run_java_surface_pipeline(input_dict, input_file="spy_input.json", output_fi
 
     with open(input_file, "w", encoding="utf-8") as f:
         json.dump(input_dict, f, indent=2)
-    print(f"Saved real SPY input slice to {input_file}")
+    print(f"Saved input slice to {input_file}")
 
     print("Running Java CRR/BS SurfaceRunner...")
-    cmd = [
-        "mvn.cmd", "exec:java",
-        "-Dexec.mainClass=com.eventrvcalc.core.surface.SurfaceRunner",
-        f"-Dexec.args={input_file} {output_file}"
-    ]
+    cp_file = os.path.join(PROJECT_ROOT, "target", "classpath.txt")
+    if os.path.exists(cp_file):
+        with open(cp_file, "r", encoding="utf-8") as f:
+            cp_str = f.read().strip() + os.pathsep + os.path.join(PROJECT_ROOT, "target", "classes")
+        cmd = ["java", "-cp", cp_str, "com.eventrvcalc.core.surface.SurfaceRunner", input_file, output_file]
+    else:
+        cmd = [
+            "mvn.cmd", "exec:java",
+            "-Dexec.mainClass=com.eventrvcalc.core.surface.SurfaceRunner",
+            f"-Dexec.args={input_file} {output_file}"
+        ]
     subprocess.run(cmd, shell=True, check=True, cwd=PROJECT_ROOT)
     print(f"Java pipeline completed. Results written to {output_file}")
 
@@ -441,10 +447,23 @@ def plot_surface(data, output_png="surface_exploration.png"):
         print(f"Copied visualization to artifact directory: {dest}")
 
 def main():
-    parquet_path = "spy_eod_2023.parquet"
-    slice_data = extract_spy_slice(parquet_path=parquet_path, quote_date="2023-01-03", target_dte=45.0)
-    surface_results = run_java_surface_pipeline(slice_data, "spy_input.json", "surface_data.json")
-    plot_surface(surface_results, "surface_exploration.png")
+    parser = argparse.ArgumentParser(description="Plot 4-panel surface exploration from options input slice")
+    parser.add_argument("--input-file", default=None, help="Path to input option slice JSON (e.g. spy_t2.json or spy_input.json)")
+    parser.add_argument("--output-png", default="surface_exploration.png", help="Path to output PNG image")
+    args = parser.parse_args()
+
+    if args.input_file:
+        with open(args.input_file, "r", encoding="utf-8") as f:
+            slice_data = json.load(f)
+        output_json = "surface_data.json"
+        surface_results = run_java_surface_pipeline(slice_data, args.input_file, output_json)
+        plot_surface(surface_results, args.output_png)
+    else:
+        parquet_path = "spy_eod_2023.parquet"
+        slice_data = extract_spy_slice(parquet_path=parquet_path, quote_date="2023-01-03", target_dte=45.0)
+        surface_results = run_java_surface_pipeline(slice_data, "spy_input.json", "surface_data.json")
+        plot_surface(surface_results, args.output_png)
 
 if __name__ == "__main__":
+    import argparse
     main()

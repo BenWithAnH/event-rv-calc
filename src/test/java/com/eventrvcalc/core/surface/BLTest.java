@@ -186,6 +186,13 @@ class BLTest {
         // Variance condition: p * u^2 + (1 - p) * d^2 == sigma_event^2
         assertThat(pTrue * jump.u() * jump.u() + (1.0 - pTrue) * jump.d() * jump.d())
                 .isCloseTo(sigmaEvent * sigmaEvent, within(1e-12));
+
+        // Bearish event test (e.g. rate hike on equities):
+        BL.ZeroDriftJump bearishJump = BL.solveZeroDriftJump(sigmaEvent, pTrue, false);
+        assertThat(bearishJump.moveIfEvent()).isLessThan(0.0); // drop if hike
+        assertThat(bearishJump.moveIfNotEvent()).isGreaterThan(0.0); // rally if no hike
+        assertThat(pTrue * bearishJump.moveIfEvent() + (1.0 - pTrue) * bearishJump.moveIfNotEvent())
+                .isCloseTo(0.0, within(1e-12));
     }
 
     private static double gauss(double x, double mu, double sigma) {
