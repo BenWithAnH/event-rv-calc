@@ -66,6 +66,28 @@ class YFinanceOptionsIngestionTest {
     }
 
     @Test
+    @DisplayName("Fallback to v1Pre when v1Post is negative or inverted (e.g. HYG / IEF negative variance slope)")
+    void testNegativeV1PostFallsBackToV1Pre() throws Exception {
+        double S0 = 100.0;
+        double r = 0.04;
+        double q = 0.0;
+        int nStrikes = 60;
+
+        // T1 variance: 0.001
+        JsonNode t1Node = createSyntheticSlice(S0, 10.0 / 365.0, r, q, Math.sqrt((0.001 / (10.0 / 365.0))), nStrikes);
+        // T2 variance: 0.0025
+        JsonNode t2Node = createSyntheticSlice(S0, 25.0 / 365.0, r, q, Math.sqrt((0.0025 / (25.0 / 365.0))), nStrikes);
+        // T3 variance lower than T2: 0.0020 (causes negative v1Post)
+        JsonNode t3Node = createSyntheticSlice(S0, 40.0 / 365.0, r, q, Math.sqrt((0.0020 / (40.0 / 365.0))), nStrikes);
+
+        SurfaceRunner.EventPureMoveResult res = SurfaceRunner.calculateEventWindow(t1Node, t2Node, t3Node, 15.0, 1.0);
+
+        // Should not be clamped to 0.0; should fall back to v1Pre (strictly > 0)
+        assertThat(res.v1Day()).isGreaterThan(1e-6);
+        assertThat(res.sigmaEvent()).isGreaterThan(0.0);
+    }
+
+    @Test
     @DisplayName("End-to-end integration: load downloaded yfinance SPY 3-expiry manifest and calculate pure event move")
     void testLoadYFinanceDownloadedManifest() throws Exception {
         File manifestFile = new File("target/test_options/spy_event_manifest.json");

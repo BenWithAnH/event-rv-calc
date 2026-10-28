@@ -153,6 +153,29 @@ public class SurfaceRunner {
             }
         }
 
+        // Filter out stale after-hours lastPrice outliers (> 2.5x the chain's median IV)
+        if (validVols.size() >= 3) {
+            double[] sortedVols = validVols.stream().mapToDouble(Double::doubleValue).sorted().toArray();
+            int nVols = sortedVols.length;
+            double medianIv = (nVols % 2 == 1)
+                    ? sortedVols[nVols / 2]
+                    : 0.5 * (sortedVols[nVols / 2 - 1] + sortedVols[nVols / 2]);
+
+            List<Double> cleanStrikes = new ArrayList<>();
+            List<Double> cleanVols = new ArrayList<>();
+            for (int i = 0; i < validVols.size(); i++) {
+                double v = validVols.get(i);
+                if (v <= 2.5 * medianIv && v >= 0.2 * medianIv) {
+                    cleanStrikes.add(validStrikes.get(i));
+                    cleanVols.add(v);
+                }
+            }
+            if (cleanStrikes.size() >= 3) {
+                validStrikes = cleanStrikes;
+                validVols = cleanVols;
+            }
+        }
+
         double[] strikesArr = validStrikes.stream().mapToDouble(Double::doubleValue).toArray();
         double[] volsArr = validVols.stream().mapToDouble(Double::doubleValue).toArray();
 
@@ -192,12 +215,13 @@ public class SurfaceRunner {
         double vT3 = resT3.logVariance();
 
         // Daily background noise sanity check:
-        // Background noise V_1 should never exceed pre-event daily rate (vT1 / daysToT1),
-        // preventing subsequent macro events or upward term-structure jumps in T3 from wiping out pure event move.
+        // If v1Post is valid (strictly positive and <= v1Pre), use it; otherwise fallback to v1Pre.
+        // This prevents v1Post <= 0 (when T3 has lower total variance due to holiday decay / illiquidity)
+        // or excessive term-structure jumps in T3 from wiping out pure event move.
         double tradingDaysToT1 = Math.max(1.0, resT1.T() * 252.0);
         double v1Pre = vT1 / tradingDaysToT1;
         double v1Post = BL.calculateDailyNoiseVariance(vT2, vT3, tradingDaysT2ToT3);
-        double v1Day = Math.min(v1Pre, Math.max(0.0, v1Post));
+        double v1Day = (v1Post > 1e-7 && v1Post <= v1Pre) ? v1Post : v1Pre;
         double sigmaEvent = BL.impliedPureEventMove(vT1, vT2, v1Day, windowDays);
 
         return new EventPureMoveResult(resT1, resT2, resT3, vT1, vT2, vT3, v1Day, sigmaEvent);
@@ -299,6 +323,29 @@ public class SurfaceRunner {
                 validVols.add(sigmaHat);
             } catch (Exception e) {
                 System.err.printf("Skipping strike %.1f: %s%n", quote.strike(), e.getMessage());
+            }
+        }
+
+        // Filter out stale after-hours lastPrice outliers (> 2.5x the chain's median IV)
+        if (validVols.size() >= 3) {
+            double[] sortedVols = validVols.stream().mapToDouble(Double::doubleValue).sorted().toArray();
+            int nVols = sortedVols.length;
+            double medianIv = (nVols % 2 == 1)
+                    ? sortedVols[nVols / 2]
+                    : 0.5 * (sortedVols[nVols / 2 - 1] + sortedVols[nVols / 2]);
+
+            List<Double> cleanStrikes = new ArrayList<>();
+            List<Double> cleanVols = new ArrayList<>();
+            for (int i = 0; i < validVols.size(); i++) {
+                double v = validVols.get(i);
+                if (v <= 2.5 * medianIv && v >= 0.2 * medianIv) {
+                    cleanStrikes.add(validStrikes.get(i));
+                    cleanVols.add(v);
+                }
+            }
+            if (cleanStrikes.size() >= 3) {
+                validStrikes = cleanStrikes;
+                validVols = cleanVols;
             }
         }
 
