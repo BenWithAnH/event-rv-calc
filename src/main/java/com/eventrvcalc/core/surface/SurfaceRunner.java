@@ -91,6 +91,7 @@ public class SurfaceRunner {
                     // F * exp(-r*T) = (C_mid - P_mid) + K * exp(-r*T) => S_eff = F * exp(-r*T), q = 0.0
                     double discRate = Math.exp(-r * T);
                     double effectiveSpot = (cMid - pMid) + atmK * discRate;
+                    // ponytail: Hardcoded +/-15% sanity band for effective spot calibration; upgrade to dynamic liquidity-weighted band if extreme market dislocations occur.
                     if (effectiveSpot > 0.85 * S0 && effectiveSpot < 1.15 * S0) {
                         S0 = effectiveSpot;
                         q = 0.0;
@@ -118,8 +119,15 @@ public class SurfaceRunner {
                 double putWeight = qNode.has("putWeight") ? qNode.get("putWeight").asDouble() : (eta == -1 ? 1.0 : 0.0);
                 double exchangeIv = qNode.has("exchangeIv") ? qNode.get("exchangeIv").asDouble() : 0.0;
 
+                double pctFromSpot = Math.abs(strike - S0) / S0;
+                boolean isOtmConsistent = (eta == 0)
+                        || (eta == -1 && strike <= S0 * 1.03)
+                        || (eta == 1 && strike >= S0 * 0.97)
+                        || (pctFromSpot <= 0.03);
+                if (!isOtmConsistent) continue;
+
+                double sigmaHat = exchangeIv;
                 try {
-                    double sigmaHat;
                     if (callWeight > 0.0 && putWeight > 0.0) {
                         Double sigCall = null;
                         Double sigPut = null;
@@ -135,33 +143,19 @@ public class SurfaceRunner {
                             sigmaHat = sigCall;
                         } else if (sigPut != null) {
                             sigmaHat = sigPut;
-                        } else {
-                            sigmaHat = exchangeIv;
                         }
                     } else if (callWeight >= 1.0 || eta == 1) {
                         sigmaHat = CRR.findSigmaHat(S0, strike, T, r, q, N, 1, mid);
                     } else {
                         sigmaHat = CRR.findSigmaHat(S0, strike, T, r, q, N, -1, mid);
                     }
-                    double pctFromSpot = Math.abs(strike - S0) / S0;
-                    boolean isOtmConsistent = (eta == 0)
-                            || (eta == -1 && strike <= S0 * 1.03)
-                            || (eta == 1 && strike >= S0 * 0.97)
-                            || (pctFromSpot <= 0.03);
-                    if (isOtmConsistent && sigmaHat > 0.005 && sigmaHat < 3.0) {
-                        validStrikes.add(strike);
-                        validVols.add(sigmaHat);
-                    }
-                } catch (Exception ignored) {
-                    double pctFromSpot = Math.abs(strike - S0) / S0;
-                    boolean isOtmConsistent = (eta == 0)
-                            || (eta == -1 && strike <= S0 * 1.03)
-                            || (eta == 1 && strike >= S0 * 0.97)
-                            || (pctFromSpot <= 0.03);
-                    if (isOtmConsistent && exchangeIv > 0.005 && exchangeIv < 3.0) {
-                        validStrikes.add(strike);
-                        validVols.add(exchangeIv);
-                    }
+                } catch (Exception ex) {
+                    // ponytail: Fall back to broker/exchange IV when deep OTM/ITM strikes violate American tree no-arbitrage bounds
+                    sigmaHat = exchangeIv;
+                }
+                if (sigmaHat > 0.005 && sigmaHat < 3.0) {
+                    validStrikes.add(strike);
+                    validVols.add(sigmaHat);
                 }
             }
         }

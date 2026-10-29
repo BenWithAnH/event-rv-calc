@@ -183,6 +183,7 @@ public class FomcSelectorFrame extends JFrame {
             protected File doInBackground() {
                 try {
                     File outPng = new File("event_surface.png");
+                    // ponytail: Targets py -3.13 specifically where yfinance/scipy C-extensions are installed.
                     ProcessBuilder pb = new ProcessBuilder(
                             "py", "-3.13", "scripts/visualize_surface.py",
                             "--input-file", sliceJson.getAbsolutePath(),

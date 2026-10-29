@@ -113,6 +113,7 @@ public class Polymarket {
         }
 
         public BL.PolymarketTailBrackets extractTailBrackets() {
+            // ponytail: Substring heuristics match Polymarket FOMC bracket titles ("50 bps", "25 bps"). Upgrade path: use Gamma market metadata token IDs if schema changes.
             double pCut50 = 0.0;
             double pCut25 = 0.0;
             double pHike25 = 0.0;

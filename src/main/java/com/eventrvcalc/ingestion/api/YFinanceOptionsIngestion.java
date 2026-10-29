@@ -72,6 +72,7 @@ public class YFinanceOptionsIngestion {
             throw new IOException("Failed to create options output directory: " + outDir.getAbsolutePath());
         }
 
+        // ponytail: Targets py -3.13 specifically where yfinance/scipy C-extensions are installed.
         ProcessBuilder pb = new ProcessBuilder(
                 "py", "-3.13", "scripts/fetch_options_yfinance.py",
                 "--fetch-zq",
@@ -184,6 +185,7 @@ public class YFinanceOptionsIngestion {
             throw new IOException("Failed to create options output directory: " + outDir.getAbsolutePath());
         }
 
+        // ponytail: Targets py -3.13 specifically where yfinance/scipy C-extensions are installed.
         ProcessBuilder pb = new ProcessBuilder(
                 "py", "-3.13", "scripts/fetch_options_yfinance.py",
                 "--symbol", sym,

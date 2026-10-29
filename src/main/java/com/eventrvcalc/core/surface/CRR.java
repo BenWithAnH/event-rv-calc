@@ -64,23 +64,23 @@ public class CRR {
         p = Math.max(0.0, Math.min(1.0, p));
         double discount = Math.exp(-r * deltaT);
 
-        // Terminal payoff at step i = N:
-        // S_{N, j} = S0 * u^j * d^(N - j) for j in (0, 1, ... N)
-        // V_{N, j} = max(0, eta * (S_{N, j} - K))
+        // ponytail: Fixed N=100 default steps with 1D rollback. Inner loop steps S_ij via u2 to eliminate O(N^2) Math.pow calls.
+        double u2 = u * u;
         double[] V = new double[N + 1];
+        double sTerminal = S0 * Math.pow(d, N);
         for (int j = 0; j <= N; j++) {
-            double Snj = S0 * Math.pow(u, j) * Math.pow(d, N - j);
-            V[j] = Math.max(0.0, eta * (Snj - K));
+            V[j] = Math.max(0.0, eta * (sTerminal - K));
+            sTerminal *= u2;
         }
 
         // Backward induction from i = N - 1 down to 0:
-        // V_{i, j}^{Am}(sigma) = max(eta * (S_{i, j} - K), e^(-r * deltaT) * (p * V_{i+1, j+1} + (1 - p) * V_{i+1, j}))
         for (int i = N - 1; i >= 0; i--) {
+            double sStep = S0 * Math.pow(d, i);
             for (int j = 0; j <= i; j++) {
-                double Sij = S0 * Math.pow(u, j) * Math.pow(d, i - j);
                 double continuation = discount * (p * V[j + 1] + (1.0 - p) * V[j]);
-                double exercise = eta * (Sij - K);
+                double exercise = eta * (sStep - K);
                 V[j] = Math.max(exercise, continuation);
+                sStep *= u2;
             }
         }
 
@@ -115,10 +115,12 @@ public class CRR {
         p = Math.max(0.0, Math.min(1.0, p));
         double discount = Math.exp(-r * deltaT);
 
+        double u2 = u * u;
         double[] V = new double[N + 1];
+        double sTerminal = S0 * Math.pow(d, N);
         for (int j = 0; j <= N; j++) {
-            double Snj = S0 * Math.pow(u, j) * Math.pow(d, N - j);
-            V[j] = Math.max(0.0, eta * (Snj - K));
+            V[j] = Math.max(0.0, eta * (sTerminal - K));
+            sTerminal *= u2;
         }
 
         // Backward induction with early exercise turned off

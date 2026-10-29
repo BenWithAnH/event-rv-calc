@@ -825,6 +825,7 @@ public class BL {
         return Math.exp(-0.5 * z * z) / (sigma * Math.sqrt(2.0 * Math.PI));
     }
 
+    // ponytail: Radix-2 Cooley-Tukey in-place FFT for jump density deconvolution. Requires n to be a power of 2.
     private static void fft(double[] re, double[] im, boolean invert) {
         int n = re.length;
         for (int i = 1, j = 0; i < n; i++) {
