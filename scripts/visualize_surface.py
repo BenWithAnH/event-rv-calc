@@ -205,7 +205,12 @@ def extract_spy_slice(parquet_path=None, quote_date="2023-01-03", target_dte=45.
         "quotes": quotes
     }
 
-def run_java_surface_pipeline(input_dict, input_file="spy_input.json", output_file="surface_data.json"):
+def run_java_surface_pipeline(input_dict, input_file=None, output_file=None):
+    if input_file is None:
+        input_file = os.path.join(PROJECT_ROOT, "data", "spy_input.json")
+    if output_file is None:
+        output_file = os.path.join(PROJECT_ROOT, "target", "surface_data.json")
+
     if not os.path.isabs(input_file):
         input_file = os.path.join(PROJECT_ROOT, input_file)
     if not os.path.isabs(output_file):
@@ -491,14 +496,22 @@ def main():
     if args.input_file:
         with open(args.input_file, "r", encoding="utf-8") as f:
             slice_data = json.load(f)
-        output_json = "surface_data.json"
+        output_json = os.path.join(PROJECT_ROOT, "target", "surface_data.json")
         surface_results = run_java_surface_pipeline(slice_data, args.input_file, output_json)
         plot_surface(surface_results, args.output_png)
     else:
-        parquet_path = "spy_eod_2023.parquet"
-        slice_data = extract_spy_slice(parquet_path=parquet_path, quote_date="2023-01-03", target_dte=45.0)
-        surface_results = run_java_surface_pipeline(slice_data, "spy_input.json", "surface_data.json")
-        plot_surface(surface_results, args.output_png)
+        sample_input = os.path.join(PROJECT_ROOT, "data", "spy_input.json")
+        if os.path.exists(sample_input):
+            with open(sample_input, "r", encoding="utf-8") as f:
+                slice_data = json.load(f)
+            output_json = os.path.join(PROJECT_ROOT, "target", "surface_data.json")
+            surface_results = run_java_surface_pipeline(slice_data, sample_input, output_json)
+            plot_surface(surface_results, args.output_png)
+        else:
+            parquet_path = "spy_eod_2023.parquet"
+            slice_data = extract_spy_slice(parquet_path=parquet_path, quote_date="2023-01-03", target_dte=45.0)
+            surface_results = run_java_surface_pipeline(slice_data, sample_input, os.path.join(PROJECT_ROOT, "target", "surface_data.json"))
+            plot_surface(surface_results, args.output_png)
 
 if __name__ == "__main__":
     import argparse

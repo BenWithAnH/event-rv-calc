@@ -23,7 +23,7 @@ class YFinanceOptionsIngestionTest {
     @Test
     @DisplayName("SurfaceRunner can process test JSON dataset and extract BL variance")
     void testProcessExistingOptionSlice() throws Exception {
-        File spyInput = new File("spy_input.json");
+        File spyInput = new File("data/spy_input.json").exists() ? new File("data/spy_input.json") : new File("spy_input.json");
         assertThat(spyInput).exists();
 
         JsonNode root = MAPPER.readTree(spyInput);

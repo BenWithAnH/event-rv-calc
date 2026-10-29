@@ -342,8 +342,9 @@ public class SurfaceRunner {
     }
 
     public static void main(String[] args) throws Exception {
-        String inputFile = args.length > 0 ? args[0] : "spy_input.json";
-        String outputFile = args.length > 1 ? args[1] : "surface_data.json";
+        String defaultInput = new File("data/spy_input.json").exists() ? "data/spy_input.json" : "spy_input.json";
+        String inputFile = args.length > 0 ? args[0] : defaultInput;
+        String outputFile = args.length > 1 ? args[1] : (new File("target").exists() ? "target/surface_data.json" : "surface_data.json");
 
         File in = new File(inputFile);
         if (!in.exists()) {

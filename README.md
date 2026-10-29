@@ -20,6 +20,12 @@ src/main/java/com/eventrvcalc/
         ├── YFinanceOptionsIngestion.java # Options chain & CME 30-Day Fed Funds futures (ZQ) ingestion
         └── FomcSelectorFrame.java   # Interactive Swing analysis dashboard & visualization trigger
 
+data/
+└── spy_input.json                   # Sample market options chain input slice
+
+docs/
+└── cross_asset_implied_probability_surface_plan.md # Quantitative architectural design framework
+
 scripts/
 ├── fetch_options_yfinance.py        # Python helper for yfinance market data extraction
 └── visualize_surface.py             # 3D implied probability surface & cross-asset density plotter
@@ -58,13 +64,11 @@ scripts/
 
 ### Launch Interactive Desktop UI
 ```bash
-run_ui.bat
-# or
 ./mvnw exec:java
 ```
 
 ### Run Batch Surface Calibration CLI
 ```bash
-./mvnw compile exec:java -Dexec.mainClass="com.eventrvcalc.core.surface.SurfaceRunner" -Dexec.args="spy_input.json surface_data.json"
+./mvnw compile exec:java -Dexec.mainClass="com.eventrvcalc.core.surface.SurfaceRunner" -Dexec.args="data/spy_input.json target/surface_data.json"
 ```
 

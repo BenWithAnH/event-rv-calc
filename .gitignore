@@ -3,6 +3,12 @@ target/
 *.class
 .mvn/wrapper/maven-wrapper.jar
 
+# Generated runtime data & visualization plots
+*.png
+*.parquet
+surface_data.json
+*.bat
+
 # IDE & Editor settings
 .idea/
 *.iml
