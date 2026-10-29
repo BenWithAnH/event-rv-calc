@@ -1,10 +1,23 @@
+# Maven build outputs
 target/
 *.class
 .mvn/wrapper/maven-wrapper.jar
+
+# IDE & Editor settings
 .idea/
 *.iml
 .vscode/
 .settings/
 .project
 .classpath
-.md
+
+# Python bytecode & virtualenvs
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+
+# OS metadata
+.DS_Store
+Thumbs.db
