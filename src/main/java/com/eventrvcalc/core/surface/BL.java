@@ -1116,39 +1116,67 @@ public class BL {
             double skewTlt,
             double skewSpy,
             boolean isEventBullish) {
+        return triangulateFomcVenues(
+                Double.NaN, pPolymarket, pRates, sigmaTlt, sigmaSpy,
+                v1Tlt, v1Spy, skewTlt, skewSpy, isEventBullish
+        );
+    }
+
+    /**
+     * Overload allowing explicit injection of the active consensus probability (e.g. from user selection
+     * or hybrid consensus) so that trees, synthesis, and status reporting use one synchronized probability.
+     */
+    public static CrossAssetTriangulation triangulateFomcVenues(
+            double activePOverride,
+            double pPolymarket,
+            double pRates,
+            double sigmaTlt,
+            double sigmaSpy,
+            double v1Tlt,
+            double v1Spy,
+            double skewTlt,
+            double skewSpy,
+            boolean isEventBullish) {
 
         double safeSigmaTlt = (!Double.isFinite(sigmaTlt) || sigmaTlt < 0.0) ? 0.0 : sigmaTlt;
         double safeSigmaSpy = (!Double.isFinite(sigmaSpy) || sigmaSpy < 0.0) ? 0.0 : sigmaSpy;
 
-        // 1. Synthesize Consensus Event Probability across 3 Venues:
+        // 1. Synthesize Consensus Event Probability across Venues:
         // Venue 1: Polymarket retail prediction crowd
         // Venue 2: CME 30-Day Fed Funds futures (ZQ) institutional rate
-        // Venue 3: TLT/SPY option surface risk-neutral jump skewness
+        // Venue 3: TLT/SPY option surface risk-neutral jump skewness (Diagnostic only; non-voting)
+        //
+        // Note on Skew Non-Identification: Standardized risk-neutral skewness S = (1 - 2p) / sqrt(p(1 - p))
+        // inverts a pure binary jump without background diffusion or dot-plot variance sharing.
+        // In reality, 2-week TLT skew reflects structural put demand and diffusion, and is consistent
+        // with many (p, share) pairs. Skew alone cannot identify p. It is reported as an uncoupled diagnostic
+        // and does NOT vote in consensus synthesis (pTri).
         double pOptions = Double.NaN;
         if (Double.isFinite(skewTlt) && Math.abs(skewTlt) > 1e-4) {
-            // Closed-form option-implied jump probability from standardized risk-neutral skewness:
-            // S = (1 - 2p) / sqrt(p(1 - p)) => p = 0.5 * (1 + |S| / sqrt(4 + S^2))
             double s = Math.max(-2.5, Math.min(2.5, skewTlt));
             pOptions = 0.5 * (1.0 + Math.abs(s) / Math.sqrt(4.0 + s * s));
         }
 
         double pTri;
-        boolean hasRates = Double.isFinite(pRates);
-        boolean hasPoly = Double.isFinite(pPolymarket);
-        boolean hasOpt = Double.isFinite(pOptions);
-
-        if (hasRates && hasPoly && hasOpt) {
-            pTri = 0.55 * pRates + 0.30 * pPolymarket + 0.15 * pOptions;
-        } else if (hasRates && hasPoly) {
-            pTri = 0.65 * pRates + 0.35 * pPolymarket; // institutional bond desks lead rate cuts/hikes
-        } else if (hasRates) {
-            pTri = pRates;
-        } else if (hasPoly) {
-            pTri = pPolymarket;
-        } else if (hasOpt) {
-            pTri = pOptions;
+        if (Double.isFinite(activePOverride)) {
+            pTri = activePOverride;
         } else {
-            pTri = 0.50;
+            boolean hasRates = Double.isFinite(pRates);
+            boolean hasPoly = Double.isFinite(pPolymarket);
+
+            if (hasRates && hasPoly) {
+                // Heuristic consensus blend: 65% CME Fed Funds ZQ + 35% Polymarket
+                // Weight rationale: 65% institutional rates reflecting CME Fed Funds 30-day (ZQ) futures depth
+                // and bank treasury / SOFR balance-sheet hedging liquidity; 35% Polymarket retail crowd discovery.
+                // (Note: weights are an empirical heuristic, not structural econometrics).
+                pTri = 0.65 * pRates + 0.35 * pPolymarket;
+            } else if (hasRates) {
+                pTri = pRates;
+            } else if (hasPoly) {
+                pTri = pPolymarket;
+            } else {
+                pTri = 0.50;
+            }
         }
         pTri = Math.max(1e-4, Math.min(1.0 - 1e-4, pTri));
 

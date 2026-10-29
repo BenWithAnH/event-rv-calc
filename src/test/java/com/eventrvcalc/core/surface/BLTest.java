@@ -461,8 +461,8 @@ class BLTest {
     }
 
     @Test
-    @DisplayName("Venue 3 options-implied jump probability actually contributes to p_Tri")
-    void testVenue3ContributesToProbabilitySynthesis() {
+    @DisplayName("Venue 3 option skew is diagnostic only and does not drag down consensus probability")
+    void testVenue3OptionSkewIsDiagnosticAndDoesNotDragDownProbability() {
         double pRates = 0.80;
         double pPoly = 0.80;
         double sigmaTlt = 0.012;
@@ -473,13 +473,18 @@ class BLTest {
         assertThat(triNoOpt.pOptions()).isNaN();
         assertThat(triNoOpt.pTriangulated()).isCloseTo(0.80, within(1e-4));
 
-        // When TLT skew is -0.50 (put skew), option-implied jump probability pOptions is ~62%:
+        // When TLT skew is -0.50 (put skew), option-implied jump probability pOptions diagnostic is ~62.13%:
         // S = -0.50 => p = 0.5 * (1 + 0.50 / sqrt(4 + 0.25)) = 0.5 * (1 + 0.2425) = 62.13%
-        // Blended with 15% weight: 0.55 * 0.80 + 0.30 * 0.80 + 0.15 * 0.6213 = 0.68 + 0.0932 = 77.32%
+        // But skew is under-identified; options layer must NOT vote in pTri:
         var triWithOpt = BL.triangulateFomcVenues(pPoly, pRates, sigmaTlt, sigmaSpy, 1e-4, 1e-4, -0.50, -1.50, false);
         assertThat(triWithOpt.pOptions()).isCloseTo(0.6213, within(0.001));
-        assertThat(triWithOpt.pTriangulated()).isNotEqualTo(triNoOpt.pTriangulated());
-        assertThat(triWithOpt.pTriangulated()).isCloseTo(0.7732, within(0.005));
+        // pTri must remain 0.80 (equal to 65/35 rates/prediction market blend), NOT dragged down to 77.3%:
+        assertThat(triWithOpt.pTriangulated()).isEqualTo(triNoOpt.pTriangulated());
+        assertThat(triWithOpt.pTriangulated()).isCloseTo(0.80, within(1e-4));
+
+        // When explicit activeP is injected via overload, pTriangulated matches activeP exactly:
+        var triActive = BL.triangulateFomcVenues(0.8053, pPoly, pRates, sigmaTlt, sigmaSpy, 1e-4, 1e-4, -0.50, -1.50, false);
+        assertThat(triActive.pTriangulated()).isCloseTo(0.8053, within(1e-4));
     }
 
     private static double gauss(double x, double mu, double sigma) {

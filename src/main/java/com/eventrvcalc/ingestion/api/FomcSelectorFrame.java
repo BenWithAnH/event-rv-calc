@@ -432,7 +432,7 @@ public class FomcSelectorFrame extends JFrame {
                     hybridP = 0.65 * effectiveRatesP + 0.35 * pPolymarket;
                     double divergencePts = (effectiveRatesP - pPolymarket) * 100.0;
                     sb.append(String.format("  Institutional vs Retail Divergence        : %+.2f pts (CME ZQ Turn+Tail - Polymarket)%n", divergencePts));
-                    sb.append(String.format("  Hybrid Consensus Blend (ZQ + PM)          : %.2f%% [65%% CME ZQ Institutional + 35%% Polymarket Retail Crowd]%n",
+                    sb.append(String.format("  Hybrid Consensus Blend (ZQ + PM)          : %.2f%% [65%% CME ZQ Institutional + 35%% Polymarket Retail Crowd (Empirical Heuristic)]%n",
                             hybridP * 100.0));
                 } else if (!Double.isNaN(effectiveRatesP)) {
                     hybridP = effectiveRatesP;
@@ -575,7 +575,7 @@ public class FomcSelectorFrame extends JFrame {
 
                 double ratesPForSynthesis = effectiveRatesP;
                 BL.CrossAssetTriangulation triangulation = BL.triangulateFomcVenues(
-                        pPolymarket, ratesPForSynthesis, sigmaTlt, sigmaSpy, v1Tlt, v1Spy, skewTlt, skewSpy, isBullish);
+                        activeP, pPolymarket, ratesPForSynthesis, sigmaTlt, sigmaSpy, v1Tlt, v1Spy, skewTlt, skewSpy, isBullish);
 
                 sb.append("\n========================================================================================\n");
                 sb.append("=== 3-VENUE FOMC EVENT SYNTHESIS & TRIANGULATION (PREDICTION + RATES + B-L SURFACES) ===\n");
@@ -589,10 +589,21 @@ public class FomcSelectorFrame extends JFrame {
                                 (fedFundsRes != null ? fedFundsRes.deltaRatePct() * 100.0 : 0.0))));
                 sb.append(String.format("Venue 3 — B-L Implied Volatility Surfaces (TLT & SPY) :%n"));
                 if (!Double.isNaN(triangulation.pOptions())) {
-                    sb.append(String.format("   * Option-Implied Jump Prob (p_Options) : %.2f%% (extracted from TLT risk-neutral skewness %+.4f)%n",
+                    sb.append(String.format("   * Option Skew Inversion Diagnostic (p_Options) : %.2f%% (from raw TLT skew %+.4f; under-identified)%n",
                             triangulation.pOptions() * 100.0, skewTlt));
+                    sb.append(String.format("     [Caveat: Under-identified. 2-week TLT skew reflects structural put demand and diffusion, not a pure binary event probability. Many (p, share) pairs fit this skew.]%n"));
                 } else {
-                    sb.append(String.format("   * Option-Implied Jump Prob (p_Options) : N/A (No TLT skewness)%n"));
+                    sb.append(String.format("   * Option Skew Inversion Diagnostic (p_Options) : N/A (No TLT skewness)%n"));
+                }
+                if (!Double.isNaN(skewTlt) && sigmaTlt > 1e-4) {
+                    BL.ThreeStateFomcJump tltTreeCheck = BL.solveThreeStateJump(sigmaTlt, activeP, skewTlt, isBullish);
+                    boolean skewConsistent = Math.abs(tltTreeCheck.realizedSkewness() - skewTlt) < 0.05;
+                    sb.append(String.format("   * Options Consistency Check at Active p=%.2f%% : %s (Tree realized skew %+.3f vs market %+.3f, dot-plot var share %.0f%%)%n",
+                            activeP * 100.0,
+                            skewConsistent ? "CONSISTENT / PASS" : "DIVERGENT",
+                            tltTreeCheck.realizedSkewness(), skewTlt, tltTreeCheck.dotPlotVarianceShare() * 100.0));
+                    sb.append(String.format("     [Diagnostic: TLT option surface accommodates active p=%.2f%% under %.0f%% dot-plot variance share; options confirm consensus rather than vote.]%n",
+                            activeP * 100.0, tltTreeCheck.dotPlotVarianceShare() * 100.0));
                 }
                 sb.append(String.format("   * TLT Pure Event Move: %.2f%% -> Implied 20Y Yield Shock: +/-%.2f bps (D_mod ~16.5y)%n",
                         sigmaTlt * 100.0, triangulation.tltImpliedYieldShockBps()));
@@ -600,15 +611,8 @@ public class FomcSelectorFrame extends JFrame {
                     sb.append(String.format("     [Note: +/-%.2f bps yield shock is light for an FOMC decision; background diffusion subtraction across wide weekly expiry gap absorbs event variance into noise]%n",
                             triangulation.tltImpliedYieldShockBps()));
                 }
-                sb.append(String.format("     Move if Hike/Event (at p_Tri=%.2f%%): %+.2f bps yield | Move if Pause/Surprise: %+.2f bps yield%n",
+                sb.append(String.format("     Move if Hike/Event (at p=%.2f%%): %+.2f bps yield | Move if Pause/Surprise: %+.2f bps yield%n",
                         triangulation.pTriangulated() * 100.0, triangulation.tltYieldMoveIfEventBps(), triangulation.tltYieldMoveIfNotEventBps()));
-                if (Math.abs(triangulation.pTriangulated() - activeP) > 1e-4) {
-                    BL.ZeroDriftJump activeTltJump = BL.solveZeroDriftJump(sigmaTlt, activeP, skewTlt, isBullish);
-                    double activeTltHikeBps = -(activeTltJump.moveIfEvent() / BL.TLT_MODIFIED_DURATION) * 10000.0;
-                    double activeTltSurpriseBps = -(activeTltJump.moveIfNotEvent() / BL.TLT_MODIFIED_DURATION) * 10000.0;
-                    sb.append(String.format("     (vs Layer A Tree at Active p=%.2f%%: %+.2f bps / %+.2f bps)%n",
-                            activeP * 100.0, activeTltHikeBps, activeTltSurpriseBps));
-                }
                 if (!Double.isNaN(sigmaIef) && sigmaIef > 1e-4) {
                     sb.append(String.format("   * IEF Pure Event Move: %.2f%%%s -> Implied 10Y Yield Shock: +/-%.2f bps (D_mod ~7.5y)%n",
                             sigmaIef * 100.0, isIefSynthetic ? " [Synthetic from TLT]" : "",
@@ -623,28 +627,27 @@ public class FomcSelectorFrame extends JFrame {
                     sb.append(String.format("     [Note: Fragile residual (<3%% total variance); +/-0.1 vol pt quote error swings move by %+.2f%%]%n",
                             spySens.moveSensitivityToVolPoint() * 100.0));
                 }
-                sb.append(String.format("     Move if Hike/Event (at p_Tri=%.2f%%): %+.2f%% equity | Move if Pause/Surprise: %+.2f%% equity%n",
+                sb.append(String.format("     Move if Hike/Event (at p=%.2f%%): %+.2f%% equity | Move if Pause/Surprise: %+.2f%% equity%n",
                         triangulation.pTriangulated() * 100.0, triangulation.spyMoveIfEventPct() * 100.0, triangulation.spyMoveIfNotEventPct() * 100.0));
-                if (Math.abs(triangulation.pTriangulated() - activeP) > 1e-4) {
-                    BL.ZeroDriftJump activeSpyJump = BL.solveZeroDriftJump(sigmaSpy, activeP, skewSpy, isBullish);
-                    sb.append(String.format("     (vs Layer A Tree at Active p=%.2f%%: %+.2f%% / %+.2f%%)%n",
-                            activeP * 100.0, activeSpyJump.moveIfEvent() * 100.0, activeSpyJump.moveIfNotEvent() * 100.0));
-                }
                 sb.append("----------------------------------------------------------------------------------------\n");
-                sb.append(String.format("-> ACTIVE PROBABILITY APPLIED TO TREES        : %.2f%% (%s)%n", activeP * 100.0, activeSourceName));
-                if (!Double.isNaN(triangulation.pOptions())) {
-                    sb.append(String.format("-> 3-VENUE TRIANGULATED CONSENSUS PROB (p_Tri) : %.2f%% [55%% CME ZQ (%.2f%%) + 30%% PM (%.2f%%) + 15%% TLT Skew (%.2f%%)]%n",
-                            triangulation.pTriangulated() * 100.0,
-                            effectiveRatesP * 100.0,
-                            pPolymarket * 100.0,
-                            triangulation.pOptions() * 100.0));
-                } else if (!Double.isNaN(effectiveRatesP) && !Double.isNaN(pPolymarket)) {
-                    sb.append(String.format("-> 2-VENUE TRIANGULATED CONSENSUS PROB (p_Tri) : %.2f%% [65%% CME ZQ (%.2f%%) + 35%% PM (%.2f%%)]%n",
+                sb.append(String.format("-> ACTIVE CONSENSUS PROBABILITY APPLIED       : %.2f%% (%s)%n", activeP * 100.0, activeSourceName));
+                if (!Double.isNaN(effectiveRatesP) && !Double.isNaN(pPolymarket)) {
+                    sb.append(String.format("   * Triangulated Blend (p_Tri)               : %.2f%% [65%% CME Fed Funds ZQ (%.2f%%) + 35%% Polymarket (%.2f%%)]%n",
                             triangulation.pTriangulated() * 100.0,
                             effectiveRatesP * 100.0,
                             pPolymarket * 100.0));
+                    sb.append("   * Weight Rationale                         : 65% weight on institutional rates reflecting CME Fed Funds 30-day (ZQ) depth\n" +
+                              "                                                and bank treasury / SOFR hedging liquidity; 35% weight on Polymarket retail\n" +
+                              "                                                crowd positioning and tail discovery. (Empirical heuristic; options layer excluded\n" +
+                              "                                                from probability vote due to under-identification from skew).\n");
+                } else if (!Double.isNaN(effectiveRatesP)) {
+                    sb.append(String.format("   * Triangulated Consensus (p_Tri)           : %.2f%% [100%% CME Fed Funds ZQ (%.2f%%)]%n",
+                            triangulation.pTriangulated() * 100.0, effectiveRatesP * 100.0));
+                } else if (!Double.isNaN(pPolymarket)) {
+                    sb.append(String.format("   * Triangulated Consensus (p_Tri)           : %.2f%% [100%% Polymarket (%.2f%%)]%n",
+                            triangulation.pTriangulated() * 100.0, pPolymarket * 100.0));
                 } else {
-                    sb.append(String.format("-> TRIANGULATED CONSENSUS PROB (p_Tri)        : %.2f%%%n", triangulation.pTriangulated() * 100.0));
+                    sb.append(String.format("   * Triangulated Consensus (p_Tri)           : %.2f%%%n", triangulation.pTriangulated() * 100.0));
                 }
                 double dynamicBaseRatio = (!Double.isNaN(v1Tlt) && !Double.isNaN(v1Spy) && v1Tlt > 1e-9 && v1Spy > 1e-9)
                         ? Math.max(0.65, Math.min(2.00, Math.sqrt(v1Tlt / v1Spy)))
@@ -669,12 +672,11 @@ public class FomcSelectorFrame extends JFrame {
                 final double finalActiveP = activeP;
                 final String finalActiveName = activeSourceName;
                 SwingUtilities.invokeLater(() -> {
-                    String optStr = Double.isNaN(finalTri.pOptions()) ? "N/A" : String.format("%.1f%%", finalTri.pOptions() * 100.0);
+                    String optStr = Double.isNaN(finalTri.pOptions()) ? "N/A" : String.format("%.1f%% (diag)", finalTri.pOptions() * 100.0);
                     summaryLine1.setText(String.format(
-                            "ACTIVE PROB: %.1f%% (%s) | 3-Venue p_Tri: %.1f%% (CME: %s | PM: %s | Opt: %s) | 20Y Yield Shock: +/-%.1f bps | SPY Move: +/-%.2f%%",
+                            "ACTIVE PROB: %.1f%% (%s) | CME: %s | PM: %s | TLT Skew Diag: %s (non-voting) | 20Y Yield Shock: +/-%.1f bps | SPY Move: +/-%.2f%%",
                             finalActiveP * 100.0,
                             finalActiveName,
-                            finalTri.pTriangulated() * 100.0,
                             Double.isNaN(finalPBonds) ? "N/A" : String.format("%.1f%%", finalPBonds * 100.0),
                             Double.isNaN(finalPPolymarket) ? "N/A" : String.format("%.1f%%", finalPPolymarket * 100.0),
                             optStr,
