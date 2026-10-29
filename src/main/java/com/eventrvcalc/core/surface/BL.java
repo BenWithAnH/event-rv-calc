@@ -121,13 +121,24 @@ public class BL {
     public static List<DensityPoint> generateDensitySlice(double S0, double[] targetStrikes,
                                                          double T, double r, double q,
                                                          BS.VolCurve volCurve, double dK) {
+        if (dK <= 0.0) {
+            throw new IllegalArgumentException("dK must be strictly positive: " + dK);
+        }
         List<DensityPoint> slice = new ArrayList<>(targetStrikes.length);
+        double expRT = Math.exp(r * T);
+        double dK2 = dK * dK;
+        double twoDk = 2.0 * dK;
         for (double K : targetStrikes) {
-            double px = BS.europeanCallPrice(S0, K, T, r, q, volCurve);
-            double d2C = secondDerivative(S0, K, T, r, q, volCurve, dK);
-            double pdf = Math.max(0.0, Math.exp(r * T) * d2C);
-            double cdfVal = cdf(S0, K, T, r, q, volCurve, dK);
-            slice.add(new DensityPoint(K, px, d2C, pdf, cdfVal));
+            double cMid = BS.europeanCallPrice(S0, K, T, r, q, volCurve);
+            double cUp = BS.europeanCallPrice(S0, K + dK, T, r, q, volCurve);
+            double cDown = BS.europeanCallPrice(S0, K - dK, T, r, q, volCurve);
+
+            double d2C = (cUp - 2.0 * cMid + cDown) / dK2;
+            double pdf = Math.max(0.0, expRT * d2C);
+            double dCdK = (cUp - cDown) / twoDk;
+            double cdfVal = Math.max(0.0, Math.min(1.0, 1.0 + expRT * dCdK));
+
+            slice.add(new DensityPoint(K, cMid, d2C, pdf, cdfVal));
         }
         return slice;
     }
@@ -226,19 +237,26 @@ public class BL {
         if (slice == null || slice.size() < 2 || forward <= 0.0) {
             throw new IllegalArgumentException("Valid density slice (>=2 points) and positive forward required");
         }
+        DensityPoint p0 = slice.get(0);
+        if (p0.strike() <= 0.0) {
+            throw new IllegalArgumentException("Strikes must be strictly positive");
+        }
+        double x0 = Math.log(p0.strike() / forward);
+        double y0 = x0 * x0 * p0.density();
         double sum = 0.0;
+
         for (int i = 0; i < slice.size() - 1; i++) {
-            DensityPoint p0 = slice.get(i);
             DensityPoint p1 = slice.get(i + 1);
-            if (p0.strike() <= 0.0 || p1.strike() <= 0.0) {
+            if (p1.strike() <= 0.0) {
                 throw new IllegalArgumentException("Strikes must be strictly positive");
             }
             double dK = p1.strike() - p0.strike();
-            double x0 = Math.log(p0.strike() / forward);
             double x1 = Math.log(p1.strike() / forward);
-            double y0 = x0 * x0 * p0.density();
             double y1 = x1 * x1 * p1.density();
             sum += 0.5 * (y0 + y1) * dK;
+            p0 = p1;
+            x0 = x1;
+            y0 = y1;
         }
         return sum;
     }
@@ -260,14 +278,138 @@ public class BL {
      *   \sigma_{event} = \sqrt{max(0, V_{T2} - V_{T1} - windowDays * V_1)}
      */
     public static double impliedPureEventMove(double vT1, double vT2, double v1Day, double windowDays) {
+        return impliedPureEventMove(vT1, vT2, v1Day, windowDays, 0.0);
+    }
+
+    /**
+     * Implied pure event move \sigma_{event} stripping out both baseline trading-day diffusion
+     * (windowDays * V_1) and scheduled non-FOMC macro cluster variance (extraMacroDays * V_1)
+     * such as NFP, CPI, and Quadruple Witching when the [T1, T2] straddle spans multiple weeks.
+     */
+    public static double impliedPureEventMove(double vT1, double vT2, double v1Day, double windowDays, double extraMacroDays) {
         if (windowDays < 0.0) {
             throw new IllegalArgumentException("windowDays must be non-negative");
         }
-        return Math.sqrt(Math.max(0.0, vT2 - vT1 - windowDays * v1Day));
+        double effectiveDays = windowDays + Math.max(0.0, extraMacroDays);
+        double diff = vT2 - vT1 - effectiveDays * v1Day;
+        // If stripping estimated macro cluster variance extinguishes the event jump,
+        // but raw trading-day window diffusion is positive, fall back to raw window diffusion.
+        if (diff <= 0.0 && extraMacroDays > 0.0) {
+            double rawDiff = vT2 - vT1 - windowDays * v1Day;
+            if (rawDiff > 0.0) {
+                diff = rawDiff;
+            }
+        }
+        return Math.sqrt(Math.max(0.0, diff));
     }
 
     public static double impliedPureEventMove(double vT1, double vT2, double v1Day) {
-        return impliedPureEventMove(vT1, vT2, v1Day, 1.0);
+        return impliedPureEventMove(vT1, vT2, v1Day, 1.0, 0.0);
+    }
+
+    /**
+     * Counts trading days (Monday through Friday, excluding major US market holidays)
+     * in the half-open interval (d1, d2].
+     */
+    public static int countTradingDays(java.time.LocalDate d1, java.time.LocalDate d2) {
+        if (d1 == null || d2 == null) {
+            return 1;
+        }
+        if (d1.isAfter(d2)) {
+            java.time.LocalDate tmp = d1;
+            d1 = d2;
+            d2 = tmp;
+        }
+        int count = 0;
+        java.time.LocalDate cur = d1.plusDays(1);
+        while (!cur.isAfter(d2)) {
+            java.time.DayOfWeek dow = cur.getDayOfWeek();
+            if (dow != java.time.DayOfWeek.SATURDAY && dow != java.time.DayOfWeek.SUNDAY && !isUsMarketHoliday(cur)) {
+                count++;
+            }
+            cur = cur.plusDays(1);
+        }
+        return Math.max(1, count);
+    }
+
+    private static boolean isUsMarketHoliday(java.time.LocalDate d) {
+        int m = d.getMonthValue();
+        int day = d.getDayOfMonth();
+        java.time.DayOfWeek dow = d.getDayOfWeek();
+        // New Year's Day (Jan 1 or observed)
+        if (m == 1 && (day == 1 || (day == 2 && dow == java.time.DayOfWeek.MONDAY))) return true;
+        // Independence Day (Jul 4 or observed)
+        if (m == 7 && (day == 4 || (day == 3 && dow == java.time.DayOfWeek.FRIDAY) || (day == 5 && dow == java.time.DayOfWeek.MONDAY))) return true;
+        // Thanksgiving (4th Thursday of November)
+        if (m == 11 && dow == java.time.DayOfWeek.THURSDAY && day >= 22 && day <= 28) return true;
+        // Christmas Day (Dec 25 or observed)
+        if (m == 12 && (day == 25 || (day == 24 && dow == java.time.DayOfWeek.FRIDAY) || (day == 26 && dow == java.time.DayOfWeek.MONDAY))) return true;
+        return false;
+    }
+
+    /**
+     * Checks if a ticker is a fixed-income or Treasury instrument (not subject to equity Quadruple Witching).
+     */
+    public static boolean isFixedIncomeTicker(String ticker) {
+        if (ticker == null || ticker.isBlank()) return false;
+        String t = ticker.trim().toUpperCase();
+        return t.equals("TLT") || t.equals("IEF") || t.equals("SHY") || t.equals("IEI")
+                || t.equals("TLH") || t.equals("BIL") || t.equals("BND") || t.equals("AGG")
+                || t.equals("HYG") || t.equals("JNK") || t.equals("LQD") || t.equals("TIP")
+                || t.startsWith("ZQ") || t.startsWith("ZB") || t.startsWith("ZN") || t.startsWith("ZT");
+    }
+
+    /**
+     * Estimates additional baseline variance day-equivalents inside (t1Date, t2Date]
+     * caused by non-FOMC macro releases (NFP, CPI) and Quarterly OpEx / Quadruple Witching
+     * when the option straddle window spans more than 3 trading days.
+     */
+    public static double estimateMacroClusterExtraDays(java.time.LocalDate t1Date, java.time.LocalDate t2Date) {
+        return estimateMacroClusterExtraDays(t1Date, t2Date, null);
+    }
+
+    public static double estimateMacroClusterExtraDays(java.time.LocalDate t1Date, java.time.LocalDate t2Date, String ticker) {
+        if (t1Date == null || t2Date == null || !t2Date.isAfter(t1Date)) {
+            return 0.0;
+        }
+        int windowTradingDays = countTradingDays(t1Date, t2Date);
+        if (windowTradingDays <= 3) {
+            return 0.0; // Tight 1-to-3 day straddle around FOMC isolates FOMC cleanly
+        }
+        double extraDays = 0.0;
+        boolean hasCpiWindow = false;
+        boolean hasNfp = false;
+        boolean hasQuadWitching = false;
+        boolean isBond = isFixedIncomeTicker(ticker);
+
+        java.time.LocalDate cur = t1Date.plusDays(1);
+        while (!cur.isAfter(t2Date)) {
+            java.time.DayOfWeek dow = cur.getDayOfWeek();
+            int dom = cur.getDayOfMonth();
+            int month = cur.getMonthValue();
+            if (dow != java.time.DayOfWeek.SATURDAY && dow != java.time.DayOfWeek.SUNDAY) {
+                // 1. NFP: First Friday of the month (or 2nd Friday if 1st is Jan 1 / holiday)
+                if (dow == java.time.DayOfWeek.FRIDAY && dom <= 7) {
+                    hasNfp = true;
+                }
+                // 2. CPI / PPI: Mid-month inflation release window (10th-14th on Tue/Wed/Thu)
+                if (dom >= 10 && dom <= 14 && (dow == java.time.DayOfWeek.TUESDAY
+                        || dow == java.time.DayOfWeek.WEDNESDAY || dow == java.time.DayOfWeek.THURSDAY)) {
+                    hasCpiWindow = true;
+                }
+                // 3. Quadruple Witching / S&P 500 Quarterly Rebalancing (3rd Friday of Mar, Jun, Sep, Dec)
+                // Applies strictly to equities/indices (SPY); fixed income / Treasury ETFs do not experience Quad Witching.
+                if (!isBond && (month == 3 || month == 6 || month == 9 || month == 12)
+                        && dow == java.time.DayOfWeek.FRIDAY && dom >= 15 && dom <= 21) {
+                    hasQuadWitching = true;
+                }
+            }
+            cur = cur.plusDays(1);
+        }
+        if (hasNfp) extraDays += 0.75;
+        if (hasCpiWindow) extraDays += 0.85;
+        if (hasQuadWitching) extraDays += 0.85;
+        return extraDays;
     }
 
     /**
@@ -422,13 +564,15 @@ public class BL {
         double sigmaUp = std * 0.7;
         double sigmaDown = std * 0.7;
 
+        // Hoist allocation outside the 200-step EM loop to eliminate heap churn
+        double[] gammaUp = new double[n];
+
         // ponytail: 200-step EM loop is O(N) per step; sufficient for 1D grids <= 4096 points.
         for (int iter = 0; iter < 200; iter++) {
             double sumGammaUp = 0.0;
             double sumGammaDown = 0.0;
             double newMuUp = 0.0;
             double newMuDown = 0.0;
-            double[] gammaUp = new double[n];
 
             for (int i = 0; i < n; i++) {
                 double pUp = p * normalPdf(x[i], muUp, sigmaUp);
@@ -527,11 +671,23 @@ public class BL {
      * @param pEvent         Probability of the specified event happening
      * @param isEventBullish True if event occurrence is bullish for underlying (e.g. rate cut, positive earnings);
      *                       False if event occurrence is bearish (e.g. rate hike).
-     *                       If event is bearish (isEventBullish = false):
-     *                         moveIfEvent = -\sigma \sqrt{(1-p)/p}
-     *                         moveIfNotEvent = +\sigma \sqrt{p/(1-p)}
      */
     public static ZeroDriftJump solveZeroDriftJump(double sigmaEvent, double pEvent, boolean isEventBullish) {
+        return solveZeroDriftJump(sigmaEvent, pEvent, Double.NaN, isEventBullish);
+    }
+
+    /**
+     * Solves the zero-drift 2-state jump outcomes under the exact zero-drift forward martingale
+     * and variance-matching conditions at the actual event probability pEvent:
+     *   pEvent * moveIfEvent + (1 - pEvent) * moveIfNotEvent = 0,   Var(J) = \sigma_{event}^2
+     *
+     * Note: In a 2-state Bernoulli tree with fixed probability pEvent and variance \sigma_{event}^2,
+     * the two jump states are uniquely locked by E[J] = 0 and Var(J) = \sigma_{event}^2.
+     * Surface skewness (blSkewness) requires a 3rd degree of freedom and is therefore solved in
+     * {@link #solveThreeStateJump(double, double, double, boolean)}, whose conditional expectation
+     * over the event sub-branches (Hawkish + Dovish) reduces to this exact 2-state moveIfEvent.
+     */
+    public static ZeroDriftJump solveZeroDriftJump(double sigmaEvent, double pEvent, double blSkewness, boolean isEventBullish) {
         double safeSigma = (Double.isNaN(sigmaEvent) || sigmaEvent < 0.0) ? 0.0 : sigmaEvent;
         double safeP = Double.isNaN(pEvent) ? 0.50 : Math.max(1e-4, Math.min(1.0 - 1e-4, pEvent));
 
@@ -549,7 +705,6 @@ public class BL {
             u = moveIfEvent;
             d = moveIfNotEvent;
         } else {
-            // Bearish event: event occurrence causes downward drop; non-occurrence (relief/pause) causes upward jump
             moveIfEvent = -branchSmall;
             moveIfNotEvent = +branchSurprise;
             u = moveIfNotEvent;
@@ -559,10 +714,110 @@ public class BL {
     }
 
     /**
+     * 3-State FOMC Jump Decomposition incorporating Summary of Economic Projections (Dot Plot),
+     * Powell Press Conference dispersion, and Breeden-Litzenberger surface skewness:
+     *   - State 1 (pHawkish): Base Policy Decision + Hawkish Dots / Press Conference
+     *   - State 2 (pDovish) : Base Policy Decision + Dovish Dots / Press Conference
+     *   - State 3 (pSurprise): Surprise Policy Rate Decision (1 - p)
+     */
+    public record ThreeStateFomcJump(
+            double pHawkish,
+            double moveHawkish,
+            double pDovish,
+            double moveDovish,
+            double pSurprise,
+            double moveSurprise,
+            double dotPlotVarianceShare,
+            double realizedSkewness
+    ) {}
+
+    /**
+     * Solves a 3-state FOMC jump distribution matching:
+     *   1. Zero-drift martingale: p_H * m_H + p_D * m_D + p_S * m_S = 0
+     *   2. Total pure event variance: p_H * m_H^2 + p_D * m_D^2 + p_S * m_S^2 = \sigma_{event}^2
+     *   3. Breeden-Litzenberger 3rd moment (skewness S): calibrates Dot-Plot variance share \theta
+     *      and intra-decision Hawkish/Dovish asymmetry to match empirical option surface skew.
+     */
+    public static ThreeStateFomcJump solveThreeStateJump(
+            double sigmaEvent, double pEvent, double blSkewness, boolean isEventBullish) {
+        double safeSigma = (Double.isNaN(sigmaEvent) || sigmaEvent < 0.0) ? 0.0 : sigmaEvent;
+        double p = Double.isNaN(pEvent) ? 0.50 : Math.max(0.05, Math.min(0.95, pEvent));
+        double pSurprise = 1.0 - p;
+        double targetSkew = (Double.isNaN(blSkewness) || !Double.isFinite(blSkewness)) ? 0.0
+                : Math.max(-2.5, Math.min(2.5, blSkewness));
+
+        if (safeSigma <= 1e-8) {
+            return new ThreeStateFomcJump(0.5 * p, 0.0, 0.5 * p, 0.0, pSurprise, 0.0, 0.0, 0.0);
+        }
+
+        // Fine grid-search with smooth interior regularization over Dot-Plot variance share theta in [0.20, 0.78]
+        // and intra-decision split alpha in [0.18, 0.82] (avoiding boundary clipping at 0.15 * p)
+        // where pHawkish = alpha * p, pDovish = (1 - alpha) * p:
+        // Base policy mean move: m_base = sign * sigma * sqrt((1 - theta) * (1 - p) / p)
+        // Surprise policy move:  m_surp = - (p / (1 - p)) * m_base
+        // Dot-plot dispersion around m_base with zero conditional drift:
+        //   alpha * d_H + (1 - alpha) * d_D = 0,  p * (alpha * d_H^2 + (1 - alpha) * d_D^2) = theta * sigma^2
+        double bestTheta = 0.50;
+        double bestAlpha = 0.50;
+        double bestErr = Double.POSITIVE_INFINITY;
+        double signBase = isEventBullish ? 1.0 : -1.0;
+        double safeSigma3 = safeSigma * safeSigma * safeSigma;
+        double priorTheta = Math.min(0.72, Math.max(0.28, p * 0.75));
+
+        for (int ti = 20; ti <= 78; ti++) {
+            double theta = ti / 100.0;
+            double mBase = signBase * safeSigma * Math.sqrt((1.0 - theta) * pSurprise / p);
+            double mSurp = -(p / pSurprise) * mBase;
+            double dotStd = safeSigma * Math.sqrt(theta / p);
+            double surpTerm = pSurprise * mSurp * mSurp * mSurp;
+            double thetaDiff = theta - priorTheta;
+            double thetaPenalty = 0.25 * thetaDiff * thetaDiff;
+
+            for (int ai = 18; ai <= 82; ai++) {
+                double alpha = ai / 100.0; // probability share of Hawkish Dots within base decision
+                // Hawkish dots is always more negative for asset price than Dovish dots:
+                double dHawk = -dotStd * Math.sqrt((1.0 - alpha) / alpha);
+                double dDov = +dotStd * Math.sqrt(alpha / (1.0 - alpha));
+                double mHawk = mBase + dHawk;
+                double mDov = mBase + dDov;
+
+                double pH = alpha * p;
+                double pD = (1.0 - alpha) * p;
+                double m3 = pH * mHawk * mHawk * mHawk + pD * mDov * mDov * mDov + surpTerm;
+                double skew = m3 / safeSigma3;
+
+                double skewDiff = skew - targetSkew;
+                double alphaDiff = alpha - 0.50;
+                // Smooth quadratic objective prevents hard-boundary clamping when |targetSkew| is large
+                double err = skewDiff * skewDiff + thetaPenalty + 0.35 * alphaDiff * alphaDiff;
+                if (err < bestErr) {
+                    bestErr = err;
+                    bestTheta = theta;
+                    bestAlpha = alpha;
+                }
+            }
+        }
+
+        double mBase = signBase * safeSigma * Math.sqrt((1.0 - bestTheta) * pSurprise / p);
+        double mSurp = -(p / pSurprise) * mBase;
+        double dotStd = safeSigma * Math.sqrt(bestTheta / p);
+        double dHawk = -dotStd * Math.sqrt((1.0 - bestAlpha) / bestAlpha);
+        double dDov = +dotStd * Math.sqrt(bestAlpha / (1.0 - bestAlpha));
+        double mHawk = mBase + dHawk;
+        double mDov = mBase + dDov;
+        double pH = bestAlpha * p;
+        double pD = (1.0 - bestAlpha) * p;
+        double m3 = pH * mHawk * mHawk * mHawk + pD * mDov * mDov * mDov + pSurprise * mSurp * mSurp * mSurp;
+        double realizedSkew = m3 / (safeSigma * safeSigma * safeSigma);
+
+        return new ThreeStateFomcJump(pH, mHawk, pD, mDov, pSurprise, mSurp, bestTheta, realizedSkew);
+    }
+
+    /**
      * Backward-compatible overload defaulting to isEventBullish = true (canonical notes notation).
      */
     public static ZeroDriftJump solveZeroDriftJump(double sigmaEvent, double p) {
-        return solveZeroDriftJump(sigmaEvent, p, true);
+        return solveZeroDriftJump(sigmaEvent, p, Double.NaN, true);
     }
 
     private static double normalPdf(double x, double mu, double sigma) {
@@ -627,6 +882,26 @@ public class BL {
         public static PolymarketTailBrackets empty() {
             return new PolymarketTailBrackets(0.0, 0.0, 0.0, 0.0);
         }
+
+        /**
+         * Returns the implied "No change / Hold" (0 bps) bracket probability:
+         *   p_{no\_change} = \max(0, 1 - (p_{cut50} + p_{cut25} + p_{hike25} + p_{hike50}))
+         */
+        public double pNoChange() {
+            double c50 = Double.isFinite(pCut50) ? Math.max(0.0, pCut50) : 0.0;
+            double c25 = Double.isFinite(pCut25) ? Math.max(0.0, pCut25) : 0.0;
+            double h25 = Double.isFinite(pHike25) ? Math.max(0.0, pHike25) : 0.0;
+            double h50 = Double.isFinite(pHike50) ? Math.max(0.0, pHike50) : 0.0;
+            return Math.max(0.0, 1.0 - (c50 + c25 + h25 + h50));
+        }
+
+        public double expectedRateChangeBps() {
+            double c50 = Double.isFinite(pCut50) ? Math.max(0.0, pCut50) : 0.0;
+            double c25 = Double.isFinite(pCut25) ? Math.max(0.0, pCut25) : 0.0;
+            double h25 = Double.isFinite(pHike25) ? Math.max(0.0, pHike25) : 0.0;
+            double h50 = Double.isFinite(pHike50) ? Math.max(0.0, pHike50) : 0.0;
+            return -50.0 * c50 - 25.0 * c25 + 25.0 * h25 + 50.0 * h50;
+        }
     }
 
     public record TailAdjustedCmeResult(
@@ -635,8 +910,21 @@ public class BL {
             double pHike25Zq,
             double pBondsTailAdjusted,
             double tailCorrectionBps,
-            boolean isHikeImplied
-    ) {}
+            boolean isHikeImplied,
+            double yearEndTurnBps,
+            double deltaRateTurnAdjustedBps,
+            double pBondsTurnAndTailAdjusted
+    ) {
+        public TailAdjustedCmeResult(
+                double deltaRateBps,
+                double pBondsBinary,
+                double pHike25Zq,
+                double pBondsTailAdjusted,
+                double tailCorrectionBps,
+                boolean isHikeImplied) {
+            this(deltaRateBps, pBondsBinary, pHike25Zq, pBondsTailAdjusted, tailCorrectionBps, isHikeImplied, 0.0, deltaRateBps, pBondsTailAdjusted);
+        }
+    }
 
     /**
      * Solves for the tail-adjusted CME Fed Funds futures probability by accounting for
@@ -648,36 +936,137 @@ public class BL {
     public static TailAdjustedCmeResult solveTailAdjustedCme(
             double deltaRatePct,
             PolymarketTailBrackets tails) {
+        return solveTailAdjustedCme(deltaRatePct, tails, 0.0);
+    }
 
-        double deltaBps = deltaRatePct * 100.0; // e.g. 0.2089% -> 20.89 bps
+    /**
+     * Solves for tail-adjusted CME Fed Funds futures probability, optionally accounting for
+     * year-end balance-sheet turn funding pressure in December contracts.
+     */
+    public static TailAdjustedCmeResult solveTailAdjustedCme(
+            double deltaRatePct,
+            PolymarketTailBrackets tails,
+            double yearEndTurnBps) {
+
+        double safeDeltaPct = Double.isFinite(deltaRatePct) ? deltaRatePct : 0.0;
+        double deltaBps = safeDeltaPct * 100.0;
         double pBinary = Math.min(1.0, Math.max(0.0, Math.abs(deltaBps) / 25.0));
 
+        double turnBps = (Double.isFinite(yearEndTurnBps) && yearEndTurnBps > 0.0) ? yearEndTurnBps : 0.0;
+        double adjustedDeltaBps = deltaBps >= 0.0 ? Math.max(0.0, deltaBps - turnBps) : Math.min(0.0, deltaBps + turnBps);
+
         if (tails == null) {
-            return new TailAdjustedCmeResult(deltaBps, pBinary, pBinary, pBinary, 0.0, deltaBps >= 0.0);
+            double pTurnBinary = (turnBps <= 0.0) ? pBinary : Math.min(1.0, Math.max(0.0, Math.abs(adjustedDeltaBps) / 25.0));
+            return new TailAdjustedCmeResult(
+                    deltaBps, pBinary, pBinary, pBinary, 0.0, deltaBps >= 0.0,
+                    turnBps, adjustedDeltaBps, pTurnBinary
+            );
         }
+
+        double safeCut50 = Double.isFinite(tails.pCut50()) ? Math.max(0.0, Math.min(1.0, tails.pCut50())) : 0.0;
+        double safeCut25 = Double.isFinite(tails.pCut25()) ? Math.max(0.0, Math.min(1.0, tails.pCut25())) : 0.0;
+        double safeHike50 = Double.isFinite(tails.pHike50()) ? Math.max(0.0, Math.min(1.0, tails.pHike50())) : 0.0;
 
         // Tails contribution outside of 25 bps hike:
         // tailContribution = -50 * p_cut50 - 25 * p_cut25 + 50 * p_hike50
-        double tailContribution = -50.0 * tails.pCut50() - 25.0 * tails.pCut25() + 50.0 * tails.pHike50();
+        double tailContribution = -50.0 * safeCut50 - 25.0 * safeCut25 + 50.0 * safeHike50;
         double pHike25Zq = (deltaBps - tailContribution) / 25.0;
         pHike25Zq = Math.max(0.0, Math.min(1.0, pHike25Zq));
 
-        double pBondsTailAdjusted = Math.max(0.0, Math.min(1.0, pHike25Zq + tails.pHike50()));
+        double pBondsTailAdjusted = Math.max(0.0, Math.min(1.0, pHike25Zq + safeHike50));
         double tailCorrectionBps = deltaBps - (25.0 * pBinary);
+
+        // Turn-adjusted calculation (short-circuit redundant math if turnBps == 0):
+        double pHike25ZqTurn;
+        double pBondsTurnAndTail;
+        if (turnBps <= 0.0) {
+            pHike25ZqTurn = pHike25Zq;
+            pBondsTurnAndTail = pBondsTailAdjusted;
+        } else {
+            pHike25ZqTurn = (adjustedDeltaBps - tailContribution) / 25.0;
+            pHike25ZqTurn = Math.max(0.0, Math.min(1.0, pHike25ZqTurn));
+            pBondsTurnAndTail = Math.max(0.0, Math.min(1.0, pHike25ZqTurn + safeHike50));
+        }
 
         return new TailAdjustedCmeResult(
                 deltaBps,
                 pBinary,
                 pHike25Zq,
                 pBondsTailAdjusted,
-                tailContribution,
-                deltaBps >= 0.0
+                tailCorrectionBps,
+                deltaBps >= 0.0,
+                turnBps,
+                adjustedDeltaBps,
+                pBondsTurnAndTail
         );
+    }
+
+    public record ResidualSensitivity(
+            double sigmaEvent,
+            double totalVarianceT2,
+            double eventVarianceShare,
+            double sensitivityFactor,
+            double moveSensitivityToVolPoint,
+            boolean isFragile
+    ) {}
+
+    /**
+     * Evaluates whether an extracted event move is an ill-conditioned, fragile residual of two nearly
+     * equal total variances (e.g. sigma_event^2 < 3% of V_T2) where a 0.1 vol-point error swings the move by multiples.
+     */
+    public static ResidualSensitivity calculateResidualSensitivity(
+            double vT1, double vT2, double sigmaEvent, double t2Years, double atmVolT2) {
+        double safeSigma = (!Double.isFinite(sigmaEvent) || sigmaEvent < 0.0) ? 0.0 : sigmaEvent;
+        double safeVT2 = (!Double.isFinite(vT2) || vT2 < 1e-8) ? 1e-8 : vT2;
+        double eventVar = safeSigma * safeSigma;
+        double varShare = eventVar / safeVT2;
+
+        double safeT2 = (!Double.isFinite(t2Years) || t2Years < 1.0 / 252.0) ? (1.0 / 252.0) : t2Years;
+        double safeAtmVol = (Double.isFinite(atmVolT2) && atmVolT2 > 1e-4)
+                ? atmVolT2
+                : Math.sqrt(safeVT2 / safeT2);
+        // d(sigma_event) / d(sigma_quote) = (sigma_quote * T2) / sigma_event
+        double dSigmaEvent_dSigmaQuote = (safeAtmVol * safeT2) / Math.max(1e-4, safeSigma);
+        double moveDeltaFor10BpsQuote = dSigmaEvent_dSigmaQuote * 0.001; // 0.1 vol point error = 0.001
+
+        boolean fragile = (!Double.isFinite(sigmaEvent) || safeSigma < 0.0035 || varShare < 0.03
+                || moveDeltaFor10BpsQuote > 0.50 * safeSigma);
+
+        return new ResidualSensitivity(safeSigma, safeVT2, varShare, dSigmaEvent_dSigmaQuote, moveDeltaFor10BpsQuote, fragile);
+    }
+
+    /**
+     * Regularizes extracted event moves using cross-asset empirical beta bounds to prevent
+     * term-structure slope and holiday illiquidity (e.g. HYG Thanksgiving week) from generating
+     * implausible event moves (e.g. HYG 8x SPY).
+     */
+    public static double applyCrossAssetSanityBounds(String ticker, double sigmaEvent, double sigmaSpy, double sigmaTlt) {
+        if (ticker == null || !Double.isFinite(sigmaEvent) || sigmaEvent <= 1e-6) {
+            return sigmaEvent;
+        }
+        if (ticker.equalsIgnoreCase("HYG") || ticker.equalsIgnoreCase("JNK")) {
+            // High Yield corporate bonds: beta to SPY ~0.35-0.45, duration weight to TLT ~3.8 / 16.5 = ~0.23
+            boolean hasSpy = Double.isFinite(sigmaSpy) && sigmaSpy > 1e-4;
+            boolean hasTlt = Double.isFinite(sigmaTlt) && sigmaTlt > 1e-4;
+            if (hasSpy && hasTlt) {
+                double cap = 0.50 * sigmaSpy + 0.30 * sigmaTlt;
+                double maxAllowed = Math.max(cap, Math.min(sigmaSpy, sigmaTlt) * 0.85);
+                if (sigmaEvent > maxAllowed) {
+                    return maxAllowed;
+                }
+            } else if (hasSpy && sigmaEvent > 0.70 * sigmaSpy) {
+                return 0.70 * sigmaSpy;
+            } else if (hasTlt && sigmaEvent > 0.85 * sigmaTlt) {
+                return 0.85 * sigmaTlt;
+            }
+        }
+        return sigmaEvent;
     }
 
     public record CrossAssetTriangulation(
             double pPolymarket,
             double pRates,
+            double pOptions,
             double pTriangulated,
             double sigmaTlt,
             double sigmaSpy,
@@ -697,7 +1086,7 @@ public class BL {
     /**
      * Triangulates across 3 venues:
      * 1. Venue 1 (Prediction Market - Polymarket/Kalshi)
-     * 2. Venue 2 (Short-Term Rates - CME Fed Funds ZQ, tail-adjusted)
+     * 2. Venue 2 (Short-Term Rates - CME Fed Funds ZQ)
      * 3. Venue 3 (TLT & SPY Breeden-Litzenberger Surfaces with TLT Duration Conversion)
      */
     public static CrossAssetTriangulation triangulateFomcVenues(
@@ -706,67 +1095,124 @@ public class BL {
             double sigmaTlt,
             double sigmaSpy,
             boolean isEventBullish) {
+        return triangulateFomcVenues(
+                pPolymarket, pRates, sigmaTlt, sigmaSpy,
+                Double.NaN, Double.NaN, Double.NaN, Double.NaN, isEventBullish
+        );
+    }
 
-        double safeSigmaTlt = (Double.isNaN(sigmaTlt) || sigmaTlt < 0.0) ? 0.0 : sigmaTlt;
-        double safeSigmaSpy = (Double.isNaN(sigmaSpy) || sigmaSpy < 0.0) ? 0.0 : sigmaSpy;
+    /**
+     * Full cross-asset FOMC triangulation incorporating empirical pre-event diffusion variance
+     * ratio (\sqrt{V_{1,TLT} / V_{1,SPY}}) instead of a static 1.25x constant, and coupling
+     * Breeden-Litzenberger log-skewness into the conditional asset jump moves.
+     */
+    public static CrossAssetTriangulation triangulateFomcVenues(
+            double pPolymarket,
+            double pRates,
+            double sigmaTlt,
+            double sigmaSpy,
+            double v1Tlt,
+            double v1Spy,
+            double skewTlt,
+            double skewSpy,
+            boolean isEventBullish) {
 
-        // 1. Synthesize Consensus Event Probability
+        double safeSigmaTlt = (!Double.isFinite(sigmaTlt) || sigmaTlt < 0.0) ? 0.0 : sigmaTlt;
+        double safeSigmaSpy = (!Double.isFinite(sigmaSpy) || sigmaSpy < 0.0) ? 0.0 : sigmaSpy;
+
+        // 1. Synthesize Consensus Event Probability across 3 Venues:
+        // Venue 1: Polymarket retail prediction crowd
+        // Venue 2: CME 30-Day Fed Funds futures (ZQ) institutional rate
+        // Venue 3: TLT/SPY option surface risk-neutral jump skewness
+        double pOptions = Double.NaN;
+        if (Double.isFinite(skewTlt) && Math.abs(skewTlt) > 1e-4) {
+            // Closed-form option-implied jump probability from standardized risk-neutral skewness:
+            // S = (1 - 2p) / sqrt(p(1 - p)) => p = 0.5 * (1 + |S| / sqrt(4 + S^2))
+            double s = Math.max(-2.5, Math.min(2.5, skewTlt));
+            pOptions = 0.5 * (1.0 + Math.abs(s) / Math.sqrt(4.0 + s * s));
+        }
+
         double pTri;
-        if (!Double.isNaN(pPolymarket) && !Double.isNaN(pRates)) {
+        boolean hasRates = Double.isFinite(pRates);
+        boolean hasPoly = Double.isFinite(pPolymarket);
+        boolean hasOpt = Double.isFinite(pOptions);
+
+        if (hasRates && hasPoly && hasOpt) {
+            pTri = 0.55 * pRates + 0.30 * pPolymarket + 0.15 * pOptions;
+        } else if (hasRates && hasPoly) {
             pTri = 0.65 * pRates + 0.35 * pPolymarket; // institutional bond desks lead rate cuts/hikes
-        } else if (!Double.isNaN(pRates)) {
+        } else if (hasRates) {
             pTri = pRates;
-        } else if (!Double.isNaN(pPolymarket)) {
+        } else if (hasPoly) {
             pTri = pPolymarket;
+        } else if (hasOpt) {
+            pTri = pOptions;
         } else {
             pTri = 0.50;
         }
-        pTri = Double.isNaN(pTri) ? 0.50 : Math.max(1e-4, Math.min(1.0 - 1e-4, pTri));
+        pTri = Math.max(1e-4, Math.min(1.0 - 1e-4, pTri));
 
         // 2. TLT Duration to 20Y Yield Shock (bps)
         // Delta_y_bps = -(Delta_P / P) / D_mod * 10,000
         double tltYieldShockBps = (safeSigmaTlt / TLT_MODIFIED_DURATION) * 10000.0;
-        ZeroDriftJump tltJump = solveZeroDriftJump(safeSigmaTlt, pTri, isEventBullish);
+        ZeroDriftJump tltJump = solveZeroDriftJump(safeSigmaTlt, pTri, skewTlt, isEventBullish);
         // Note: Bond price drops when yields rise (Hike/Event is bearish bonds -> positive yield shock)
         double tltYieldMoveIfEventBps = -(tltJump.moveIfEvent() / TLT_MODIFIED_DURATION) * 10000.0;
         double tltYieldMoveIfNotEventBps = -(tltJump.moveIfNotEvent() / TLT_MODIFIED_DURATION) * 10000.0;
 
-        // 3. SPY Jump Solution
-        ZeroDriftJump spyJump = solveZeroDriftJump(safeSigmaSpy, pTri, isEventBullish);
+        // 3. SPY Jump Solution (coupled to SPY B-L skewness)
+        ZeroDriftJump spyJump = solveZeroDriftJump(safeSigmaSpy, pTri, skewSpy, isEventBullish);
 
         // 4. Cross-Asset Vol Ratio (MOVE vs VIX event proxy)
         double ratio = safeSigmaSpy > 1e-6 ? (safeSigmaTlt / safeSigmaSpy) : Double.NaN;
 
-        // Baseline TLT/SPY ratio is ~1.25x (meaning TLT typically moves 1.25x as much as SPY)
-        // Fair SPY Move implied by TLT = safeSigmaTlt / 1.25
-        double fairSpySigma = safeSigmaTlt / BASELINE_TLT_SPY_RATIO;
-        double spyVolEdge = fairSpySigma - safeSigmaSpy;
+        // Dynamic baseline TLT/SPY ratio from empirical background diffusion sqrt(V1_TLT / V1_SPY),
+        // falling back to BASELINE_TLT_SPY_RATIO (1.25) only when V1 is not provided.
+        double baselineRatio = BASELINE_TLT_SPY_RATIO;
+        if (Double.isFinite(v1Tlt) && Double.isFinite(v1Spy) && v1Tlt > 1e-9 && v1Spy > 1e-9) {
+            baselineRatio = Math.max(0.65, Math.min(2.00, Math.sqrt(v1Tlt / v1Spy)));
+        }
+
+        double fairSpySigma = safeSigmaTlt / baselineRatio;
+        double rawSpyVolEdge = fairSpySigma - safeSigmaSpy;
         double spyMovePer10Bps = (tltYieldShockBps > 1e-4) ? (safeSigmaSpy / (tltYieldShockBps / 10.0)) : Double.NaN;
 
         String verdict;
         String explanation;
+        double shock = tltYieldShockBps;
+        String shockDesc = shock < 5.0 ? "mild / light" : shock < 10.0 ? "typical" : "heavy";
+
+        // Gating when SPY event variance is a fragile residual in the noise regime:
+        boolean spyIsFragile = safeSigmaSpy > 1e-6 && (safeSigmaSpy < 0.0035 || (safeSigmaSpy < 0.006 && ratio > 1.8 * baselineRatio));
+        double spyVolEdge = spyIsFragile ? Double.NaN : rawSpyVolEdge;
+
         if (Double.isNaN(ratio) || safeSigmaSpy <= 1e-6 || safeSigmaTlt <= 1e-6) {
             verdict = "INSUFFICIENT DATA (UNABLE TO TRIANGULATE)";
             explanation = "Insufficient or zero volatility estimates for TLT or SPY to determine cross-asset pricing regime.";
-        } else if (ratio > 1.80) {
+        } else if (spyIsFragile) {
+            verdict = "INDETERMINATE (SPY RESIDUAL HIGH NOISE)";
+            explanation = String.format("SPY pure event move (+/-%.2f%%) is an ill-conditioned residual (<3%% of total variance, where a 0.1 vol-point error swings the move by multiples). Edge is suppressed as measurement noise; do not trade unhedged.",
+                    safeSigmaSpy * 100.0);
+        } else if (ratio > 1.45 * baselineRatio) {
             verdict = "EQUITY VOL CHEAP vs RATES (MOVE/VIX DIVERGENCE)";
-            explanation = String.format("TLT B-L prices a heavy %+.1f bps 20Y yield shock while SPY B-L prices only %+.2f%% equity move. " +
-                    "Equity options are asleep at the wheel relative to rates volatility; SPY straddles are underpriced relative to what bonds know.",
-                    tltYieldShockBps, safeSigmaSpy * 100.0);
-        } else if (ratio < 0.75) {
+            explanation = String.format("TLT B-L prices a %s +/-%.1f bps 20Y yield shock while SPY B-L prices only +/-%.2f%% equity move. " +
+                    "Equity options appear cheap relative to rates volatility based on the %.2fx empirical baseline.",
+                    shockDesc, tltYieldShockBps, safeSigmaSpy * 100.0, baselineRatio);
+        } else if (ratio < 0.60 * baselineRatio) {
             verdict = "RATES VOL CHEAP vs EQUITIES";
-            explanation = String.format("Equity options are pricing a large %+.2f%% move while TLT options only price %+.1f bps of yield shock. " +
-                    "TLT straddles are cheap relative to SPY straddles.",
-                    safeSigmaSpy * 100.0, tltYieldShockBps);
+            explanation = String.format("Equity options are pricing a large +/-%.2f%% move while TLT options price a %s +/-%.1f bps of yield shock. " +
+                    "TLT straddles are cheap relative to SPY straddles based on the %.2fx empirical baseline.",
+                    safeSigmaSpy * 100.0, shockDesc, tltYieldShockBps, baselineRatio);
         } else {
             verdict = "CROSS-ASSET VOL IN EQUILIBRIUM";
-            explanation = String.format("TLT (implied yield shock %+.1f bps) and SPY (implied move %+.2f%%) B-L surfaces are pricing consistent macro event risk (ratio %.2f).",
-                    tltYieldShockBps, safeSigmaSpy * 100.0, ratio);
+            explanation = String.format("TLT (implied yield shock +/-%.1f bps [%s]) and SPY (implied move +/-%.2f%%) B-L surfaces are pricing consistent macro event risk (ratio %.2f vs %.2fx baseline).",
+                    tltYieldShockBps, shockDesc, safeSigmaSpy * 100.0, ratio, baselineRatio);
         }
 
         return new CrossAssetTriangulation(
                 pPolymarket,
                 pRates,
+                pOptions,
                 pTri,
                 safeSigmaTlt,
                 safeSigmaSpy,

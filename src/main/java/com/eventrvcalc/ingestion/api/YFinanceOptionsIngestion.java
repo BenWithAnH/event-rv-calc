@@ -80,14 +80,26 @@ public class YFinanceOptionsIngestion {
         );
         pb.redirectErrorStream(true);
         Process proc = pb.start();
-        byte[] outputBytes;
-        try (var is = proc.getInputStream()) {
-            outputBytes = is.readAllBytes();
-        }
+        java.util.concurrent.CompletableFuture<byte[]> streamFuture =
+                java.util.concurrent.CompletableFuture.supplyAsync(() -> {
+                    try (var is = proc.getInputStream()) {
+                        return is.readAllBytes();
+                    } catch (IOException e) {
+                        return new byte[0];
+                    }
+                });
         boolean finished = proc.waitFor(45, TimeUnit.SECONDS);
         if (!finished) {
+            proc.descendants().forEach(ProcessHandle::destroyForcibly);
             proc.destroyForcibly();
+            streamFuture.cancel(true);
             throw new IOException("fetch_options_yfinance.py --fetch-zq timed out after 45s");
+        }
+        byte[] outputBytes;
+        try {
+            outputBytes = streamFuture.get(5, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            outputBytes = new byte[0];
         }
         int exitCode = proc.exitValue();
         if (exitCode != 0) {
@@ -122,18 +134,19 @@ public class YFinanceOptionsIngestion {
      * from pre-meeting and meeting-month 30-Day Fed Funds futures prices.
      */
     public static FedFundsProbabilityResult computeFedFundsProbability(
-            double prePrice, double meetingPrice, Double postPrice, LocalDate meetingDate) {
+            double prePrice, double meetingPrice, Double postPrice, LocalDate meetingDate, boolean effectiveDateWeighted) {
         double rPre = 100.0 - prePrice;
         int d = meetingDate.getDayOfMonth();
         int nDays = meetingDate.lengthOfMonth();
-        int daysPost = nDays - (d - 1);
+        int daysPre = effectiveDateWeighted ? Math.min(nDays - 1, d) : (d - 1);
+        int daysPost = Math.max(1, nDays - daysPre);
 
         double rPost;
         if (daysPost <= 2 && postPrice != null) {
             rPost = 100.0 - postPrice;
         } else {
             double rAvg = 100.0 - meetingPrice;
-            rPost = (nDays * rAvg - (d - 1) * rPre) / daysPost;
+            rPost = (nDays * rAvg - daysPre * rPre) / daysPost;
         }
 
         double delta = rPost - rPre;
@@ -143,8 +156,18 @@ public class YFinanceOptionsIngestion {
     }
 
     public static FedFundsProbabilityResult computeFedFundsProbability(
+            double prePrice, double meetingPrice, Double postPrice, LocalDate meetingDate) {
+        return computeFedFundsProbability(prePrice, meetingPrice, postPrice, meetingDate, true);
+    }
+
+    public static FedFundsProbabilityResult computeFedFundsProbability(
+            double prePrice, double meetingPrice, LocalDate meetingDate, boolean effectiveDateWeighted) {
+        return computeFedFundsProbability(prePrice, meetingPrice, null, meetingDate, effectiveDateWeighted);
+    }
+
+    public static FedFundsProbabilityResult computeFedFundsProbability(
             double prePrice, double meetingPrice, LocalDate meetingDate) {
-        return computeFedFundsProbability(prePrice, meetingPrice, null, meetingDate);
+        return computeFedFundsProbability(prePrice, meetingPrice, null, meetingDate, true);
     }
 
     /**
@@ -169,14 +192,26 @@ public class YFinanceOptionsIngestion {
         );
         pb.redirectErrorStream(true);
         Process proc = pb.start();
-        byte[] outputBytes;
-        try (var is = proc.getInputStream()) {
-            outputBytes = is.readAllBytes();
-        }
+        java.util.concurrent.CompletableFuture<byte[]> streamFuture =
+                java.util.concurrent.CompletableFuture.supplyAsync(() -> {
+                    try (var is = proc.getInputStream()) {
+                        return is.readAllBytes();
+                    } catch (IOException e) {
+                        return new byte[0];
+                    }
+                });
         boolean finished = proc.waitFor(60, TimeUnit.SECONDS);
         if (!finished) {
+            proc.descendants().forEach(ProcessHandle::destroyForcibly);
             proc.destroyForcibly();
+            streamFuture.cancel(true);
             throw new IOException("fetch_options_yfinance.py timed out after 60s for symbol " + sym);
+        }
+        byte[] outputBytes;
+        try {
+            outputBytes = streamFuture.get(5, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            outputBytes = new byte[0];
         }
         int exitCode = proc.exitValue();
         if (exitCode != 0) {

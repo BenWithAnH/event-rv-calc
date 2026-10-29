@@ -59,7 +59,12 @@ public class Polymarket {
         }
 
         public double yesProbability() {
-            return probabilityOf("Yes");
+            for (Outcome o : outcomes) {
+                if ("Yes".equalsIgnoreCase(o.name())) {
+                    return o.price();
+                }
+            }
+            return outcomes.isEmpty() ? 0.0 : outcomes.get(0).price();
         }
     }
 
@@ -146,7 +151,7 @@ public class Polymarket {
                 }
             }
             if (!matchedHike) {
-                throw new IllegalStateException("No hike/increase brackets found in event " + slug);
+                return 0.0;
             }
             return Math.min(1.0, sum);
         }
@@ -229,20 +234,37 @@ public class Polymarket {
     public static final String FED_CALENDAR_URL = "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm";
 
     public static List<LocalDate> fetchFomcDecisionDates() throws IOException, InterruptedException {
-        String html = getJson(FED_CALENDAR_URL);
+        String html = getHtml(FED_CALENDAR_URL);
         return parseFomcDecisionDatesHtml(html);
     }
 
+    private static String getHtml(String url) throws IOException, InterruptedException {
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                .timeout(Duration.ofSeconds(15))
+                .GET()
+                .build();
+        HttpResponse<String> resp = HTTP.send(req, HttpResponse.BodyHandlers.ofString());
+        if (resp.statusCode() < 200 || resp.statusCode() >= 300) {
+            throw new IOException("HTTP " + resp.statusCode() + " for " + url);
+        }
+        return resp.body();
+    }
+
+    private static final Pattern FOMC_PANEL_PATTERN = Pattern.compile(
+            "(?s)<div class=\"panel panel-default\">.*?(\\d{4}) FOMC Meetings.*?(?=<div class=\"panel panel-default\">|</html>)");
+    private static final Pattern FOMC_ROW_PATTERN = Pattern.compile(
+            "(?s)fomc-meeting__month[^>]*>\\s*<strong>([A-Za-z/]+)</strong>.*?fomc-meeting__date[^>]*>\\s*(\\d{1,2})(?:-(\\d{1,2}))?");
+
     public static List<LocalDate> parseFomcDecisionDatesHtml(String html) {
         List<LocalDate> dates = new ArrayList<>();
-        Pattern panelPat = Pattern.compile("(?s)<div class=\"panel panel-default\">.*?(\\d{4}) FOMC Meetings.*?(?=<div class=\"panel panel-default\">|</html>)");
-        Pattern rowPat = Pattern.compile("(?s)fomc-meeting__month[^>]*>\\s*<strong>([A-Za-z/]+)</strong>.*?fomc-meeting__date[^>]*>\\s*(\\d{1,2})(?:-(\\d{1,2}))?");
-
-        Matcher pm = panelPat.matcher(html);
+        Matcher pm = FOMC_PANEL_PATTERN.matcher(html);
         while (pm.find()) {
             int year = Integer.parseInt(pm.group(1));
             String panelHtml = pm.group(0);
-            Matcher rm = rowPat.matcher(panelHtml);
+            Matcher rm = FOMC_ROW_PATTERN.matcher(panelHtml);
             while (rm.find()) {
                 String monthRaw = rm.group(1).trim();
                 String endDayRaw = rm.group(3) != null ? rm.group(3) : rm.group(2);

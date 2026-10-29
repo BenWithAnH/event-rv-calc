@@ -316,8 +316,8 @@ public class BS {
                 double c1 = detC1 / det;
                 double c2 = detC2 / det;
 
-                double b = Math.max(1e-5, c2);
-                double rho = Math.max(-0.999, Math.min(0.999, c1 / b));
+                double b = Math.max(1e-5, Math.min(1.5 * T, c2));
+                double rho = Math.max(-0.95, Math.min(0.95, c1 / b));
 
                 double sse = 0.0;
                 for (int i = 0; i < n; i++) {
@@ -329,9 +329,16 @@ public class BS {
 
                 if (c2 < 1e-5) {
                     sse += 10.0 * (1e-5 - c2) * (1e-5 - c2);
+                } else if (c2 > 1.5 * T) {
+                    double excessB = c2 - 1.5 * T;
+                    sse += 10.0 * excessB * excessB;
                 }
                 if (a < 0.0) {
                     sse += 10.0 * a * a;
+                }
+                double minVertexVar = a + b * s * Math.sqrt(Math.max(0.0, 1.0 - rho * rho));
+                if (minVertexVar < 0.0) {
+                    sse += 50.0 * minVertexVar * minVertexVar;
                 }
 
                 this.lastA = a;

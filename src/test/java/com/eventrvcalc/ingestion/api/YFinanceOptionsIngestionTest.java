@@ -115,6 +115,76 @@ class YFinanceOptionsIngestionTest {
     }
 
     @Test
+    @DisplayName("Verify TLT pure event move is positive and does not extinguish under macro cluster deduction")
+    void testTltPureEventMoveNonZero() throws Exception {
+        File manifestFile = new File("target/options/tlt_event_manifest.json");
+        if (!manifestFile.exists()) return;
+
+        JsonNode root = MAPPER.readTree(manifestFile);
+        YFinanceOptionsIngestion.OptionsManifest manifest = new YFinanceOptionsIngestion.OptionsManifest(
+                root.path("symbol").asText(),
+                root.path("eventDate").asText(),
+                root.path("t1Expiry").asText(),
+                root.path("t2Expiry").asText(),
+                root.path("t3Expiry").asText(),
+                root.path("tradingDaysT1ToT2").asDouble(1.0),
+                root.path("tradingDaysT2ToT3").asDouble(5.0),
+                Path.of(root.path("t1File").asText()),
+                Path.of(root.path("t2File").asText()),
+                Path.of(root.path("t3File").asText())
+        );
+
+        SurfaceRunner.EventPureMoveResult res = YFinanceOptionsIngestion.computePureEventMove(manifest);
+        assertThat(res.sigmaEvent()).isGreaterThan(0.001);
+        double yieldShockBps = (res.sigmaEvent() / BL.TLT_MODIFIED_DURATION) * 10000.0;
+        assertThat(yieldShockBps).isGreaterThan(1.0);
+    }
+
+    @Test
+    @DisplayName("Verify HYG and IEF option manifests exclude deep ITM calls and produce bounded event vol")
+    void testHygAndIefOptionManifestsCleanAndBounded() throws Exception {
+        File hygManifestFile = new File("target/options/hyg_event_manifest.json");
+        if (hygManifestFile.exists()) {
+            JsonNode root = MAPPER.readTree(hygManifestFile);
+            YFinanceOptionsIngestion.OptionsManifest manifest = new YFinanceOptionsIngestion.OptionsManifest(
+                    root.path("symbol").asText(),
+                    root.path("eventDate").asText(),
+                    root.path("t1Expiry").asText(),
+                    root.path("t2Expiry").asText(),
+                    root.path("t3Expiry").asText(),
+                    root.path("tradingDaysT1ToT2").asDouble(1.0),
+                    root.path("tradingDaysT2ToT3").asDouble(5.0),
+                    Path.of(root.path("t1File").asText()),
+                    Path.of(root.path("t2File").asText()),
+                    Path.of(root.path("t3File").asText())
+            );
+            SurfaceRunner.EventPureMoveResult res = YFinanceOptionsIngestion.computePureEventMove(manifest);
+            double t2AnnVol = Math.sqrt(res.vT2() / res.t2Result().T());
+            assertThat(t2AnnVol).isLessThan(0.15);
+            assertThat(res.sigmaEvent()).isLessThan(0.025);
+        }
+
+        File iefManifestFile = new File("target/options/ief_event_manifest.json");
+        if (iefManifestFile.exists()) {
+            JsonNode root = MAPPER.readTree(iefManifestFile);
+            YFinanceOptionsIngestion.OptionsManifest manifest = new YFinanceOptionsIngestion.OptionsManifest(
+                    root.path("symbol").asText(),
+                    root.path("eventDate").asText(),
+                    root.path("t1Expiry").asText(),
+                    root.path("t2Expiry").asText(),
+                    root.path("t3Expiry").asText(),
+                    root.path("tradingDaysT1ToT2").asDouble(1.0),
+                    root.path("tradingDaysT2ToT3").asDouble(5.0),
+                    Path.of(root.path("t1File").asText()),
+                    Path.of(root.path("t2File").asText()),
+                    Path.of(root.path("t3File").asText())
+            );
+            SurfaceRunner.EventPureMoveResult res = YFinanceOptionsIngestion.computePureEventMove(manifest);
+            assertThat(res.sigmaEvent()).isLessThan(0.0065);
+        }
+    }
+
+    @Test
     @DisplayName("computeFedFundsProbability computes correct post rate and pBonds for rate hike")
     void testFedFundsProbabilityCalculation_Hike() {
         // Pre-FOMC price 95.625 (rate 4.375%), meeting month price 95.455 on Dec 9 (31 days in Dec, d=9)
@@ -122,7 +192,7 @@ class YFinanceOptionsIngestionTest {
         double prePrice = 95.625;
         double meetingPrice = 95.455;
 
-        var res = YFinanceOptionsIngestion.computeFedFundsProbability(prePrice, meetingPrice, meetingDate);
+        var res = YFinanceOptionsIngestion.computeFedFundsProbability(prePrice, meetingPrice, meetingDate, false);
 
         assertThat(res.ratePrePct()).isCloseTo(4.375, within(0.001));
         // 31 days in Dec, d=9: 8 days at 4.375%, 23 days at rPost => (31*4.545 - 8*4.375)/23 = 4.60413%
@@ -141,7 +211,7 @@ class YFinanceOptionsIngestionTest {
         double prePrice = 95.00;
         double meetingPrice = 95.125;
 
-        var res = YFinanceOptionsIngestion.computeFedFundsProbability(prePrice, meetingPrice, meetingDate);
+        var res = YFinanceOptionsIngestion.computeFedFundsProbability(prePrice, meetingPrice, meetingDate, false);
 
         assertThat(res.ratePrePct()).isCloseTo(5.00, within(0.001));
         assertThat(res.ratePostImpliedPct()).isCloseTo(4.75, within(0.001));

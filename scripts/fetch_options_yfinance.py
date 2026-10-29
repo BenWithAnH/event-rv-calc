@@ -130,6 +130,7 @@ def format_option_slice(ticker, expiry_str, current_spot, risk_free_rate=0.043):
     today = datetime.date.today()
     exp_dt = datetime.datetime.strptime(expiry_str, "%Y-%m-%d").date()
     dte = max(1.0, float((exp_dt - today).days))
+    trading_days = count_trading_days(today, exp_dt)
     T = dte / 365.0
     q = estimate_dividend_yield(ticker, expiry_str, current_spot)
     
@@ -148,6 +149,7 @@ def format_option_slice(ticker, expiry_str, current_spot, risk_free_rate=0.043):
     atm_k = min(filtered_strikes, key=lambda k: abs(k - current_spot)) if filtered_strikes else current_spot
     atm_call_mid = 0.0
     atm_put_mid = 0.0
+    atm_iv = 0.0
     
     for k in filtered_strikes:
         c_row = calls_by_k.get(k)
@@ -156,13 +158,13 @@ def format_option_slice(ticker, expiry_str, current_spot, risk_free_rate=0.043):
         c_bid = float(c_row['bid']) if c_row is not None and not pd.isna(c_row.get('bid')) else 0.0
         c_ask = float(c_row['ask']) if c_row is not None and not pd.isna(c_row.get('ask')) else 0.0
         c_last = float(c_row['lastPrice']) if c_row is not None and not pd.isna(c_row.get('lastPrice')) else 0.0
-        c_mid = (c_bid + c_ask) / 2.0 if (c_bid + c_ask) > 0.0 else c_last
+        c_mid = (c_bid + c_ask) / 2.0 if (c_bid > 0.0 and c_ask > 0.0) else (c_last if abs(k - current_spot) / current_spot <= 0.02 else 0.0)
         c_iv = float(c_row['impliedVolatility']) if c_row is not None and not pd.isna(c_row.get('impliedVolatility')) else 0.0
         
         p_bid = float(p_row['bid']) if p_row is not None and not pd.isna(p_row.get('bid')) else 0.0
         p_ask = float(p_row['ask']) if p_row is not None and not pd.isna(p_row.get('ask')) else 0.0
         p_last = float(p_row['lastPrice']) if p_row is not None and not pd.isna(p_row.get('lastPrice')) else 0.0
-        p_mid = (p_bid + p_ask) / 2.0 if (p_bid + p_ask) > 0.0 else p_last
+        p_mid = (p_bid + p_ask) / 2.0 if (p_bid > 0.0 and p_ask > 0.0) else (p_last if abs(k - current_spot) / current_spot <= 0.02 else 0.0)
         p_iv = float(p_row['impliedVolatility']) if p_row is not None and not pd.isna(p_row.get('impliedVolatility')) else 0.0
         
         if math.isnan(c_mid): c_mid = 0.0
@@ -171,8 +173,14 @@ def format_option_slice(ticker, expiry_str, current_spot, risk_free_rate=0.043):
         if math.isnan(p_iv): p_iv = 0.0
         
         if k == atm_k:
-            atm_call_mid = c_mid
-            atm_put_mid = p_mid
+            atm_call_mid = c_mid if (c_bid > 0.0 and c_ask > 0.0) else 0.0
+            atm_put_mid = p_mid if (p_bid > 0.0 and p_ask > 0.0) else 0.0
+            if c_iv > 0.005 and p_iv > 0.005:
+                atm_iv = 0.5 * (c_iv + p_iv)
+            elif c_iv > 0.005:
+                atm_iv = c_iv
+            elif p_iv > 0.005:
+                atm_iv = p_iv
             
         # OTM partition: Puts for K < S0, Calls for K > S0, blended ATM zone (within 1%)
         pct_diff = (k - current_spot) / current_spot
@@ -192,7 +200,7 @@ def format_option_slice(ticker, expiry_str, current_spot, risk_free_rate=0.043):
                 bid = p_bid
                 ask = p_ask
                 exchange_iv = p_iv
-            else:
+            elif abs(pct_diff) <= 0.03 and c_mid > 0.001:
                 eta = 1
                 call_weight = 1.0
                 mid = c_mid
@@ -207,7 +215,7 @@ def format_option_slice(ticker, expiry_str, current_spot, risk_free_rate=0.043):
                 bid = c_bid
                 ask = c_ask
                 exchange_iv = c_iv
-            else:
+            elif abs(pct_diff) <= 0.03 and p_mid > 0.001:
                 eta = -1
                 put_weight = 1.0
                 mid = p_mid
@@ -240,7 +248,13 @@ def format_option_slice(ticker, expiry_str, current_spot, risk_free_rate=0.043):
                 ask = c_ask
                 exchange_iv = c_iv
             
-        if mid > 0.001:
+        # Filter out wide illiquid spreads on weekly bond ETFs ((ask - bid) / mid > 0.85)
+        spread_ok = True
+        if bid > 0.0 and ask > bid and mid > 0.0:
+            if (ask - bid) / mid > 0.85 and abs(pct_diff) > 0.02:
+                spread_ok = False
+
+        if mid > 0.001 and spread_ok:
             quotes.append({
                 "strike": float(k),
                 "eta": eta,
@@ -260,11 +274,13 @@ def format_option_slice(ticker, expiry_str, current_spot, risk_free_rate=0.043):
         "quoteDate": today.strftime("%Y-%m-%d"),
         "expireDate": expiry_str,
         "dte": dte,
+        "tradingDays": trading_days,
         "rawS0": round(current_spot, 4),
         "S0": round(current_spot, 4),
         "atmK": float(atm_k),
         "atmCallMid": round(atm_call_mid, 4),
         "atmPutMid": round(atm_put_mid, 4),
+        "atmIv": round(atm_iv, 6),
         "T": round(T, 6),
         "r": risk_free_rate,
         "q": q,
@@ -298,13 +314,16 @@ def compute_fed_funds_probability(event_date_str, pre_price, meeting_price, post
         n_days = (datetime.date(event_dt.year, event_dt.month + 1, 1) - datetime.timedelta(days=1)).day
         
     r_pre = 100.0 - pre_price
-    days_post = n_days - (d - 1)
+    # FOMC decision on day d becomes effective on day d + 1:
+    # Days 1..d (d days) accrue at r_pre; days (d+1)..n_days (n_days - d days) accrue at r_post.
+    days_pre = min(n_days - 1, d)
+    days_post = max(1, n_days - days_pre)
     
     if days_post <= 2 and post_price is not None:
         r_post = 100.0 - post_price
     else:
         r_meeting_avg = 100.0 - meeting_price
-        r_post = (n_days * r_meeting_avg - (d - 1) * r_pre) / max(1, days_post)
+        r_post = (n_days * r_meeting_avg - days_pre * r_pre) / max(1, days_post)
         
     delta_rate = r_post - r_pre
     p_bonds = min(1.0, max(0.0, abs(delta_rate) / 0.25))
@@ -396,9 +415,13 @@ def main():
         post_sym = get_zq_contract_symbol(post_y, post_m)
         
         print(f"Fetching Fed Funds Futures for {args.event_date}: Pre={pre_sym}, Meet={meet_sym}, Post={post_sym}...")
-        pre_px, matched_pre = fetch_futures_price(pre_sym, "ZQ=F")
-        meet_px, matched_meet = fetch_futures_price(meet_sym, "ZQ=F")
-        post_px, matched_post = fetch_futures_price(post_sym)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+            fut_pre = executor.submit(fetch_futures_price, pre_sym, "ZQ=F")
+            fut_meet = executor.submit(fetch_futures_price, meet_sym, "ZQ=F")
+            fut_post = executor.submit(fetch_futures_price, post_sym)
+            pre_px, matched_pre = fut_pre.result()
+            meet_px, matched_meet = fut_meet.result()
+            post_px, matched_post = fut_post.result()
         
         # Fallback to realistic front-month price if specific contract has no quote
         if pre_px is None or meet_px is None:

@@ -259,6 +259,227 @@ class BLTest {
 
         // p_Bonds_TailAdjusted = 80.01% + 2.45% = 82.46%
         assertThat(res.pBondsTailAdjusted() * 100.0).isCloseTo(82.46, within(0.01));
+
+        // Direct Polymarket expected bps comparison (no circular injection):
+        // E_PM[Delta r] = -50(0.0040) - 25(0.0055) + 25(0.7940) + 50(0.0245) = +20.7375 bps
+        assertThat(tails.expectedRateChangeBps()).isCloseTo(20.7375, within(0.01));
+    }
+
+    @Test
+    @DisplayName("Issue 1 Fix: SPY Dec 2026 forward variance avoids Christmas V1 trap and strips NFP/CPI/Quad-Witching cluster")
+    void testDecFomcSpyForwardVarianceAndMacroDeClustering() {
+        // Exact critique numbers:
+        // T1 (2026-12-04): 14.05% (~37 calendar days / 26 trading days)
+        // T2 (2026-12-18): 14.73% (~51 calendar days / 36 trading days, 10 trading days after T1)
+        // T3 (2026-12-31): 14.08% (~64 calendar days / 45 trading days, 9 trading days after T2)
+        double vT1 = Math.pow(0.1405, 2) * (37.0 / 365.0); // 0.00200107
+        double vT2 = Math.pow(0.1473, 2) * (51.0 / 365.0); // 0.00303168
+        double vT3 = Math.pow(0.1408, 2) * (64.0 / 365.0); // 0.00347609
+
+        // True pre-event daily trading variance (26 trading days to T1) vs Christmas holiday decay (T2 -> T3):
+        double v1Pre = vT1 / 26.0; // ~0.00007696/day
+        double v1PostHoliday = BL.calculateDailyNoiseVariance(vT2, vT3, 9.0); // ~0.00004938/day
+
+        assertThat(v1PostHoliday).isLessThan(0.85 * v1Pre); // Holiday decay detected
+
+        java.time.LocalDate t1Date = java.time.LocalDate.of(2026, 12, 4);
+        java.time.LocalDate t2Date = java.time.LocalDate.of(2026, 12, 18);
+        double extraMacroDays = BL.estimateMacroClusterExtraDays(t1Date, t2Date);
+        // Window (Dec 4, Dec 18] includes mid-month CPI and Dec 18 Quadruple Witching
+        assertThat(extraMacroDays).isGreaterThan(1.0);
+
+        double sigmaCleaned = BL.impliedPureEventMove(vT1, vT2, v1Pre, 10.0, extraMacroDays);
+        // Cleaned SPY FOMC move is ~1.12% (far below the broken 2.30% illusion)
+        assertThat(sigmaCleaned * 100.0).isBetween(1.00, 1.35);
+    }
+
+    @Test
+    @DisplayName("Issue 3 Fix: 2-state zero-drift jump solver and 3-state FOMC tree satisfy exact zero-drift and variance moments")
+    void testSkewCoupledAndThreeStateFomcJumpSolver() {
+        double p = 0.7999;
+        double sigmaSpy = 0.0125;
+        double spySkew = -1.4670; // Downside equity smirk
+        double sigmaTlt = 0.0141;
+        double tltSkew = +0.1500; // Symmetric / slightly positive bond call skew
+
+        BL.ZeroDriftJump spyJump = BL.solveZeroDriftJump(sigmaSpy, p, spySkew, false);
+        BL.ZeroDriftJump tltJump = BL.solveZeroDriftJump(sigmaTlt, p, tltSkew, false);
+
+        // 2-state tree satisfies exact zero-drift martingale E[J] = 0 and Var(J) = sigma^2 at actual probability p:
+        double spyMean2 = p * spyJump.moveIfEvent() + (1.0 - p) * spyJump.moveIfNotEvent();
+        double spyVar2 = p * Math.pow(spyJump.moveIfEvent(), 2) + (1.0 - p) * Math.pow(spyJump.moveIfNotEvent(), 2);
+        assertThat(spyMean2).isCloseTo(0.0, within(1e-9));
+        assertThat(spyVar2).isCloseTo(sigmaSpy * sigmaSpy, within(1e-9));
+
+        double tltMean2 = p * tltJump.moveIfEvent() + (1.0 - p) * tltJump.moveIfNotEvent();
+        double tltVar2 = p * Math.pow(tltJump.moveIfEvent(), 2) + (1.0 - p) * Math.pow(tltJump.moveIfNotEvent(), 2);
+        assertThat(tltMean2).isCloseTo(0.0, within(1e-9));
+        assertThat(tltVar2).isCloseTo(sigmaTlt * sigmaTlt, within(1e-9));
+
+        // 3-State FOMC Jump Tree (Hike + Hawkish Dots, Hike + Dovish Dots, Surprise Pause):
+        BL.ThreeStateFomcJump threeState = BL.solveThreeStateJump(sigmaSpy, p, spySkew, false);
+        BL.ThreeStateFomcJump threeStateTlt = BL.solveThreeStateJump(sigmaTlt, p, tltSkew, false);
+        assertThat(threeState.pHawkish() + threeState.pDovish()).isCloseTo(p, within(1e-9));
+        assertThat(threeState.pSurprise()).isCloseTo(1.0 - p, within(1e-9));
+        // Skewness coupling differentiates SPY vs TLT 3-state branch probabilities and realized skewness:
+        assertThat(threeState.realizedSkewness()).isLessThan(threeStateTlt.realizedSkewness());
+        // No boundary clamping at 0.15 * p:
+        assertThat(threeState.pHawkish()).isGreaterThan(0.155 * p);
+
+        // 1. Exact zero-drift martingale:
+        double mean = threeState.pHawkish() * threeState.moveHawkish()
+                + threeState.pDovish() * threeState.moveDovish()
+                + threeState.pSurprise() * threeState.moveSurprise();
+        assertThat(mean).isCloseTo(0.0, within(1e-9));
+
+        // 2. Exact total pure event variance:
+        double variance = threeState.pHawkish() * Math.pow(threeState.moveHawkish(), 2)
+                + threeState.pDovish() * Math.pow(threeState.moveDovish(), 2)
+                + threeState.pSurprise() * Math.pow(threeState.moveSurprise(), 2);
+        assertThat(variance).isCloseTo(sigmaSpy * sigmaSpy, within(1e-9));
+
+        // 3. Hawkish dots produces a larger drop than Dovish dots, and Dot-Plot variance share is substantial:
+        assertThat(threeState.moveHawkish()).isLessThan(threeState.moveDovish());
+        assertThat(threeState.dotPlotVarianceShare()).isBetween(0.20, 0.85);
+    }
+
+    @Test
+    @DisplayName("Issue 4 Fix: ZQZ26 effective-date weighting uses 9/31 and 22/31 for Dec 9 FOMC (+21.14 bps, 84.55% prob)")
+    void testZqEffectiveDateWeightingDec9() {
+        // Exact numbers from user critique:
+        // Pre-FOMC ZQX26 = 96.12 (3.8800%), Dec ZQZ26 = 95.97 (4.0300%), FOMC on 2026-12-09 (effective Dec 10)
+        // 9 days at 3.8800% and 22 days at r_post => r_post = (31 * 4.03 - 9 * 3.88) / 22 = 4.09136% (+21.14 bps)
+        var res = com.eventrvcalc.ingestion.api.YFinanceOptionsIngestion.computeFedFundsProbability(
+                96.12, 95.97, java.time.LocalDate.of(2026, 12, 9)
+        );
+        assertThat(res.ratePrePct()).isCloseTo(3.8800, within(1e-4));
+        assertThat(res.ratePostImpliedPct()).isCloseTo(4.0914, within(1e-4));
+        assertThat(res.deltaRatePct() * 100.0).isCloseTo(21.14, within(0.01));
+        assertThat(res.pBonds() * 100.0).isCloseTo(84.55, within(0.02));
+    }
+
+    @Test
+    @DisplayName("Fixed income tickers (TLT, IEF) exclude equity Quadruple Witching in macro de-clustering")
+    void testTltFixedIncomeExcludesQuadWitching() {
+        java.time.LocalDate t1 = java.time.LocalDate.of(2026, 12, 4);
+        java.time.LocalDate t2 = java.time.LocalDate.of(2026, 12, 18);
+
+        double extraSpy = BL.estimateMacroClusterExtraDays(t1, t2, "SPY");
+        double extraTlt = BL.estimateMacroClusterExtraDays(t1, t2, "TLT");
+
+        // SPY has both CPI (0.85) and Quad Witching (0.85) => 1.70
+        assertThat(extraSpy).isCloseTo(1.70, within(1e-6));
+        // TLT is fixed income, so Quad Witching is excluded => CPI only (0.85)
+        assertThat(extraTlt).isCloseTo(0.85, within(1e-6));
+
+        // When applied to TLT variance in Dec 2026, sigmaCleaned is positive (~0.61%):
+        double vT1 = 0.00180632;
+        double vT2 = 0.00256982;
+        double v1Pre = 6.690086e-5;
+        double sigmaTlt = BL.impliedPureEventMove(vT1, vT2, v1Pre, 10.0, extraTlt);
+        assertThat(sigmaTlt).isGreaterThan(0.005);
+    }
+
+    @Test
+    @DisplayName("HYG cross-asset beta sanity bounds: Capped relative to SPY and TLT")
+    void testHygCrossAssetBetaBounds() {
+        double rawHygSigma = 0.0197; // 1.97% implausible move
+        double spySigma = 0.0025;    // 0.25%
+        double tltSigma = 0.0053;    // 0.53% (3.2 bps shock)
+
+        double boundedHyg = BL.applyCrossAssetSanityBounds("HYG", rawHygSigma, spySigma, tltSigma);
+
+        // Theoretical cap: 0.50 * 0.0025 + 0.30 * 0.0053 = 0.00125 + 0.00159 = 0.00284 (0.284%)
+        assertThat(boundedHyg).isLessThan(0.005);
+        assertThat(boundedHyg).isCloseTo(0.00284, within(0.0005));
+
+        // Normal HYG move within beta bounds is untouched:
+        double normalHyg = 0.0020;
+        assertThat(BL.applyCrossAssetSanityBounds("HYG", normalHyg, spySigma, tltSigma)).isEqualTo(normalHyg);
+    }
+
+    @Test
+    @DisplayName("SPY residual sensitivity and SNR: Flags fragile residual and ill-conditioned edge")
+    void testSpyResidualSensitivityAndSnr() {
+        double vT1 = 0.0020;
+        double vT2 = 0.0030;
+        double sigmaEvent = 0.0025; // 0.25%
+        double t2Years = 14.0 / 252.0;
+        double atmVolT2 = 0.14;
+
+        BL.ResidualSensitivity sens = BL.calculateResidualSensitivity(vT1, vT2, sigmaEvent, t2Years, atmVolT2);
+
+        // Event variance is (0.0025)^2 = 0.00000625, which is ~0.2% of V_T2 (well under 3%)
+        assertThat(sens.eventVarianceShare()).isLessThan(0.01);
+        assertThat(sens.isFragile()).isTrue();
+
+        // 0.1 vol point error swings event move by ~0.31%, which is > 100% of the move itself!
+        assertThat(sens.moveSensitivityToVolPoint()).isGreaterThan(0.0025);
+
+        // Solid event move (e.g. 1.2% on 2-day straddle) is not fragile:
+        BL.ResidualSensitivity robust = BL.calculateResidualSensitivity(0.0005, 0.0008, 0.0120, 2.0 / 252.0, 0.15);
+        assertThat(robust.isFragile()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Turn-adjusted CME ZQ vs Polymarket: Definitional divergence and December turn")
+    void testTailAdjustedApplesToApplesDivergenceWithTurn() {
+        double deltaRatePct = 0.2114; // +21.14 bps
+        BL.PolymarketTailBrackets tails = new BL.PolymarketTailBrackets(
+                0.0040, 0.0055, 0.7940, 0.0245
+        );
+
+        // 1. Unadjusted binary: 21.14 / 25 = 84.56%
+        // Tail-adjusted: accounts for 50+ bps hike bracket (2.45%) and cut brackets
+        BL.TailAdjustedCmeResult res = BL.solveTailAdjustedCme(deltaRatePct, tails, 0.0);
+        assertThat(res.pBondsBinary() * 100.0).isCloseTo(84.56, within(0.02));
+
+        // 2. With 2.0 bps December year-end turn discount:
+        BL.TailAdjustedCmeResult resWithTurn = BL.solveTailAdjustedCme(deltaRatePct, tails, 2.0);
+        assertThat(resWithTurn.deltaRateTurnAdjustedBps()).isCloseTo(19.14, within(0.01));
+        assertThat(resWithTurn.pBondsTurnAndTailAdjusted()).isLessThan(res.pBondsTailAdjusted());
+    }
+
+    @Test
+    @DisplayName("Cross-asset triangulation gates verdict on fragile SPY residual and fixes light shock label")
+    void testCrossAssetTriangulationGatingOnFragileSpy() {
+        double sigmaTlt = 0.005313; // 3.22 bps shock (0.005313 / 16.5 * 10000 = 3.22 bps)
+        double sigmaSpy = 0.0025;   // Fragile 0.25% SPY residual
+        double pRates = 0.8455;
+        double pPoly = 0.8195;
+
+        BL.CrossAssetTriangulation tri = BL.triangulateFomcVenues(
+                pPoly, pRates, sigmaTlt, sigmaSpy, 6.69e-5, 7.69e-5, -0.15, -1.65, false
+        );
+
+        // Must NOT declare EQUITY VOL CHEAP based on fragile noise:
+        assertThat(tri.regimeVerdict()).isEqualTo("INDETERMINATE (SPY RESIDUAL HIGH NOISE)");
+        assertThat(tri.detailedExplanation()).contains("ill-conditioned residual");
+        assertThat(tri.detailedExplanation()).contains("measurement noise");
+        // Edge must be suppressed (NaN) when residual is fragile:
+        assertThat(tri.spyVolEdgePct()).isNaN();
+    }
+
+    @Test
+    @DisplayName("Venue 3 options-implied jump probability actually contributes to p_Tri")
+    void testVenue3ContributesToProbabilitySynthesis() {
+        double pRates = 0.80;
+        double pPoly = 0.80;
+        double sigmaTlt = 0.012;
+        double sigmaSpy = 0.010;
+
+        // When TLT skew is NaN / absent, pTri = 0.65 * 0.80 + 0.35 * 0.80 = 0.80:
+        var triNoOpt = BL.triangulateFomcVenues(pPoly, pRates, sigmaTlt, sigmaSpy, 1e-4, 1e-4, Double.NaN, Double.NaN, false);
+        assertThat(triNoOpt.pOptions()).isNaN();
+        assertThat(triNoOpt.pTriangulated()).isCloseTo(0.80, within(1e-4));
+
+        // When TLT skew is -0.50 (put skew), option-implied jump probability pOptions is ~62%:
+        // S = -0.50 => p = 0.5 * (1 + 0.50 / sqrt(4 + 0.25)) = 0.5 * (1 + 0.2425) = 62.13%
+        // Blended with 15% weight: 0.55 * 0.80 + 0.30 * 0.80 + 0.15 * 0.6213 = 0.68 + 0.0932 = 77.32%
+        var triWithOpt = BL.triangulateFomcVenues(pPoly, pRates, sigmaTlt, sigmaSpy, 1e-4, 1e-4, -0.50, -1.50, false);
+        assertThat(triWithOpt.pOptions()).isCloseTo(0.6213, within(0.001));
+        assertThat(triWithOpt.pTriangulated()).isNotEqualTo(triNoOpt.pTriangulated());
+        assertThat(triWithOpt.pTriangulated()).isCloseTo(0.7732, within(0.005));
     }
 
     private static double gauss(double x, double mu, double sigma) {
