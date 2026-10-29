@@ -1165,10 +1165,10 @@ public class BL {
             boolean hasPoly = Double.isFinite(pPolymarket);
 
             if (hasRates && hasPoly) {
-                // Heuristic consensus blend: 65% CME Fed Funds ZQ + 35% Polymarket
+                // Judgmental consensus blend: 65% CME Fed Funds ZQ + 35% Polymarket
                 // Weight rationale: 65% institutional rates reflecting CME Fed Funds 30-day (ZQ) futures depth
                 // and bank treasury / SOFR balance-sheet hedging liquidity; 35% Polymarket retail crowd discovery.
-                // (Note: weights are an empirical heuristic, not structural econometrics).
+                // (Note: weights are a judgmental weighting based on market liquidity and institutional depth, not an empirical backtest).
                 pTri = 0.65 * pRates + 0.35 * pPolymarket;
             } else if (hasRates) {
                 pTri = pRates;

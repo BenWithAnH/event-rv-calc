@@ -380,8 +380,9 @@ public class FomcSelectorFrame extends JFrame {
                             fedFundsRes.pBonds(), fedFundsRes.pBonds() * 100.0));
 
                     // Year-end turn premium adjustment for December FOMC contracts:
-                    // ZQ settles on the 31-day monthly average of EFFR. A year-end turn spike (e.g. ~18.7 bps on Dec 31)
-                    // only impacts the last day of December.
+                    // ZQ settles on the 31-day monthly average of EFFR. An assumed year-end turn spike
+                    // of +18.7 bps on Dec 31 (assumption based on recent historical year-end balance-sheet turn prints;
+                    // drives ~1.3 pts of headline probability) only impacts the last day of December.
                     // Spread over 22 post-FOMC days (meeting Dec 9, effective Dec 10):
                     // Delta_r_turn_post = (1 day / 22 post-days) * 18.7 bps = 0.85 bps (monthly average impact = 18.7/31 = 0.60 bps).
                     boolean isDecemberMeeting = selectedDate != null && selectedDate.getMonthValue() == 12;
@@ -396,11 +397,11 @@ public class FomcSelectorFrame extends JFrame {
                         if (isDecemberMeeting) {
                             BL.TailAdjustedCmeResult res2Bp = BL.solveTailAdjustedCme(fedFundsRes.deltaRatePct(), tails, 2.0);
                             sb.append(String.format("  [Year-End Turn Premium Analysis]  :%n"));
-                            sb.append(String.format("     * Turn Derivation: Dec 31 single-day EFFR spike (~18.7 bps) over 22 post-meeting days = +%.2f bps on post-rate (+%.2f bps on 31d month avg)%n",
+                            sb.append(String.format("     * Turn Assumption: Assumed Dec 31 single-day EFFR spike of +18.7 bps (assumption based on recent historical year-end prints; drives ~1.3 pts of headline probability) spread over 22 post-meeting days = +%.2f bps on post-rate (+%.2f bps on 31d month avg)%n",
                                     derivedTurnBps, derivedTurnBps * (22.0 / 31.0)));
-                            sb.append(String.format("     * Derived Turn (0.85 bps) -> Rate Delta: %+.2f bps | Binary: %.2f%% | Any-Hike: %.2f%%%n",
+                            sb.append(String.format("     * Baseline Turn Assumption (0.85 bps post-rate / 18.7 bps Dec 31 spike) -> Rate Delta: %+.2f bps | Binary: %.2f%% | Any-Hike: %.2f%%%n",
                                     tailCmeResult.deltaRateTurnAdjustedBps(), (tailCmeResult.deltaRateTurnAdjustedBps() / 25.0) * 100.0, tailCmeResult.pBondsTurnAndTailAdjusted() * 100.0));
-                            sb.append(String.format("     * Conservative (2.00 bps) -> Rate Delta: %+.2f bps | Binary: %.2f%% | Any-Hike: %.2f%% (Requires ~62 bps single-day spike)%n",
+                            sb.append(String.format("     * Conservative (2.00 bps) -> Rate Delta: %+.2f bps | Binary: %.2f%% | Any-Hike: %.2f%% (Requires ~44 bps single-day post-meeting spike [2.0x22], or ~62 bps on 31d month avg; either is implausible)%n",
                                     res2Bp.deltaRateTurnAdjustedBps(), (res2Bp.deltaRateTurnAdjustedBps() / 25.0) * 100.0, res2Bp.pBondsTurnAndTailAdjusted() * 100.0));
                         }
                     }
@@ -432,7 +433,7 @@ public class FomcSelectorFrame extends JFrame {
                     hybridP = 0.65 * effectiveRatesP + 0.35 * pPolymarket;
                     double divergencePts = (effectiveRatesP - pPolymarket) * 100.0;
                     sb.append(String.format("  Institutional vs Retail Divergence        : %+.2f pts (CME ZQ Turn+Tail - Polymarket)%n", divergencePts));
-                    sb.append(String.format("  Hybrid Consensus Blend (ZQ + PM)          : %.2f%% [65%% CME ZQ Institutional + 35%% Polymarket Retail Crowd (Empirical Heuristic)]%n",
+                    sb.append(String.format("  Hybrid Consensus Blend (ZQ + PM)          : %.2f%% [65%% CME ZQ Institutional + 35%% Polymarket Retail Crowd (Judgmental Weighting)]%n",
                             hybridP * 100.0));
                 } else if (!Double.isNaN(effectiveRatesP)) {
                     hybridP = effectiveRatesP;
@@ -457,7 +458,7 @@ public class FomcSelectorFrame extends JFrame {
                 } else {
                     // Default: Hybrid Consensus (ZQ + PM)
                     activeP = hybridP;
-                    activeSourceName = "Hybrid Consensus (ZQ + PM) (Default)";
+                    activeSourceName = "Hybrid Consensus (ZQ + PM) [65/35 Judgmental] (Default)";
                 }
 
                 sb.append(String.format("  -> ACTIVE PROBABILITY APPLIED TO ALL SURFACES : %.2f%% (%s)%n%n",
@@ -589,9 +590,9 @@ public class FomcSelectorFrame extends JFrame {
                                 (fedFundsRes != null ? fedFundsRes.deltaRatePct() * 100.0 : 0.0))));
                 sb.append(String.format("Venue 3 — B-L Implied Volatility Surfaces (TLT & SPY) :%n"));
                 if (!Double.isNaN(triangulation.pOptions())) {
-                    sb.append(String.format("   * Option Skew Inversion Diagnostic (p_Options) : %.2f%% (from raw TLT skew %+.4f; under-identified)%n",
+                    sb.append(String.format("   * Option Skew Inversion Diagnostic (p_Options) : %.2f%% [NOT COMPARABLE to Any-Hike Probabilities; Raw Skew Diagnostic %+.4f]%n",
                             triangulation.pOptions() * 100.0, skewTlt));
-                    sb.append(String.format("     [Caveat: Under-identified. 2-week TLT skew reflects structural put demand and diffusion, not a pure binary event probability. Many (p, share) pairs fit this skew.]%n"));
+                    sb.append(String.format("     [Caveat: Under-identified. Not comparable to rates or Polymarket any-hike probabilities. 2-week TLT skew reflects structural put demand and background diffusion, not a pure binary event probability. Many (p, share) pairs fit this skew; options do not vote in consensus.]%n"));
                 } else {
                     sb.append(String.format("   * Option Skew Inversion Diagnostic (p_Options) : N/A (No TLT skewness)%n"));
                 }
@@ -600,9 +601,9 @@ public class FomcSelectorFrame extends JFrame {
                     boolean skewConsistent = Math.abs(tltTreeCheck.realizedSkewness() - skewTlt) < 0.05;
                     sb.append(String.format("   * Options Consistency Check at Active p=%.2f%% : %s (Tree realized skew %+.3f vs market %+.3f, dot-plot var share %.0f%%)%n",
                             activeP * 100.0,
-                            skewConsistent ? "CONSISTENT / PASS" : "DIVERGENT",
+                            skewConsistent ? "DOES NOT CONTRADICT" : "CONTRADICTS / DIVERGENT",
                             tltTreeCheck.realizedSkewness(), skewTlt, tltTreeCheck.dotPlotVarianceShare() * 100.0));
-                    sb.append(String.format("     [Diagnostic: TLT option surface accommodates active p=%.2f%% under %.0f%% dot-plot variance share; options confirm consensus rather than vote.]%n",
+                    sb.append(String.format("     [Caveat: Under-identified. TLT option surface accommodates active p=%.2f%% under %.0f%% dot-plot variance share; options do not contradict active p, but do not independently confirm or support it (weak evidence; non-voting).]%n",
                             activeP * 100.0, tltTreeCheck.dotPlotVarianceShare() * 100.0));
                 }
                 sb.append(String.format("   * TLT Pure Event Move: %.2f%% -> Implied 20Y Yield Shock: +/-%.2f bps (D_mod ~16.5y)%n",
@@ -638,7 +639,7 @@ public class FomcSelectorFrame extends JFrame {
                             pPolymarket * 100.0));
                     sb.append("   * Weight Rationale                         : 65% weight on institutional rates reflecting CME Fed Funds 30-day (ZQ) depth\n" +
                               "                                                and bank treasury / SOFR hedging liquidity; 35% weight on Polymarket retail\n" +
-                              "                                                crowd positioning and tail discovery. (Empirical heuristic; options layer excluded\n" +
+                              "                                                crowd positioning and tail discovery. (Judgmental weighting; options layer excluded\n" +
                               "                                                from probability vote due to under-identification from skew).\n");
                 } else if (!Double.isNaN(effectiveRatesP)) {
                     sb.append(String.format("   * Triangulated Consensus (p_Tri)           : %.2f%% [100%% CME Fed Funds ZQ (%.2f%%)]%n",
